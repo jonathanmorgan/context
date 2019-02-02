@@ -140,6 +140,14 @@ class Abstract_Work_Log( models.Model ):
     #----------------------------------------------------------------------
 
 
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Work_Log, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+
     def __str__( self ):
  
         # return reference
