@@ -18,6 +18,8 @@ You should have received a copy of the GNU Lesser General Public License along w
 #================================================================================
 
 
+# Django imports
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
@@ -114,6 +116,7 @@ class Abstract_Work_Log( models.Model ):
 
     slug = models.SlugField( unique = True )
     name = models.CharField( max_length = 255, blank = True, null = True )
+    worker = models.ForeignKey( User, on_delete = models.CASCADE, blank = True, null = True )
     notes = models.TextField( blank = True, null = True )
     
     # tags!
