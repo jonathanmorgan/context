@@ -182,22 +182,14 @@ class Abstract_Work_Log( models.Model ):
 @python_2_unicode_compatible
 class Work_Log( Abstract_Work_Log ):
 
-    #----------------------------------------------------------------------
-    # model fields and meta
-    #----------------------------------------------------------------------
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Work_Log, self ).__init__( *args, **kwargs )
 
-    #slug = models.SlugField( unique = True )
-    #name = models.CharField( max_length = 255, blank = True, null = True )
-    #notes = models.TextField( blank = True, null = True )
+    #-- END method __init__() --#
+
+    # just use the stuff in the parent class.
     
-    # tags!
-    #tags = TaggableManager( blank = True )
-
-    # time stamps.
-    #create_date = models.DateTimeField( auto_now_add = True )
-    #last_modified = models.DateTimeField( auto_now = True )
-    
-    pass
-
 #-- END model Work_Log --#
 
