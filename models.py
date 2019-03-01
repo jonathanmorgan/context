@@ -175,6 +175,90 @@ class Abstract_Context_Parent( models.Model ):
 #-- END abstract model Abstract_Context_Parent --#
 
 
+# Abstract_Relation model
+@python_2_unicode_compatible
+class Abstract_Relation( Abstract_Context_Parent ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    relation_from = None
+    relation_to = None
+    directed = models.BooleanField( default = False )
+    relation_type = None
+
+
+    #----------------------------------------------------------------------
+    # Meta
+    #----------------------------------------------------------------------
+
+    # Meta-data for this class.
+    class Meta:
+
+        abstract = True
+        
+    #-- END class Meta --#
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Relation, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got a relation_from?
+        if ( self.relation_from is not None ):
+        
+            string_list.append( str( self.relation_from ) )
+            
+        #-- END check for relation_from. --#
+
+        # got a to_term?
+        if ( self.relation_to is not None ):
+        
+            string_list.append( str( self.relation_to ) )
+            
+        #-- END check to see if relation_to. --#
+        
+        # directed?
+        if ( self.directed is not None ):
+        
+            string_list.append( "( {} )".format( self.directed ) )
+            
+        #-- END check to see if directed. --#
+ 
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+
+#-- END model Abstract_Relation --#
+
+
 # Abstract_Type model
 @python_2_unicode_compatible
 class Abstract_Type( Abstract_Context_Parent ):
@@ -392,16 +476,17 @@ class Entity( Abstract_Context_Parent ):
 
 # Entity_Relation model
 @python_2_unicode_compatible
-class Entity_Relation( Abstract_Context_Parent ):
+class Entity_Relation( Abstract_Relation ):
 
     #----------------------------------------------------------------------
     # model fields and meta
     #----------------------------------------------------------------------
 
 
-    from_entity = models.ForeignKey( "Entity", on_delete = models.CASCADE, related_name = "relation_from_entity_set" )
-    to_entity = models.ForeignKey( "Entity", on_delete = models.CASCADE, related_name = "relation_to_entity_set" )
-    directed = models.BooleanField( default = False )
+    relation_from = models.ForeignKey( "Entity", on_delete = models.CASCADE, related_name = "relation_from_entity_set" )
+    relation_to = models.ForeignKey( "Entity", on_delete = models.CASCADE, related_name = "relation_to_entity_set" )
+    #directed = models.BooleanField( default = False )
+    relation_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.SET_NULL, blank = True, null = True )
 
 
     #----------------------------------------------------------------------
@@ -412,52 +497,12 @@ class Entity_Relation( Abstract_Context_Parent ):
     def __init__( self, *args, **kwargs ):
         
         # call parent __init()__ first.
-        super( Entity_Types, self ).__init__( *args, **kwargs )
+        super( Entity_Relation, self ).__init__( *args, **kwargs )
 
     #-- END method __init__() --#
 
     
-    def __str__( self ):
- 
-        # return reference
-        string_OUT = ''
-        
-        # declare variables
-        string_list = []
-        
-        # id
-        if ( self.id is not None ):
-        
-            string_list.append( str( self.id ) )
-            
-        #-- END check to see if ID --#
-        
-        # got a from_entity?
-        if ( self.from_entity is not None ):
-        
-            string_list.append( str( self.from_entity ) )
-            
-        #-- END check for from_entity. --#
-
-        # got a to_entity?
-        if ( self.to_entity is not None ):
-        
-            string_list.append( str( self.to_entity ) )
-            
-        #-- END check to see if to_entity. --#
-        
-        # directed?
-        if ( self.directed is not None ):
-        
-            string_list.append( "( {} )".format( self.directed ) )
-            
-        #-- END check to see if directed. --#
- 
-        string_OUT += " - ".join( string_list )
- 
-        return string_OUT
-
-    #-- END method __str__() --#
+    # use parent def __str__( self ):
 
 #-- END model Entity_Relation --#
 
@@ -492,17 +537,25 @@ class Entity_Relation_Type( Abstract_Type ):
 #-- END model Entity_Relation_Type --#
 
 
-# Entity_Relation_Types model
+# Entity_Trait model
 @python_2_unicode_compatible
-class Entity_Relation_Types( Abstract_Context_Parent ):
+class Entity_Trait( Abstract_Context_Parent ):
 
     #----------------------------------------------------------------------
     # model fields and meta
     #----------------------------------------------------------------------
 
 
-    entity_relation = models.ForeignKey( "Entity_Relation", on_delete = models.CASCADE )
-    entity_relation_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.CASCADE )
+    entity = models.ForeignKey( "Entity", on_delete = models.CASCADE )
+    name = models.CharField( max_length = 255 )
+    #slug = models.SlugField()?   
+    value = models.CharField( max_length = 255, blank = True, null = True )
+    label = models.CharField( max_length = 255, blank = True, null = True )
+    description = models.TextField( blank = True )
+
+    # context
+    trait_type = models.ForeignKey( "Entity_Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
+    term = models.ForeignKey( "Term", on_delete = models.SET_NULL, blank = True, null = True )
 
 
     #----------------------------------------------------------------------
@@ -513,12 +566,45 @@ class Entity_Relation_Types( Abstract_Context_Parent ):
     def __init__( self, *args, **kwargs ):
         
         # call parent __init()__ first.
-        super( Entity_Types, self ).__init__( *args, **kwargs )
+        super( Entity_Trait, self ).__init__( *args, **kwargs )
 
     #-- END method __init__() --#
 
     
-#-- END model Entity_Relation_Types --#
+    # use parent def __str__( self ):
+
+#-- END model Entity_Trait --#
+
+
+# Entity_Trait_Type model
+@python_2_unicode_compatible
+class Entity_Trait_Type( Abstract_Type ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    #name = models.CharField( max_length = 255, blank = True, null = True )
+    #related_model = models.CharField( max_length = 255, blank = True, null = True )
+    vocabulary = models.ForeignKey( "Vocabulary", on_delete = models.SET_NULL, blank = True, null = True )
+
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Entity_Trait_Type, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    # just use the stuff in the parent class.
+    
+#-- END model Entity_Trait_Type --#
 
 
 # Entity_Type model
@@ -578,6 +664,199 @@ class Entity_Types( Abstract_Context_Parent ):
 
     
 #-- END model Entity_Types --#
+
+
+# Term model
+@python_2_unicode_compatible
+class Term( Abstract_Context_Parent ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    value = models.CharField( max_length = 255 )
+    label = models.CharField( max_length = 255, blank = True, null = True )
+    description = models.TextField( blank = True )
+    parent_term = models.ForeignKey( "Term", on_delete = models.SET_NULL, blank = True, null = True )
+    vocabulary = models.ForeignKey( "Vocabulary", on_delete = models.CASCADE ) # required to start, so kill all terms if vocabulary is deleted.
+
+    # Meta-data for this class.
+    class Meta:
+        ordering = [ 'value' ]
+
+
+    #----------------------------------------------------------------------
+    # methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Term, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got value?
+        if ( self.value is not None ):
+        
+            string_list.append( str( self.value ) )
+            
+        #-- END check for value. --#
+
+        # got label?
+        if ( self.label is not None ):
+        
+            string_list.append( str( self.label ) )
+            
+        #-- END check to see if label. --#
+        
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+
+
+#= End Term Model =========================================================
+
+
+# Term_Relation model
+@python_2_unicode_compatible
+class Term_Relation( Abstract_Relation ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    relation_from = models.ForeignKey( "Term", on_delete = models.CASCADE, related_name = "relation_from_term_set" )
+    relation_to = models.ForeignKey( "Term", on_delete = models.CASCADE, related_name = "relation_to_term_set" )
+    #directed = models.BooleanField( default = False )
+    relation_type = models.ForeignKey( "Term_Relation_Type", on_delete = models.SET_NULL, blank = True, null = True )
+
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Term_Relation, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    
+    # use parent def __str__( self ):
+
+#-- END model Entity_Relation --#
+
+
+# Term_Relation_Type model
+@python_2_unicode_compatible
+class Term_Relation_Type( Abstract_Type ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    #name = models.CharField( max_length = 255, blank = True, null = True )
+    #related_model = models.CharField( max_length = 255, blank = True, null = True )
+
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Term_Relation_Type, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    # just use the stuff in the parent class.
+    
+#-- END model Term_Relation_Type --#
+
+
+# Vocabulary model
+@python_2_unicode_compatible
+class Vocabulary( Abstract_Context_Parent ):
+
+    name = models.CharField( max_length = 255 )
+    description = models.TextField( blank = True )
+    
+    # eventually need to add more metadata - URL, organization, etc.
+
+    # Meta-data for this class.
+    class Meta:
+        ordering = [ 'name' ]
+
+    #----------------------------------------------------------------------
+    # methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Vocabulary, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got name?
+        if ( self.name is not None ):
+        
+            string_list.append( str( self.name ) )
+            
+        #-- END check for name. --#
+        
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+
+
+#= End Vocabulary Model =========================================================
 
 
 # Abstract_Work_Log model
