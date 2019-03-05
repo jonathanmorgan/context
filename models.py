@@ -338,6 +338,98 @@ class Abstract_Type( Abstract_Context_Parent ):
 #-- END model Abstract_Type --#
 
 
+# Abstract_Related_Type_Trait model
+@python_2_unicode_compatible
+class Abstract_Related_Type_Trait( Abstract_Context_Parent ):
+
+
+    '''
+    Used to capture the traits that should be associated with an entity relation
+        type.
+    '''
+
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    related_type = None
+    name = models.CharField( max_length = 255 )
+    slug = models.SlugField()
+    label = models.CharField( max_length = 255, blank = True, null = True )
+    description = models.TextField( blank = True )
+
+    # context
+    trait_type = models.ForeignKey( "Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
+
+
+    #----------------------------------------------------------------------
+    # Meta
+    #----------------------------------------------------------------------
+
+
+    # Meta-data for this class.
+    class Meta:
+
+        abstract = True
+        ordering = [ 'last_modified' ]
+        
+    #-- END class Meta --#
+
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Related_Type_Trait, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got name?
+        if ( self.name is not None ):
+        
+            string_list.append( str( self.name ) )
+            
+        #-- END check for name. --#
+
+        # got slug?
+        if ( self.slug is not None ):
+        
+            string_list.append( "( {} )".format( str( self.slug ) ) )
+            
+        #-- END check to see if slug. --#
+        
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+
+
+#-- END model Abstract_Related_Type_Trait --#
+
+
 # Abstract_Work_Log model
 @python_2_unicode_compatible
 class Abstract_Work_Log( Abstract_Context_Parent ):
@@ -537,6 +629,43 @@ class Entity_Relation_Type( Abstract_Type ):
 #-- END model Entity_Relation_Type --#
 
 
+# Entity_Type_Trait model
+@python_2_unicode_compatible
+class Entity_Relation_Type_Trait( Abstract_Related_Type_Trait ):
+
+
+    '''
+    Used to capture the traits that should be associated with an entity relation
+        type.
+    '''
+
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    related_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.CASCADE )
+
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Entity_Relation_Type_Trait, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    # use parent def __str__( self ):
+
+    
+#-- END model Entity_Relation_Type_Trait --#
+
+
 # Entity_Trait model
 @python_2_unicode_compatible
 class Entity_Trait( Abstract_Context_Parent ):
@@ -554,7 +683,7 @@ class Entity_Trait( Abstract_Context_Parent ):
     description = models.TextField( blank = True )
 
     # context
-    trait_type = models.ForeignKey( "Entity_Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
+    trait_type = models.ForeignKey( "Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
     term = models.ForeignKey( "Term", on_delete = models.SET_NULL, blank = True, null = True )
 
 
@@ -574,37 +703,6 @@ class Entity_Trait( Abstract_Context_Parent ):
     # use parent def __str__( self ):
 
 #-- END model Entity_Trait --#
-
-
-# Entity_Trait_Type model
-@python_2_unicode_compatible
-class Entity_Trait_Type( Abstract_Type ):
-
-    #----------------------------------------------------------------------
-    # model fields and meta
-    #----------------------------------------------------------------------
-
-
-    #name = models.CharField( max_length = 255, blank = True, null = True )
-    #related_model = models.CharField( max_length = 255, blank = True, null = True )
-    vocabulary = models.ForeignKey( "Vocabulary", on_delete = models.SET_NULL, blank = True, null = True )
-
-
-    #----------------------------------------------------------------------
-    # instance methods
-    #----------------------------------------------------------------------
-
-
-    def __init__( self, *args, **kwargs ):
-        
-        # call parent __init()__ first.
-        super( Entity_Trait_Type, self ).__init__( *args, **kwargs )
-
-    #-- END method __init__() --#
-
-    # just use the stuff in the parent class.
-    
-#-- END model Entity_Trait_Type --#
 
 
 # Entity_Type model
@@ -635,6 +733,42 @@ class Entity_Type( Abstract_Type ):
     # just use the stuff in the parent class.
     
 #-- END model Entity_Type --#
+
+
+# Entity_Type_Trait model
+@python_2_unicode_compatible
+class Entity_Type_Trait( Abstract_Related_Type_Trait ):
+
+
+    '''
+    Used to capture the traits that should be associated with an entity type.
+    '''
+
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    related_type = models.ForeignKey( "Entity_Type", on_delete = models.CASCADE )
+
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Entity_Type_Trait, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    # just use the stuff in the parent class.
+
+
+#-- END model Entity_Type_Trait --#
 
 
 # Entity_Types model
@@ -799,6 +933,37 @@ class Term_Relation_Type( Abstract_Type ):
     # just use the stuff in the parent class.
     
 #-- END model Term_Relation_Type --#
+
+
+# Trait_Type model
+@python_2_unicode_compatible
+class Trait_Type( Abstract_Type ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    #name = models.CharField( max_length = 255, blank = True, null = True )
+    #related_model = models.CharField( max_length = 255, blank = True, null = True )
+    vocabulary = models.ForeignKey( "Vocabulary", on_delete = models.SET_NULL, blank = True, null = True )
+
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Trait_Type, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    # just use the stuff in the parent class.
+    
+#-- END model Trait_Type --#
 
 
 # Vocabulary model
