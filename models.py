@@ -20,6 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 # Django imports
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
@@ -521,6 +522,9 @@ class Entity( Abstract_Context_Parent ):
 
     name = models.CharField( max_length = 255 )
 
+    # JSON field to hold structured related information.
+    details_json = JSONField( blank = True, null = True )
+    
 
     #----------------------------------------------------------------------
     # instance methods
@@ -580,6 +584,9 @@ class Entity_Relation( Abstract_Relation ):
     #directed = models.BooleanField( default = False )
     relation_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.SET_NULL, blank = True, null = True )
 
+    # JSON field to hold structured related information.
+    details_json = JSONField( blank = True, null = True )
+    
 
     #----------------------------------------------------------------------
     # instance methods
