@@ -272,6 +272,7 @@ class Abstract_Type( Abstract_Context_Parent ):
     slug = models.SlugField( unique = True )
     name = models.CharField( max_length = 255, blank = True, null = True )
     related_model = models.CharField( max_length = 255, blank = True, null = True )
+    description = models.TextField( blank = True )
 
 
     #----------------------------------------------------------------------
@@ -824,7 +825,7 @@ class Term( Abstract_Context_Parent ):
 
     # Meta-data for this class.
     class Meta:
-        ordering = [ 'value' ]
+        ordering = [ 'vocabulary', 'value' ]
 
 
     #----------------------------------------------------------------------
@@ -847,6 +848,7 @@ class Term( Abstract_Context_Parent ):
         
         # declare variables
         string_list = []
+        my_value = None
         
         # id
         if ( self.id is not None ):
@@ -858,16 +860,31 @@ class Term( Abstract_Context_Parent ):
         # got value?
         if ( self.value is not None ):
         
-            string_list.append( str( self.value ) )
+            my_value = self.value
+            string_list.append( str( my_value ) )
             
         #-- END check for value. --#
 
         # got label?
         if ( self.label is not None ):
         
-            string_list.append( str( self.label ) )
+            # different from value?
+            if my_value != self.label:
+                
+                # different - output as well.
+                string_list.append( "( {} )".format( str( self.label ) ) )
+                
+            #-- END check to see if value and label are different. --#
             
         #-- END check to see if label. --#
+        
+        # vocabulary
+        if ( self.vocabulary is not None ):
+        
+            # add vocabulary name
+            string_list.append( "vocab: {}".format( str( self.vocabulary ) ) )
+        
+        #-- END check for vocabulary --#
         
         string_OUT += " - ".join( string_list )
  
