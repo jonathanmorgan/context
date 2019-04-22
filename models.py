@@ -4,7 +4,7 @@ from __future__ import division
 '''
 Copyright 2019 Jonathan Morgan
 
-This file is part of http://github.com/jonathanmorgan/sourcenet.
+This file is part of http://github.com/jonathanmorgan/context.
 
 context is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -81,7 +81,7 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
             #print( my_message )
             
             # got a logger name?
-            my_logger_name = "sourcenet.models"
+            my_logger_name = "context.models"
             if ( ( logger_name_IN is not None ) and ( logger_name_IN != "" ) ):
             
                 # use logger name passed in.

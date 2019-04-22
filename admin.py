@@ -86,7 +86,7 @@ class TermAdmin( admin.ModelAdmin ):
     #    dict of pairs of field names in the model in argument 1 (with no quotes
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in sourcenet.ajax-select-lookups.py
+    #    in this case, implemented in context.lookups.py
     form = make_ajax_form( Term, dict( vocabulary = 'vocabulary' ) )
 
     fieldsets = [
@@ -129,7 +129,7 @@ class TermInline( admin.TabularInline ):
     #    dict of pairs of field names in the model in argument 1 (with no quotes
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in sourcenet.ajax-select-lookups.py
+    #    in this case, implemented in context.lookups.py
     form = make_ajax_form( Term, dict( parent_term = 'term' ) )
 
     model = Term
