@@ -26,11 +26,13 @@ from nameparser import HumanName
 
 # Django imports
 from django.db import models
+from django.db.models import Q
 from django.utils.encoding import python_2_unicode_compatible
 
 # python_utilities
 from python_utilities.beautiful_soup.beautiful_soup_helper import BeautifulSoupHelper
 from python_utilities.logging.logging_helper import LoggingHelper
+from python_utilities.strings.string_helper import StringHelper
 
 # context imports
 from context.shared.person_details import PersonDetails
