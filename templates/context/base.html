@@ -1,0 +1,59 @@
+{% load staticfiles %}
+<html>
+
+    <head>
+        <title>{% block title %}Context{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{% static "context/context.css" %}" />
+        {% if base_include_django_ajax_selects %}
+            <link href="{% static "ajax_select/css/ajax_select.css" %}" type="text/css" media="all" rel="stylesheet">
+            <script type="text/javascript" src="{% static "ajax_select/js/bootstrap.js" %}"></script>
+            <script type="text/javascript" src="{% static "ajax_select/js/ajax_select.js" %}"></script>
+        {% endif %}
+        {%block inside-head %}{% endblock %}
+    </head>
+
+    <body>
+
+        <div name="body_wrapper" id="body_wrapper" class="bodyWrapper">
+
+            {% if base_hide_navigation %}
+    
+                <!-- No navigation to see here. -->
+                
+            {% else %}
+            
+                {% if base_simple_navigation %}
+                
+                <header>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;User: {{ request.user.username }}&nbsp;&nbsp;|&nbsp;&nbsp;<a href="{% url 'context-logout' %}{% if base_post_login_redirect %}?post_logout_redirect={{ base_post_login_redirect }}{% endif %}">Logout</a></p>
+                </header>
+                
+                {% else %}
+    
+                <header>
+                    <h3>Context</h3>
+                    <p><strong>User:</strong> {{ request.user.username }}&nbsp;&nbsp;|&nbsp;&nbsp;<a href="/">Home</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="{% url 'context-logout' %}{% if base_post_login_redirect %}?post_logout_redirect={{ base_post_login_redirect }}{% endif %}">Logout</a></p>
+                    <ul>
+                        <li>
+                            <a href="{% url 'context_text-index' %}">Context Text</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'context_analysis-index' %}">Context Analysis</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'context_data-index' %}">Context Data</a>
+                        </li>
+                    </ul>
+                    <hr />
+                </header>
+                
+                {% endif %}    
+    
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+
+    </body>
+
+</html>

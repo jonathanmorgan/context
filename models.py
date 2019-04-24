@@ -30,6 +30,10 @@ from taggit.managers import TaggableManager
 # python_utilities - logging
 from python_utilities.logging.logging_helper import LoggingHelper
 
+# shared abstract models.
+from context.shared.models import Abstract_Context_Parent
+from context.shared.models import Abstract_UUID
+
 
 #================================================================================
 # Shared variables and functions
@@ -105,75 +109,6 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
 #================================================================================
 # ! ==> Abstract Models
 #================================================================================
-
-
-# Abstract_Context_Parent model
-@python_2_unicode_compatible
-class Abstract_Context_Parent( models.Model ):
-
-    #----------------------------------------------------------------------
-    # model fields and meta
-    #----------------------------------------------------------------------
-
-    notes = models.TextField( blank = True, null = True )
-    
-    # tags!
-    tags = TaggableManager( blank = True )
-
-    # time stamps.
-    create_date = models.DateTimeField( auto_now_add = True )
-    last_modified = models.DateTimeField( auto_now = True )
-
-    #----------------------------------------------------------------------
-    # Meta
-    #----------------------------------------------------------------------
-
-    # Meta-data for this class.
-    class Meta:
-
-        abstract = True
-        ordering = [ 'last_modified' ]
-        
-    #-- END class Meta --#
-
-    #----------------------------------------------------------------------
-    # instance methods
-    #----------------------------------------------------------------------
-
-
-    def __init__( self, *args, **kwargs ):
-        
-        # call parent __init()__ first.
-        super( Abstract_Context_Parent, self ).__init__( *args, **kwargs )
-
-    #-- END method __init__() --#
-
-
-    def __str__( self ):
- 
-        # return reference
-        string_OUT = ''
-        
-        # declare variables
-        string_list = []
-        
-        # id
-        if ( self.id is not None ):
-        
-            string_list.append( str( self.id ) )
-            
-        #-- END check to see if ID --#
-        
-        string_list.append( "Abstract_Context_Parent __str__() method" )
-        string_list.append( "write a child version!" )
- 
-        string_OUT += " - ".join( string_list )
- 
-        return string_OUT
-
-    #-- END method __str__() --#
-
-#-- END abstract model Abstract_Context_Parent --#
 
 
 # Abstract_Relation model
@@ -571,6 +506,35 @@ class Entity( Abstract_Context_Parent ):
 #-- END model Entity --#
 
 
+# Entity_Identifier model
+@python_2_unicode_compatible
+class Entity_Identifier( Abstract_UUID ):
+
+    entity = models.ForeignKey( Entity, on_delete = models.CASCADE )
+    #name = models.CharField( max_length = 255, null = True, blank = True )
+    #uuid = models.TextField( blank = True, null = True )
+    #source = models.CharField( max_length = 255, null = True, blank = True )
+    #notes = models.TextField( blank = True, null = True )
+
+    #----------------------------------------------------------------------
+    # methods
+    #----------------------------------------------------------------------
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Entity_Identifier, self ).__init__( *args, **kwargs )
+
+        # then, initialize variable.
+        self.bs_helper = None
+        
+    #-- END method __init__() --#
+
+    # just use the parent stuff.
+
+#= End Entity_Identifier Model ======================================================
+
+
 # Entity_Relation model
 @python_2_unicode_compatible
 class Entity_Relation( Abstract_Relation ):
@@ -605,6 +569,35 @@ class Entity_Relation( Abstract_Relation ):
     # use parent def __str__( self ):
 
 #-- END model Entity_Relation --#
+
+
+# Entity_Identifier model
+@python_2_unicode_compatible
+class Entity_Relation_Identifier( Abstract_UUID ):
+
+    entity_relation = models.ForeignKey( Entity_Relation, on_delete = models.CASCADE )
+    #name = models.CharField( max_length = 255, null = True, blank = True )
+    #uuid = models.TextField( blank = True, null = True )
+    #source = models.CharField( max_length = 255, null = True, blank = True )
+    #notes = models.TextField( blank = True, null = True )
+
+    #----------------------------------------------------------------------
+    # methods
+    #----------------------------------------------------------------------
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Entity_Relation_Identifier, self ).__init__( *args, **kwargs )
+
+        # then, initialize variable.
+        self.bs_helper = None
+        
+    #-- END method __init__() --#
+
+    # just use the parent stuff.
+
+#= End Entity_Relation_Identifier Model ======================================================
 
 
 # Entity_Relation_Type model
