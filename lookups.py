@@ -41,6 +41,7 @@ import logging
 from django.db.models import Q
 
 # context imports
+from context.models import Entity
 from context.models import Term
 from context.models import Vocabulary
 
@@ -54,6 +55,61 @@ from ajax_select import register, LookupChannel
 #===============================================================================#
 # Individual child Lookup classes
 #===============================================================================#
+
+
+@register( "entity" )
+class EntityLookup( LookupParent ):
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent's __init__()
+        super( EntityLookup, self ).__init__()
+        
+        # initialize variables
+        self.my_class = Entity
+        
+    #-- END method __init__() --#
+
+    def get_query( self, q, request ):
+
+        """
+        return a query set.  you also have access to request.user if needed
+        """
+
+        # return reference
+        query_set_OUT = None
+
+        # is the q a number and is it the ID of an entity?
+        query_set_OUT = self.get_instance_query( q, request, self.my_class )
+
+        # got anything back?
+        if ( query_set_OUT is None ):
+
+            # No exact match for q as ID.  Return search of text in contributor.
+            query_set_OUT = self.my_class.objects.filter( Q( name__icontains = q ) | Q( details_json__icontains = q ) | Q( entity_identifier__uuid__icontains = q ) | Q( notes__icontains = q ) | Q( tags__name__icontains = q ) )
+            #query_set_OUT = self.my_class.objects.filter( Q( name__icontains = q ) | Q( details_json__icontains = q ) | Q( notes__icontains = q ) | Q( tags__name__icontains = q ) )
+            
+            # ! TODO - figure out way to look down into uuids.
+
+        #-- END retrieval of query set when no ID match. --#
+
+        return query_set_OUT
+
+    #-- END method get_query --#
+
+
+    def get_objects(self,ids):
+
+        """
+        given a list of ids, return the objects ordered as you would like them
+            on the admin page.  This is for displaying the currently selected
+            items (in the case of a ManyToMany field)
+        """
+        return self.my_class.objects.filter(pk__in=ids).order_by( 'entity_types_set__entity_type', 'name' )
+
+    #-- END method get_objects --#
+
+#-- END class TermLookup --#
 
 
 @register( "term" )

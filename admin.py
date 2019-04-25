@@ -6,9 +6,13 @@ from ajax_select.admin import AjaxSelectAdmin
 
 # Import models
 from context.models import Entity
+from context.models import Entity_Identifier
 from context.models import Entity_Relation
+from context.models import Entity_Relation_Trait
+from context.models import Entity_Relation_Identifier
 from context.models import Entity_Relation_Type
 from context.models import Entity_Relation_Type_Trait
+from context.models import Entity_Relation_Types
 from context.models import Entity_Trait
 from context.models import Entity_Type
 from context.models import Entity_Type_Trait
@@ -21,8 +25,10 @@ from context.models import Vocabulary
 from context.models import Work_Log
 
 # Register your models here.
-admin.site.register( Entity )
-admin.site.register( Entity_Relation )
+#admin.site.register( Entity )
+admin.site.register( Entity_Identifier )
+#admin.site.register( Entity_Relation )
+admin.site.register( Entity_Relation_Identifier )
 admin.site.register( Entity_Relation_Type )
 admin.site.register( Entity_Relation_Type_Trait )
 admin.site.register( Entity_Trait )
@@ -73,6 +79,244 @@ class Entity_TypeAdmin( admin.ModelAdmin ):
 #-- END Entity_TypeAdmin admin model --#
 
 admin.site.register( Entity_Type, Entity_TypeAdmin )
+
+
+#-------------------------------------------------------------------------------
+# ! --> Entity admin definition
+#-------------------------------------------------------------------------------
+
+# type inline
+class Entity_EntityTypesInline( admin.TabularInline ):
+
+    model = Entity_Types
+    extra = 1
+    fk_name = 'entity'
+
+    fieldsets = [
+        (
+            None,
+            {
+                'fields' : [ 'entity_type', 'tags' ]
+            }
+        ),
+        #(
+        #    "More Detail (optional)",
+        #    {
+        #        'fields' : [ 'notes' ],
+        #        'classes' : ( "collapse", )
+        #    }
+        #),
+    ]
+
+#-- END class Entity_EntityTypesInline --#
+
+# identifier inline
+class Entity_EntityIdentifierInline( admin.TabularInline ):
+
+    model = Entity_Identifier
+    extra = 1
+    fk_name = 'entity'
+    
+    fieldsets = [
+        (
+            None,
+            {
+                'fields' : [ 'id_type', 'name', 'uuid', 'source' ]
+            }
+        ),
+        #(
+        #    "More Detail (optional)",
+        #    {
+        #        'fields' : [ 'notes' ],
+        #        'classes' : ( "collapse", )
+        #    }
+        #),
+    ]
+
+#-- END class Entity_EntityIdentifierInline --#
+
+# trait inline
+class Entity_EntityTraitInline( admin.TabularInline ):
+
+    model = Entity_Trait
+    extra = 1
+    fk_name = 'entity'
+    
+    fieldsets = [
+        (
+            None,
+            {
+                'fields' : [ 'name', 'value', 'label', 'tags', 'trait_type', 'term' ]
+            }
+        ),
+        #(
+        #    "More Detail (optional)",
+        #    {
+        #        'fields' : [ 'description', 'notes' ],
+        #        'classes' : ( "collapse", )
+        #    }
+        #),
+    ]
+
+#-- END class Entity_EntityTraitInline --#
+
+
+class EntityAdmin( admin.ModelAdmin ):
+
+    fieldsets = [
+        (
+            None,
+            { 
+                'fields' : [ 'name', 'tags' ]
+            },
+        ),
+        (
+            "More details (Optional)",
+            {
+                "fields" : [ "details_json", "notes" ],
+                "classes" : ( "collapse", )
+            }
+        ),
+    ]
+
+    inlines = [
+        Entity_EntityTypesInline,
+        Entity_EntityIdentifierInline,
+        Entity_EntityTraitInline
+    ]
+
+    list_display = ( 'id', 'name' )
+    list_display_links = ( 'id', 'name' )
+    #list_filter = [ 'location' ]
+    search_fields = [ 'name', 'details_json', 'notes', 'id' ]
+    #date_hierarchy = 'pub_date'
+
+#-- END EntityAdmin admin model --#
+
+admin.site.register( Entity, EntityAdmin )
+
+
+#-------------------------------------------------------------------------------
+# ! --> Entity_Relation admin definition
+#-------------------------------------------------------------------------------
+
+# type inline
+class ER_EntityRelationTypesInline( admin.TabularInline ):
+
+    model = Entity_Relation_Types
+    extra = 1
+    fk_name = 'entity_relation'
+
+    fieldsets = [
+        (
+            None,
+            {
+                'fields' : [ 'entity_relation_type', 'tags' ]
+            }
+        ),
+        #(
+        #    "More Detail (optional)",
+        #    {
+        #        'fields' : [ 'notes' ],
+        #        'classes' : ( "collapse", )
+        #    }
+        #),
+    ]
+
+#-- END class ER_EntityRelationTypesInline --#
+
+# identifier inline
+class ER_EntityRelationIdentifierInline( admin.TabularInline ):
+
+    model = Entity_Relation_Identifier
+    extra = 1
+    fk_name = 'entity_relation'
+    
+    fieldsets = [
+        (
+            None,
+            {
+                'fields' : [ 'id_type', 'name', 'uuid', 'source' ]
+            }
+        ),
+        #(
+        #    "More Detail (optional)",
+        #    {
+        #        'fields' : [ 'notes' ],
+        #        'classes' : ( "collapse", )
+        #    }
+        #),
+    ]
+
+#-- END class Entity_EntityIdentifierInline --#
+
+# trait inline
+class ER_EntityRelationTraitInline( admin.TabularInline ):
+
+    model = Entity_Relation_Trait
+    extra = 1
+    fk_name = 'entity_relation'
+    
+    fieldsets = [
+        (
+            None,
+            {
+                'fields' : [ 'name', 'value', 'label', 'tags', 'trait_type', 'term' ]
+            }
+        ),
+        #(
+        #    "More Detail (optional)",
+        #    {
+        #        'fields' : [ 'description', 'notes' ],
+        #        'classes' : ( "collapse", )
+        #    }
+        #),
+    ]
+
+#-- END class ER_EntityRelationTraitInline --#
+
+
+class Entity_RelationAdmin( admin.ModelAdmin ):
+
+    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
+    #    are looking to make ajax selects form fields for; 2nd argument is a
+    #    dict of pairs of field names in the model in argument 1 (with no quotes
+    #    around them) mapped to lookup channels used to service them (lookup
+    #    channels are defined in settings.py, implenented in a separate module -
+    #    in this case, implemented in context.lookups.py
+    form = make_ajax_form( Entity_Relation, dict( relation_from = 'entity', relation_to = 'entity' ) )
+
+    fieldsets = [
+        (
+            None,
+            { 
+                'fields' : [ 'relation_from', 'relation_to', 'directed', 'relation_type', 'tags' ]
+            },
+        ),
+        (
+            "More details (Optional)",
+            {
+                "fields" : [ "details_json", "notes" ],
+                "classes" : ( "collapse", )
+            }
+        ),
+    ]
+
+    inlines = [
+        ER_EntityRelationTypesInline,
+        ER_EntityRelationIdentifierInline,
+        ER_EntityRelationTraitInline
+    ]
+
+    list_display = ( 'id', 'relation_type', 'relation_from', 'relation_to' )
+    list_display_links = ( 'id', 'relation_type' )
+    #list_filter = [ 'location' ]
+    search_fields = [ 'details_json', 'notes', 'id' ]
+    #date_hierarchy = 'pub_date'
+
+#-- END TermAdmin admin model --#
+
+admin.site.register( Entity_Relation, Entity_RelationAdmin )
 
 
 #-------------------------------------------------------------------------------

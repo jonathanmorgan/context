@@ -195,6 +195,56 @@ class Abstract_Relation( Abstract_Context_Parent ):
 #-- END model Abstract_Relation --#
 
 
+# Abstract Trait model
+@python_2_unicode_compatible
+class Abstract_Trait( Abstract_Context_Parent ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    #entity = models.ForeignKey( "Entity", on_delete = models.CASCADE )
+    name = models.CharField( max_length = 255 )
+    #slug = models.SlugField()?   
+    value = models.CharField( max_length = 255, blank = True, null = True )
+    label = models.CharField( max_length = 255, blank = True, null = True )
+    description = models.TextField( blank = True )
+
+    # context
+    trait_type = models.ForeignKey( "Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
+    term = models.ForeignKey( "Term", on_delete = models.SET_NULL, blank = True, null = True )
+
+
+    #----------------------------------------------------------------------
+    # Meta
+    #----------------------------------------------------------------------
+
+    # Meta-data for this class.
+    class Meta:
+
+        abstract = True
+        
+    #-- END class Meta --#
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Trait, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    
+    # use parent def __str__( self ):
+
+#-- END model Abstract_Trait --#
+
+
 # Abstract_Type model
 @python_2_unicode_compatible
 class Abstract_Type( Abstract_Context_Parent ):
@@ -600,6 +650,36 @@ class Entity_Relation_Identifier( Abstract_UUID ):
 #= End Entity_Relation_Identifier Model ======================================================
 
 
+# Entity_Relation_Trait model
+@python_2_unicode_compatible
+class Entity_Relation_Trait( Abstract_Trait ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    entity_relation = models.ForeignKey( "Entity_Relation", on_delete = models.CASCADE )
+    
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Entity_Relation_Trait, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    
+    # use parent def __str__( self ):
+
+#-- END model Entity_Relation_Trait --#
+
+
 # Entity_Relation_Type model
 @python_2_unicode_compatible
 class Entity_Relation_Type( Abstract_Type ):
@@ -667,9 +747,38 @@ class Entity_Relation_Type_Trait( Abstract_Related_Type_Trait ):
 #-- END model Entity_Relation_Type_Trait --#
 
 
+# Entity_Types model
+@python_2_unicode_compatible
+class Entity_Relation_Types( Abstract_Context_Parent ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    entity_relation = models.ForeignKey( "Entity_Relation", on_delete = models.CASCADE )
+    entity_relation_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.CASCADE )
+
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Entity_Relation_Types, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    
+#-- END model Entity_Relation_Types --#
+
+
 # Entity_Trait model
 @python_2_unicode_compatible
-class Entity_Trait( Abstract_Context_Parent ):
+class Entity_Trait( Abstract_Trait ):
 
     #----------------------------------------------------------------------
     # model fields and meta
@@ -677,16 +786,7 @@ class Entity_Trait( Abstract_Context_Parent ):
 
 
     entity = models.ForeignKey( "Entity", on_delete = models.CASCADE )
-    name = models.CharField( max_length = 255 )
-    #slug = models.SlugField()?   
-    value = models.CharField( max_length = 255, blank = True, null = True )
-    label = models.CharField( max_length = 255, blank = True, null = True )
-    description = models.TextField( blank = True )
-
-    # context
-    trait_type = models.ForeignKey( "Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
-    term = models.ForeignKey( "Term", on_delete = models.SET_NULL, blank = True, null = True )
-
+    
 
     #----------------------------------------------------------------------
     # instance methods
