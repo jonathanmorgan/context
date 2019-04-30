@@ -1,8 +1,12 @@
 from django.contrib import admin
+from django.contrib.postgres import fields
 
 # import code for AJAX select
 from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
+
+# django_json_widget imports
+from django_json_widget.widgets import JSONEditorWidget
 
 # Import models
 from context.models import Entity
@@ -163,6 +167,10 @@ class Entity_EntityTraitInline( admin.TabularInline ):
 
 class EntityAdmin( admin.ModelAdmin ):
 
+    formfield_overrides = {
+        fields.JSONField: {'widget': JSONEditorWidget},
+    }
+    
     fieldsets = [
         (
             None,
@@ -286,6 +294,10 @@ class Entity_RelationAdmin( admin.ModelAdmin ):
     #    in this case, implemented in context.lookups.py
     form = make_ajax_form( Entity_Relation, dict( relation_from = 'entity', relation_to = 'entity' ) )
 
+    formfield_overrides = {
+        fields.JSONField: {'widget': JSONEditorWidget},
+    }
+    
     fieldsets = [
         (
             None,

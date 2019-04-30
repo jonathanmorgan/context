@@ -1,4 +1,5 @@
 django
 django-ajax-selects
+django-json-widget
 django-taggit
 psycopg2
