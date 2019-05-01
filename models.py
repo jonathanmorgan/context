@@ -259,6 +259,7 @@ class Abstract_Type( Abstract_Context_Parent ):
     name = models.CharField( max_length = 255, blank = True, null = True )
     related_model = models.CharField( max_length = 255, blank = True, null = True )
     description = models.TextField( blank = True )
+    parent_type = None
 
 
     #----------------------------------------------------------------------
@@ -692,6 +693,7 @@ class Entity_Relation_Type( Abstract_Type ):
 
     #name = models.CharField( max_length = 255, blank = True, null = True )
     #related_model = models.CharField( max_length = 255, blank = True, null = True )
+    parent_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.SET_NULL, blank = True, null = True )
 
 
     #----------------------------------------------------------------------
@@ -818,6 +820,8 @@ class Entity_Type( Abstract_Type ):
 
     #name = models.CharField( max_length = 255, blank = True, null = True )
     #related_model = models.CharField( max_length = 255, blank = True, null = True )
+    parent_type = models.ForeignKey( "Entity_Type", on_delete = models.SET_NULL, blank = True, null = True )
+
 
 
     #----------------------------------------------------------------------

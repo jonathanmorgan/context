@@ -342,11 +342,19 @@ class ERT_Entity_Relation_Type_TraitInline( admin.TabularInline ):
 
 class Entity_Relation_TypeAdmin( admin.ModelAdmin ):
 
+    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
+    #    are looking to make ajax selects form fields for; 2nd argument is a
+    #    dict of pairs of field names in the model in argument 1 (with no quotes
+    #    around them) mapped to lookup channels used to service them (lookup
+    #    channels are defined in settings.py, implenented in a separate module -
+    #    in this case, implemented in context.lookups.py
+    form = make_ajax_form( Entity_Relation_Type, dict( parent_type = 'entity_relation_type' ) )
+
     fieldsets = [
         (
             None,
             { 
-                'fields' : [ 'slug', 'name', 'description', 'tags' ]
+                'fields' : [ 'slug', 'name', 'description', 'tags', 'parent_type' ]
             },
         ),
         (
@@ -458,11 +466,19 @@ class ET_Entity_Type_TraitInline( admin.TabularInline ):
 
 class Entity_TypeAdmin( admin.ModelAdmin ):
 
+    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
+    #    are looking to make ajax selects form fields for; 2nd argument is a
+    #    dict of pairs of field names in the model in argument 1 (with no quotes
+    #    around them) mapped to lookup channels used to service them (lookup
+    #    channels are defined in settings.py, implenented in a separate module -
+    #    in this case, implemented in context.lookups.py
+    form = make_ajax_form( Entity_Type, dict( parent_type = 'entity_type' ) )
+
     fieldsets = [
         (
             None,
             { 
-                'fields' : [ 'slug', 'name', 'description', 'tags' ]
+                'fields' : [ 'slug', 'name', 'description', 'tags', 'parent_type' ]
             },
         ),
         (
