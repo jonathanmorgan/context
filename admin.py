@@ -33,16 +33,16 @@ from context.models import Work_Log
 admin.site.register( Entity_Identifier )
 #admin.site.register( Entity_Relation )
 admin.site.register( Entity_Relation_Identifier )
-admin.site.register( Entity_Relation_Type )
+#admin.site.register( Entity_Relation_Type )
 admin.site.register( Entity_Relation_Type_Trait )
-admin.site.register( Entity_Trait )
+#admin.site.register( Entity_Trait )
 #admin.site.register( Entity_Type )
 admin.site.register( Entity_Type_Trait )
 admin.site.register( Entity_Types )
 #admin.site.register( Term )
 admin.site.register( Term_Relation )
 admin.site.register( Term_Relation_Type )
-admin.site.register( Trait_Type )
+#admin.site.register( Trait_Type )
 #admin.site.register( Vocabulary )
 admin.site.register( Work_Log )
 
@@ -50,39 +50,6 @@ admin.site.register( Work_Log )
 #==============================================================================#
 # ! ==> Admins
 #==============================================================================#
-
-
-#-------------------------------------------------------------------------------
-# ! --> Entity_Type admin definition
-#-------------------------------------------------------------------------------
-
-class Entity_TypeAdmin( admin.ModelAdmin ):
-
-    fieldsets = [
-        (
-            None,
-            { 
-                'fields' : [ 'slug', 'name', 'description', 'tags' ]
-            },
-        ),
-        (
-            "More details (Optional)",
-            {
-                "fields" : [ "related_model", "notes" ],
-                "classes" : ( "collapse", )
-            }
-        ),
-    ]
-
-    list_display = ( 'id', 'slug', 'name', 'description' )
-    list_display_links = ( 'id', 'slug' )
-    #list_filter = [ 'location' ]
-    search_fields = [ 'slug', 'name', 'description', 'related_model', 'notes', 'id' ]
-    #date_hierarchy = 'pub_date'
-
-#-- END Entity_TypeAdmin admin model --#
-
-admin.site.register( Entity_Type, Entity_TypeAdmin )
 
 
 #-------------------------------------------------------------------------------
@@ -146,11 +113,15 @@ class Entity_EntityTraitInline( admin.TabularInline ):
     extra = 1
     fk_name = 'entity'
     
+    #formfield_overrides = {
+    #    fields.JSONField: {'widget': JSONEditorWidget},
+    #}
+    
     fieldsets = [
         (
             None,
             {
-                'fields' : [ 'name', 'value', 'label', 'tags', 'trait_type', 'term' ]
+                'fields' : [ 'name', 'value', 'value_json', 'label', 'tags', 'trait_type', 'term' ]
             }
         ),
         #(
@@ -332,6 +303,193 @@ admin.site.register( Entity_Relation, Entity_RelationAdmin )
 
 
 #-------------------------------------------------------------------------------
+# ! --> Entity_Relation_Type admin definition
+#-------------------------------------------------------------------------------
+
+# type inline
+class ERT_Entity_Relation_Type_TraitInline( admin.TabularInline ):
+
+    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
+    #    are looking to make ajax selects form fields for; 2nd argument is a
+    #    dict of pairs of field names in the model in argument 1 (with no quotes
+    #    around them) mapped to lookup channels used to service them (lookup
+    #    channels are defined in settings.py, implenented in a separate module -
+    #    in this case, implemented in context.lookups.py
+    form = make_ajax_form( Entity_Relation_Type_Trait, dict( trait_type = 'trait_type' ) )
+
+    model = Entity_Relation_Type_Trait
+    extra = 1
+    fk_name = 'related_type'
+
+    fieldsets = [
+        (
+            None,
+            {
+                'fields' : [ 'slug', 'name', 'label', 'tags', 'trait_type' ]
+            }
+        ),
+        #(
+        #    "More Detail (optional)",
+        #    {
+        #        'fields' : [ 'notes' ],
+        #        'classes' : ( "collapse", )
+        #    }
+        #),
+    ]
+
+#-- END class Entity_EntityTypesInline --#
+
+
+class Entity_Relation_TypeAdmin( admin.ModelAdmin ):
+
+    fieldsets = [
+        (
+            None,
+            { 
+                'fields' : [ 'slug', 'name', 'description', 'tags' ]
+            },
+        ),
+        (
+            "More details (Optional)",
+            {
+                "fields" : [ "related_model", "notes" ],
+                "classes" : ( "collapse", )
+            }
+        ),
+    ]
+
+    inlines = [
+        ERT_Entity_Relation_Type_TraitInline,
+    ]
+
+    list_display = ( 'id', 'slug', 'name', 'description' )
+    list_display_links = ( 'id', 'slug' )
+    #list_filter = [ 'location' ]
+    search_fields = [ 'slug', 'name', 'description', 'related_model', 'notes', 'id' ]
+    #date_hierarchy = 'pub_date'
+
+#-- END Entity_TypeAdmin admin model --#
+
+admin.site.register( Entity_Relation_Type, Entity_Relation_TypeAdmin )
+
+
+#-------------------------------------------------------------------------------
+# ! --> Entity_Trait admin definition
+#-------------------------------------------------------------------------------
+
+# trait inline
+class Entity_TraitAdmin( admin.ModelAdmin ):
+
+    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
+    #    are looking to make ajax selects form fields for; 2nd argument is a
+    #    dict of pairs of field names in the model in argument 1 (with no quotes
+    #    around them) mapped to lookup channels used to service them (lookup
+    #    channels are defined in settings.py, implenented in a separate module -
+    #    in this case, implemented in context.lookups.py
+    form = make_ajax_form( Entity_Trait, dict( trait_type = 'trait_type', term = 'term' ) )
+
+    formfield_overrides = {
+        fields.JSONField: {'widget': JSONEditorWidget},
+    }
+    
+    fieldsets = [
+        (
+            None,
+            {
+                'fields' : [ 'name', 'value', 'value_json', 'label', 'tags', 'trait_type', 'term' ]
+            }
+        ),
+        (
+            "More Detail (optional)",
+            {
+                'fields' : [ 'description', 'notes' ],
+                'classes' : ( "collapse", )
+            }
+        ),
+    ]
+
+    list_display = ( 'id', 'name', 'value', 'value_json', 'label', 'tags' )
+    list_display_links = ( 'id', 'name' )
+    #list_filter = [ 'location' ]
+    search_fields = [ 'name', 'value', 'value_json', 'label', 'description', 'notes', 'id' ]
+    #date_hierarchy = 'pub_date'
+
+#-- END class Entity_EntityTraitInline --#
+
+admin.site.register( Entity_Trait, Entity_TraitAdmin )
+
+#-------------------------------------------------------------------------------
+# ! --> Entity_Type admin definition
+#-------------------------------------------------------------------------------
+
+# type inline
+class ET_Entity_Type_TraitInline( admin.TabularInline ):
+
+    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
+    #    are looking to make ajax selects form fields for; 2nd argument is a
+    #    dict of pairs of field names in the model in argument 1 (with no quotes
+    #    around them) mapped to lookup channels used to service them (lookup
+    #    channels are defined in settings.py, implenented in a separate module -
+    #    in this case, implemented in context.lookups.py
+    form = make_ajax_form( Entity_Type_Trait, dict( trait_type = 'trait_type' ) )
+
+    model = Entity_Type_Trait
+    extra = 1
+    fk_name = 'related_type'
+
+    fieldsets = [
+        (
+            None,
+            {
+                'fields' : [ 'slug', 'name', 'label', 'tags', 'trait_type' ]
+            }
+        ),
+        #(
+        #    "More Detail (optional)",
+        #    {
+        #        'fields' : [ 'notes' ],
+        #        'classes' : ( "collapse", )
+        #    }
+        #),
+    ]
+
+#-- END class Entity_EntityTypesInline --#
+
+
+class Entity_TypeAdmin( admin.ModelAdmin ):
+
+    fieldsets = [
+        (
+            None,
+            { 
+                'fields' : [ 'slug', 'name', 'description', 'tags' ]
+            },
+        ),
+        (
+            "More details (Optional)",
+            {
+                "fields" : [ "related_model", "notes" ],
+                "classes" : ( "collapse", )
+            }
+        ),
+    ]
+
+    inlines = [
+        ET_Entity_Type_TraitInline,
+    ]
+
+    list_display = ( 'id', 'slug', 'name', 'description' )
+    list_display_links = ( 'id', 'slug' )
+    #list_filter = [ 'location' ]
+    search_fields = [ 'slug', 'name', 'description', 'related_model', 'notes', 'id' ]
+    #date_hierarchy = 'pub_date'
+
+#-- END Entity_TypeAdmin admin model --#
+
+admin.site.register( Entity_Type, Entity_TypeAdmin )
+
+
+#-------------------------------------------------------------------------------
 # ! --> Term admin definition
 #-------------------------------------------------------------------------------
 
@@ -370,6 +528,48 @@ class TermAdmin( admin.ModelAdmin ):
 #-- END TermAdmin admin model --#
 
 admin.site.register( Term, TermAdmin )
+
+
+#-------------------------------------------------------------------------------
+# ! --> Trait_Type admin definition
+#-------------------------------------------------------------------------------
+
+
+class Trait_TypeAdmin( admin.ModelAdmin ):
+
+    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
+    #    are looking to make ajax selects form fields for; 2nd argument is a
+    #    dict of pairs of field names in the model in argument 1 (with no quotes
+    #    around them) mapped to lookup channels used to service them (lookup
+    #    channels are defined in settings.py, implenented in a separate module -
+    #    in this case, implemented in context.lookups.py
+    form = make_ajax_form( Trait_Type, dict( vocabulary = 'vocabulary' ) )
+
+    fieldsets = [
+        (
+            None,
+            { 
+                'fields' : [ 'slug', 'name', 'vocabulary', 'tags' ]
+            },
+        ),
+        (
+            "More details (Optional)",
+            {
+                "fields" : [ 'description', 'related_model', 'notes' ],
+                "classes" : ( "collapse", )
+            }
+        ),
+    ]
+
+    list_display = ( 'id', 'slug', 'name', 'vocabulary' )
+    list_display_links = ( 'id', 'slug' )
+    #list_filter = [ 'location' ]
+    search_fields = [ 'slug', 'name', 'related_model', 'description', 'notes', 'id' ]
+    #date_hierarchy = 'pub_date'
+
+#-- END TermAdmin admin model --#
+
+admin.site.register( Trait_Type, Trait_TypeAdmin )
 
 
 #-------------------------------------------------------------------------------

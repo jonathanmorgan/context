@@ -43,6 +43,7 @@ from django.db.models import Q
 # context imports
 from context.models import Entity
 from context.models import Term
+from context.models import Trait_Type
 from context.models import Vocabulary
 
 # python_utilities - django_ajax_selects_lookup_helper
@@ -162,6 +163,59 @@ class TermLookup( LookupParent ):
     #-- END method get_objects --#
 
 #-- END class TermLookup --#
+
+
+@register( "trait_type" )
+class Trait_TypeLookup( LookupParent ):
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent's __init__()
+        super( Trait_TypeLookup, self ).__init__()
+        
+        # initialize variables
+        self.my_class = Trait_Type
+        
+    #-- END method __init__() --#
+
+
+    def get_query( self, q, request ):
+
+        """
+        return a query set.  you also have access to request.user if needed
+        """
+
+        # return reference
+        query_set_OUT = None
+
+        # is the q a number and is it the ID of an article?
+        query_set_OUT = self.get_instance_query( q, request, self.my_class )
+
+        # got anything back?
+        if ( query_set_OUT is None ):
+
+            # No exact match for q as ID.  Return search of text in contributor.
+            query_set_OUT = self.my_class.objects.filter( Q( name__icontains = q ) | Q( slug__icontains = q ) | Q( related_model__icontains = q ) | Q( description__icontains = q ) | Q( notes__icontains = q ) | Q( vocabulary__name__icontains = q ) | Q( tags__name__icontains = q ) )
+
+        #-- END retrieval of query set when no ID match. --#
+
+        return query_set_OUT
+
+    #-- END method get_query --#
+
+
+    def get_objects(self,ids):
+
+        """
+        given a list of ids, return the objects ordered as you would like them
+            on the admin page.  This is for displaying the currently selected
+            items (in the case of a ManyToMany field)
+        """
+        return self.my_class.objects.filter(pk__in=ids).order_by( 'slug' )
+
+    #-- END method get_objects --#
+
+#-- END class Trait_TypeLookup --#
 
 
 @register( "vocabulary" )

@@ -208,6 +208,7 @@ class Abstract_Trait( Abstract_Context_Parent ):
     name = models.CharField( max_length = 255 )
     #slug = models.SlugField()?   
     value = models.CharField( max_length = 255, blank = True, null = True )
+    value_json = JSONField( blank = True, null = True )
     label = models.CharField( max_length = 255, blank = True, null = True )
     description = models.TextField( blank = True )
 
