@@ -377,9 +377,14 @@ class Abstract_Related_Content( models.Model ):
     content = models.TextField()
     status = models.CharField( max_length = 255, blank = True, null = True )
     source = models.CharField( max_length = 255, blank = True, null = True )
+    source_identifier = models.TextField( blank = True, null = True )
+    note_type = models.CharField( max_length = 255, blank = True, null = True )
     content_description = models.TextField( blank = True, null = True )
     create_date = models.DateTimeField( auto_now_add = True )
     last_modified = models.DateTimeField( auto_now = True )
+
+    # tags!
+    tags = TaggableManager( blank = True )
 
     # meta class so we know this is an abstract class.
     class Meta:
@@ -528,6 +533,102 @@ class Abstract_Related_Content( models.Model ):
 
 
 #-- END abstract Abstract_Related_Content model --#
+
+
+# Abstract_Related_JSON_Content model
+@python_2_unicode_compatible
+class Abstract_Related_JSON_Content( Abstract_Related_Content ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+    content = models.TextField( blank = True, null = True )
+    content_json = JSONField( blank = True, null = True )
+
+    # meta class so we know this is an abstract class.
+    class Meta:
+        abstract = True
+        ordering = [ 'last_modified', 'create_date' ]
+
+    #----------------------------------------------------------------------
+    # NOT instance variables
+    # Class variables - overriden by __init__() per instance if same names, but
+    #    if not set there, shared!
+    #----------------------------------------------------------------------
+
+
+    #bs_helper = None
+    
+
+    #----------------------------------------------------------------------------
+    # methods
+    #----------------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Related_JSON_Content, self ).__init__( *args, **kwargs )
+
+        # then, initialize variable.
+        self.bs_helper = None
+        
+    #-- END method __init__() --#
+
+
+    def get_content_json( self, *args, **kwargs ):
+        
+        '''
+        Returns content nested in this instance.
+        Preconditions: None
+        Postconditions: None
+        
+        Returns the content exactly as it is stored in the instance.
+        '''
+        
+        # return reference
+        content_OUT = None
+
+        # declare variables
+        me = "get_content_json"
+
+        # return the content.
+        content_OUT = self.content_json
+                
+        return content_OUT
+
+    #-- END method get_content_json() --#
+
+
+    def set_content_json( self, value_IN = "", *args, **kwargs ):
+        
+        '''
+        Accepts a piece of text.  Stores it in this instance's content variable.
+        Preconditions: None
+        Postconditions: None
+        
+        Returns the content as it is stored in the instance.
+        '''
+        
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        me = "set_content_json"
+
+        # set the text in the instance.
+        self.content_json = value_IN
+        
+        # return the content.
+        value_OUT = self.get_content_json()
+                
+        return value_OUT
+
+    #-- END method set_content_json() --#
+    
+
+#-- END abstract Abstract_Related_JSON_Content model --#
 
 
 #-------------------------------------------------------------------------------
