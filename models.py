@@ -32,6 +32,7 @@ from python_utilities.logging.logging_helper import LoggingHelper
 
 # shared abstract models.
 from context.shared.models import Abstract_Context_Parent
+from context.shared.models import Abstract_Context_With_JSON
 from context.shared.models import Abstract_UUID
 
 
@@ -113,7 +114,7 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
 
 # Abstract_Relation model
 @python_2_unicode_compatible
-class Abstract_Relation( Abstract_Context_Parent ):
+class Abstract_Relation( Abstract_Context_With_JSON ):
 
     #----------------------------------------------------------------------
     # model fields and meta
@@ -501,7 +502,7 @@ class Abstract_Work_Log( Abstract_Context_Parent ):
 
 # Entity model
 @python_2_unicode_compatible
-class Entity( Abstract_Context_Parent ):
+class Entity( Abstract_Context_With_JSON ):
 
     #----------------------------------------------------------------------
     # model fields and meta
@@ -511,7 +512,7 @@ class Entity( Abstract_Context_Parent ):
     name = models.CharField( max_length = 255 )
 
     # JSON field to hold structured related information.
-    details_json = JSONField( blank = True, null = True )
+    #details_json = JSONField( blank = True, null = True )
     
 
     #----------------------------------------------------------------------
@@ -602,7 +603,7 @@ class Entity_Relation( Abstract_Relation ):
     relation_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.SET_NULL, blank = True, null = True )
 
     # JSON field to hold structured related information.
-    details_json = JSONField( blank = True, null = True )
+    #details_json = JSONField( blank = True, null = True )
     
 
     #----------------------------------------------------------------------
@@ -694,6 +695,8 @@ class Entity_Relation_Type( Abstract_Type ):
     #name = models.CharField( max_length = 255, blank = True, null = True )
     #related_model = models.CharField( max_length = 255, blank = True, null = True )
     parent_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.SET_NULL, blank = True, null = True )
+    relation_from_entity_type = models.ForeignKey( "Entity_Type", on_delete = models.SET_NULL, blank = True, null = True, related_name = "relation_from_entity_type_set" )
+    relation_to_entity_type = models.ForeignKey( "Entity_Type", on_delete = models.SET_NULL, blank = True, null = True, related_name = "relation_to_entity_type_set" )
 
 
     #----------------------------------------------------------------------

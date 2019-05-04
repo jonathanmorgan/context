@@ -25,6 +25,7 @@ import six
 from nameparser import HumanName
 
 # Django imports
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models import Q
 from django.utils.encoding import python_2_unicode_compatible
@@ -184,6 +185,80 @@ class Abstract_Context_Parent( models.Model ):
     #-- END method __str__() --#
 
 #-- END abstract model Abstract_Context_Parent --#
+
+
+# Abstract_Context_With_JSON model
+@python_2_unicode_compatible
+class Abstract_Context_With_JSON( Abstract_Context_Parent ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+    # from parent:
+    #notes = models.TextField( blank = True, null = True )
+    
+    # tags!
+    #tags = TaggableManager( blank = True )
+
+    # time stamps.
+    #create_date = models.DateTimeField( auto_now_add = True )
+    #last_modified = models.DateTimeField( auto_now = True )
+
+    # JSON field to hold structured related information.
+    details_json = JSONField( blank = True, null = True )
+    
+
+    #----------------------------------------------------------------------
+    # Meta
+    #----------------------------------------------------------------------
+
+    # Meta-data for this class.
+    class Meta:
+
+        abstract = True
+        ordering = [ 'last_modified' ]
+        
+    #-- END class Meta --#
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Context_With_JSON, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        string_list.append( "Abstract_Context_With_JSON __str__() method" )
+        string_list.append( "write a child version!" )
+ 
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+
+#-- END abstract model Abstract_Context_With_JSON --#
 
 
 # Abstract_UUID model

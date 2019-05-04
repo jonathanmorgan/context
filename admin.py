@@ -348,13 +348,13 @@ class Entity_Relation_TypeAdmin( admin.ModelAdmin ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Entity_Relation_Type, dict( parent_type = 'entity_relation_type' ) )
+    form = make_ajax_form( Entity_Relation_Type, dict( parent_type = 'entity_relation_type', relation_from_entity_type = 'entity_type', relation_to_entity_type = 'entity_type' ) )
 
     fieldsets = [
         (
             None,
             { 
-                'fields' : [ 'slug', 'name', 'description', 'tags', 'parent_type' ]
+                'fields' : [ 'slug', 'name', 'description', 'tags', 'parent_type', 'relation_from_entity_type', 'relation_to_entity_type' ]
             },
         ),
         (
