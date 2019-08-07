@@ -263,7 +263,8 @@ class Entity_RelationAdmin( admin.ModelAdmin ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Entity_Relation, dict( relation_from = 'entity', relation_to = 'entity' ) )
+    #form = make_ajax_form( Entity_Relation, dict( relation_from = 'entity', relation_to = 'entity', relation_through = 'entity' ) )
+    autocomplete_fields = [ 'relation_from', 'relation_to', 'relation_through' ]
 
     formfield_overrides = {
         fields.JSONField: {'widget': JSONEditorWidget},
@@ -273,7 +274,7 @@ class Entity_RelationAdmin( admin.ModelAdmin ):
         (
             None,
             { 
-                'fields' : [ 'relation_from', 'relation_to', 'directed', 'relation_type', 'tags' ]
+                'fields' : [ 'relation_from', 'relation_to', 'relation_through', 'directed', 'relation_type', 'tags' ]
             },
         ),
         (
@@ -315,7 +316,8 @@ class ERT_Entity_Relation_Type_TraitInline( admin.TabularInline ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Entity_Relation_Type_Trait, dict( trait_type = 'trait_type' ) )
+    #form = make_ajax_form( Entity_Relation_Type_Trait, dict( trait_type = 'trait_type' ) )
+    autocomplete_fields = [ 'trait_type' ]
 
     model = Entity_Relation_Type_Trait
     extra = 1
@@ -348,7 +350,8 @@ class Entity_Relation_TypeAdmin( admin.ModelAdmin ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Entity_Relation_Type, dict( parent_type = 'entity_relation_type', relation_from_entity_type = 'entity_type', relation_to_entity_type = 'entity_type' ) )
+    #form = make_ajax_form( Entity_Relation_Type, dict( parent_type = 'entity_relation_type', relation_from_entity_type = 'entity_type', relation_to_entity_type = 'entity_type' ) )
+    autocomplete_fields = [ 'parent_type', 'relation_from_entity_type', 'relation_to_entity_type' ]
 
     fieldsets = [
         (
@@ -394,7 +397,8 @@ class Entity_TraitAdmin( admin.ModelAdmin ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Entity_Trait, dict( trait_type = 'trait_type', term = 'term' ) )
+    #form = make_ajax_form( Entity_Trait, dict( trait_type = 'trait_type', term = 'term' ) )
+    autocomplete_fields = [ 'trait_type', 'term' ]
 
     formfield_overrides = {
         fields.JSONField: {'widget': JSONEditorWidget},
@@ -439,7 +443,8 @@ class ET_Entity_Type_TraitInline( admin.TabularInline ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Entity_Type_Trait, dict( trait_type = 'trait_type' ) )
+    #form = make_ajax_form( Entity_Type_Trait, dict( trait_type = 'trait_type' ) )
+    autocomplete_fields = [ 'trait_type' ]
 
     model = Entity_Type_Trait
     extra = 1
@@ -449,7 +454,7 @@ class ET_Entity_Type_TraitInline( admin.TabularInline ):
         (
             None,
             {
-                'fields' : [ 'slug', 'name', 'label', 'tags', 'trait_type' ]
+                'fields' : [ 'slug', 'name', 'label', 'trait_type', 'required', 'tags' ]
             }
         ),
         #(
@@ -472,7 +477,8 @@ class Entity_TypeAdmin( admin.ModelAdmin ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Entity_Type, dict( parent_type = 'entity_type' ) )
+    #form = make_ajax_form( Entity_Type, dict( parent_type = 'entity_type' ) )
+    autocomplete_fields = [ 'parent_type' ]
 
     fieldsets = [
         (
@@ -517,7 +523,8 @@ class TermAdmin( admin.ModelAdmin ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Term, dict( vocabulary = 'vocabulary' ) )
+    #form = make_ajax_form( Term, dict( vocabulary = 'vocabulary' ) )
+    autocomplete_fields = [ 'vocabulary' ]
 
     fieldsets = [
         (
@@ -559,7 +566,8 @@ class Trait_TypeAdmin( admin.ModelAdmin ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Trait_Type, dict( vocabulary = 'vocabulary' ) )
+    #form = make_ajax_form( Trait_Type, dict( vocabulary = 'vocabulary' ) )
+    autocomplete_fields = [ 'vocabulary' ]
 
     fieldsets = [
         (
@@ -602,7 +610,8 @@ class TermInline( admin.TabularInline ):
     #    around them) mapped to lookup channels used to service them (lookup
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
-    form = make_ajax_form( Term, dict( parent_term = 'term' ) )
+    #form = make_ajax_form( Term, dict( parent_term = 'term' ) )
+    autocomplete_fields = [ 'parent_term' ]
 
     model = Term
     extra = 2

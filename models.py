@@ -349,6 +349,7 @@ class Abstract_Related_Type_Trait( Abstract_Context_Parent ):
     slug = models.SlugField()
     label = models.CharField( max_length = 255, blank = True, null = True )
     description = models.TextField( blank = True )
+    required = models.BooleanField( default = False )
 
     # context
     trait_type = models.ForeignKey( "Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
@@ -604,6 +605,10 @@ class Entity_Relation( Abstract_Relation ):
 
     # JSON field to hold structured related information.
     #details_json = JSONField( blank = True, null = True )
+
+    # add a way to tie this to a containing entity (article in which a reporter
+    #     quotes a source, for example).    
+    relation_through = models.ForeignKey( "Entity", on_delete = models.SET_NULL, related_name = "relation_through_entity_set", blank = True, null = True )
     
 
     #----------------------------------------------------------------------
