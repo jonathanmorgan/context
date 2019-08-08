@@ -351,13 +351,13 @@ class Entity_Relation_TypeAdmin( admin.ModelAdmin ):
     #    channels are defined in settings.py, implenented in a separate module -
     #    in this case, implemented in context.lookups.py
     #form = make_ajax_form( Entity_Relation_Type, dict( parent_type = 'entity_relation_type', relation_from_entity_type = 'entity_type', relation_to_entity_type = 'entity_type' ) )
-    autocomplete_fields = [ 'parent_type', 'relation_from_entity_type', 'relation_to_entity_type' ]
+    autocomplete_fields = [ 'parent_type', 'relation_from_entity_type', 'relation_to_entity_type', 'relation_through_entity_type' ]
 
     fieldsets = [
         (
             None,
             { 
-                'fields' : [ 'slug', 'name', 'description', 'tags', 'parent_type', 'relation_from_entity_type', 'relation_to_entity_type' ]
+                'fields' : [ 'slug', 'name', 'description', 'tags', 'parent_type', 'relation_from_entity_type', 'relation_to_entity_type', 'relation_through_entity_type' ]
             },
         ),
         (
@@ -500,11 +500,12 @@ class Entity_TypeAdmin( admin.ModelAdmin ):
         ET_Entity_Type_TraitInline,
     ]
 
-    list_display = ( 'id', 'slug', 'name', 'description' )
+    list_display = ( 'id', 'slug', 'name', 'description', 'last_modified', 'create_date' )
     list_display_links = ( 'id', 'slug' )
     #list_filter = [ 'location' ]
     search_fields = [ 'slug', 'name', 'description', 'related_model', 'notes', 'id' ]
     #date_hierarchy = 'pub_date'
+    ordering = [ '-last_modified' ]
 
 #-- END Entity_TypeAdmin admin model --#
 
