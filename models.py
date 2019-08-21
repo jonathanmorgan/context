@@ -112,6 +112,151 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
 #================================================================================
 
 
+# Abstract_Identifier_Type model
+@python_2_unicode_compatible
+class Abstract_Identifier_Type( Abstract_Context_Parent ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    name = models.CharField( max_length = 255, null = True, blank = True )
+    source = models.CharField( max_length = 255, null = True, blank = True )
+    notes = models.TextField( blank = True, null = True )
+    #type_list = models.ManyToManyField( Entity_Type )
+    type_list = None
+
+    # meta class so we know this is an abstract class.
+    class Meta:
+
+        abstract = True
+        ordering = [ 'source', 'name' ]
+
+    #-- END meta class --#
+
+
+    #----------------------------------------------------------------------
+    # methods
+    #----------------------------------------------------------------------
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Identifier_Type, self ).__init__( *args, **kwargs )
+        
+    #-- END method __init__() --#
+
+    # just use the parent stuff.
+    
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        type_qs = None
+        type_count = None
+        type_slug_list = None
+        current_type = None
+        current_type_slug = None
+        type_list_string = None
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got a name?
+        if ( self.name is not None ):
+        
+            string_list.append( str( self.name ) )
+            
+        #-- END check for name. --#
+
+        # got a source?
+        if ( self.source is not None ):
+        
+            string_list.append( str( self.source ) )
+            
+        #-- END check for source. --#
+        
+        # got any types?
+        if ( self.type_list is not None ):
+
+            # retrieve string list of types.
+            type_list_string = self.type_list_to_string()
+            if ( ( type_list_string is not None ) and ( type_list_string != "" ) ):
+            
+                # add it to string list.
+                string_list.append( type_list_string )
+                
+            #-- END check to see if any types. --#
+            
+        #-- END check to see if type_list defined. --#
+
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+    
+    
+    def type_list_to_string( self ):
+        
+        # return reference
+        string_OUT = None
+        
+        # declare variables
+        type_qs = None
+        type_count = None
+        type_slug_list = None
+        current_type = None
+        current_type_slug = None
+        type_list_string = None
+        
+        # got any types?
+        if ( self.type_list is not None ):
+
+            # retrieve list of types.
+            type_qs = self.type_list.all()
+
+            # got any types?
+            type_count = type_qs.count()
+            if ( type_count > 0 ):
+
+                type_slug_list = []
+                for current_type in type_qs:
+                
+                    # get name
+                    current_type_slug = current_type.slug
+                    type_slug_list.append( current_type_slug )
+                    
+                #-- END loop over types. --#
+                
+                # got any?
+                if ( len( type_slug_list ) > 0 ):
+                
+                    # yes - create string list, add to output list.
+                    string_OUT = "( {} )".format( ", ".join( type_slug_list ) )
+                    
+                #-- END check to see if any types. --#
+                
+            #-- END check to see if any types. --#
+            
+        #-- END check to see if type_list defined. --#
+
+        return string_OUT
+        
+    #-- END method type_list_to_string() --#
+    
+
+#= End Abstract_Identifier_Type Model ======================================================
+
+
 # Abstract_Relation model
 @python_2_unicode_compatible
 class Abstract_Relation( Abstract_Context_With_JSON ):
@@ -560,15 +705,27 @@ class Entity( Abstract_Context_With_JSON ):
 #-- END model Entity --#
 
 
-# Entity_Identifier model
+# Entity_Identifier_Type model
 @python_2_unicode_compatible
-class Entity_Identifier( Abstract_UUID ):
+class Entity_Identifier_Type( Abstract_Identifier_Type ):
 
-    entity = models.ForeignKey( Entity, on_delete = models.CASCADE )
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
     #name = models.CharField( max_length = 255, null = True, blank = True )
-    #uuid = models.TextField( blank = True, null = True )
     #source = models.CharField( max_length = 255, null = True, blank = True )
     #notes = models.TextField( blank = True, null = True )
+    type_list = models.ManyToManyField( 'Entity_Type', blank = True, null = True )
+
+    # meta class so we know this is an abstract class.
+    class Meta:
+
+        ordering = [ 'source', 'name' ]
+
+    #-- END meta class --#
+
 
     #----------------------------------------------------------------------
     # methods
@@ -577,14 +734,103 @@ class Entity_Identifier( Abstract_UUID ):
     def __init__( self, *args, **kwargs ):
         
         # call parent __init()__ first.
-        super( Entity_Identifier, self ).__init__( *args, **kwargs )
-
-        # then, initialize variable.
-        self.bs_helper = None
+        super( Entity_Identifier_Type, self ).__init__( *args, **kwargs )
         
     #-- END method __init__() --#
 
     # just use the parent stuff.
+    
+
+#= End Entity_Identifier_Type Model ======================================================
+
+
+# Entity_Identifier model
+@python_2_unicode_compatible
+class Entity_Identifier( Abstract_UUID ):
+
+    #name = models.CharField( max_length = 255, null = True, blank = True )
+    #uuid = models.TextField( blank = True, null = True )
+    #id_type = models.CharField( max_length = 255, null = True, blank = True )
+    #source = models.CharField( max_length = 255, null = True, blank = True )
+    #notes = models.TextField( blank = True, null = True )
+    entity = models.ForeignKey( Entity, on_delete = models.CASCADE )
+    entity_identifier_type = models.ForeignKey( Entity_Identifier_Type, blank = True, null = True, on_delete = models.SET_NULL )
+
+    #----------------------------------------------------------------------
+    # methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Entity_Identifier, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+
+    def __str__( self ):
+        
+        # return reference
+        string_OUT = ""
+        
+        # declare variables
+        prefix_string = ""
+        
+        if ( self.id ):
+        
+            # yes. output.
+            string_OUT += str( self.id )
+            prefix_string = " - "
+
+        #-- END check to see if ID --#
+
+        if ( self.name ):
+        
+            string_OUT += prefix_string + self.name
+            prefix_string = " - "
+            
+        #-- END check to see if name. --#
+            
+        if ( self.source ):
+        
+            string_OUT += prefix_string + " ( " + self.source + " )"
+            prefix_string = " - "
+            
+        #-- END check to see if source. --#
+            
+        if ( self.uuid ):
+        
+            string_OUT += prefix_string + self.uuid
+            prefix_string = " - "
+            
+        #-- END check to see if uuid. --#
+            
+        if ( self.id_type ):
+        
+            string_OUT += "{} ( id_type: {} )".format( prefix_string, self.id_type )
+            prefix_string = " - "
+            
+        #-- END check to see if id_type. --#
+            
+        if ( self.entity ):
+        
+            string_OUT += "{} Entity: {}".format( prefix_string, self.entity.id )
+            prefix_string = " - "
+            
+        #-- END check to see if id_type. --#
+            
+        if ( self.entity_identifier_type ):
+        
+            string_OUT += "{} Type: {}".format( prefix_string, self.entity_identifier_type )
+            prefix_string = " - "
+            
+        #-- END check to see if id_type. --#
+            
+        return string_OUT
+        
+    #-- END method __str__() --#
+
 
 #= End Entity_Identifier Model ======================================================
 
@@ -704,6 +950,14 @@ class Entity_Relation_Type( Abstract_Type ):
     relation_to_entity_type = models.ForeignKey( "Entity_Type", on_delete = models.SET_NULL, blank = True, null = True, related_name = "relation_to_entity_type_set" )
     relation_through_entity_type = models.ForeignKey( "Entity_Type", on_delete = models.SET_NULL, blank = True, null = True, related_name = "relation_through_entity_type_set" )
     
+
+    # Meta-data for this class.
+    class Meta:
+
+        ordering = [ 'last_modified' ]
+        
+    #-- END class Meta --#
+
 
     #----------------------------------------------------------------------
     # instance methods

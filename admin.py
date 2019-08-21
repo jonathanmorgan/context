@@ -11,6 +11,7 @@ from django_json_widget.widgets import JSONEditorWidget
 # Import models
 from context.models import Entity
 from context.models import Entity_Identifier
+from context.models import Entity_Identifier_Type
 from context.models import Entity_Relation
 from context.models import Entity_Relation_Trait
 from context.models import Entity_Relation_Identifier
@@ -31,6 +32,7 @@ from context.models import Work_Log
 # Register your models here.
 #admin.site.register( Entity )
 admin.site.register( Entity_Identifier )
+#admin.site.register( Entity_Identifier_Type )
 #admin.site.register( Entity_Relation )
 admin.site.register( Entity_Relation_Identifier )
 #admin.site.register( Entity_Relation_Type )
@@ -176,6 +178,35 @@ admin.site.register( Entity, EntityAdmin )
 
 
 #-------------------------------------------------------------------------------
+# ! --> Entity_Identifier_Type admin definition
+#-------------------------------------------------------------------------------
+
+class Entity_Identifier_TypeAdmin( admin.ModelAdmin ):
+
+    autocomplete_fields = [ 'type_list' ]
+
+    fieldsets = [
+        (
+            None,
+            { 
+                'fields' : [ 'name', 'source', 'type_list', 'tags', 'notes' ]
+            },
+        ),
+    ]
+
+    list_display = ( 'id', 'name', 'source', 'type_list_to_string', 'last_modified' )
+    list_display_links = ( 'id', 'name' )
+    list_filter = [ 'source' ]
+    search_fields = [ 'name', 'source', 'notes', 'id' ]
+    #date_hierarchy = 'pub_date'
+    ordering = [ '-last_modified' ]
+
+#-- END Entity_TypeAdmin admin model --#
+
+admin.site.register( Entity_Identifier_Type, Entity_Identifier_TypeAdmin )
+
+
+#-------------------------------------------------------------------------------
 # ! --> Entity_Relation admin definition
 #-------------------------------------------------------------------------------
 
@@ -292,11 +323,12 @@ class Entity_RelationAdmin( admin.ModelAdmin ):
         ER_EntityRelationTraitInline
     ]
 
-    list_display = ( 'id', 'relation_type', 'relation_from', 'relation_to' )
+    list_display = ( 'id', 'relation_type', 'relation_from', 'relation_to', 'last_modified' )
     list_display_links = ( 'id', 'relation_type' )
     #list_filter = [ 'location' ]
     search_fields = [ 'details_json', 'notes', 'id' ]
     #date_hierarchy = 'pub_date'
+    ordering = [ 'last_modified' ]
 
 #-- END TermAdmin admin model --#
 
@@ -373,11 +405,12 @@ class Entity_Relation_TypeAdmin( admin.ModelAdmin ):
         ERT_Entity_Relation_Type_TraitInline,
     ]
 
-    list_display = ( 'id', 'slug', 'name', 'description' )
+    list_display = ( 'id', 'slug', 'name', 'description', 'last_modified' )
     list_display_links = ( 'id', 'slug' )
     #list_filter = [ 'location' ]
     search_fields = [ 'slug', 'name', 'description', 'related_model', 'notes', 'id' ]
     #date_hierarchy = 'pub_date'
+    ordering = [ '-last_modified' ]
 
 #-- END Entity_TypeAdmin admin model --#
 
