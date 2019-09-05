@@ -359,7 +359,7 @@ class ERT_Entity_Relation_Type_TraitInline( admin.TabularInline ):
         (
             None,
             {
-                'fields' : [ 'slug', 'name', 'label', 'tags', 'trait_type' ]
+                'fields' : [ 'slug', 'name', 'label', 'trait_type', 'required', 'tags' ]
             }
         ),
         #(

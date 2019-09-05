@@ -352,7 +352,7 @@ class Abstract_Trait( Abstract_Context_Parent ):
 
     #entity = models.ForeignKey( "Entity", on_delete = models.CASCADE )
     name = models.CharField( max_length = 255 )
-    #slug = models.SlugField()?   
+    slug = models.SlugField( blank = True, null = True )
     value = models.CharField( max_length = 255, blank = True, null = True )
     value_json = JSONField( blank = True, null = True )
     label = models.CharField( max_length = 255, blank = True, null = True )
@@ -651,18 +651,20 @@ class Abstract_Work_Log( Abstract_Context_Parent ):
 class Entity( Abstract_Context_With_JSON ):
 
     #----------------------------------------------------------------------
-    # model fields and meta
+    # ! ----> model fields and meta
     #----------------------------------------------------------------------
 
 
     name = models.CharField( max_length = 255 )
+    #entity_type = models.ForeignKey( 'Entity_Type', on_delete = models.SET_NULL, blank = True, null = True )
+    my_entity_types = models.ManyToManyField( 'Entity_Type', through = 'Entity_Types', blank = True )
 
     # JSON field to hold structured related information.
     #details_json = JSONField( blank = True, null = True )
     
 
     #----------------------------------------------------------------------
-    # instance methods
+    # ! ----> overridden built-in methods
     #----------------------------------------------------------------------
 
 
@@ -702,6 +704,226 @@ class Entity( Abstract_Context_With_JSON ):
 
     #-- END method __str__() --#
 
+    #----------------------------------------------------------------------
+    # ! ----> instance methods
+    #----------------------------------------------------------------------
+
+    
+    def add_entity_type( self, type_slug_IN ):
+
+        '''
+        Accepts entity type slug.  Looks up type for that entity, adds it to
+            those associated with this entity, then returns Type.
+            
+        preconditions: Entity must already be saved for this to work.
+        
+        postconditions: Throws exception if type not found.
+        '''
+        
+        # return reference
+        type_OUT = None
+        
+        # declare variables
+        me = "add_entity_type"
+        
+        # make sure we have a type slug
+        if ( ( type_slug_IN is not None ) and ( type_slug_IN != "" ) ):
+        
+            # look up type using slug
+            type_OUT = Entity_Type.objects.get( slug = type_slug_IN )
+
+            # add to entity instance - won't create duplicate if already there.
+            self.my_entity_types.add( type_OUT )
+
+        else:
+        
+            # error
+            print( "ERROR - no slug passed in, can't process." )
+            type_OUT = None
+
+        #-- END check to see if slug passed in --#
+        
+        return type_OUT
+
+    #-- END method add_entity_type() --#
+
+
+    def set_entity_trait( self,
+                          name_IN,
+                          value_IN,
+                          slug_IN = None,
+                          value_json_IN = None,
+                          label_IN = None,
+                          description_IN = None,
+                          trait_type_IN = None,
+                          term_IN = None,
+                          entity_type_trait_IN = None ):
+
+        '''
+        Accepts entity type slug.  Looks up type for that entity, adds it to
+            those associated with this entity, then returns Type.
+            
+        preconditions: Entity must already be saved for this to work.
+        
+        postconditions: Throws exception if type not found.
+        '''
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me = "set_entity_trait"
+        trait_name = None
+        trait_qs = None
+        trait_count = None
+        trait_instance = None
+        is_updated = None
+        
+        # if trait definition passed in, get name from there.
+        if ( entity_type_trait_IN is not None ):
+        
+            # got one - it takes precedence.
+            trait_name = entity_type_trait_IN.name
+            
+        else:
+        
+            # no trait definition, use name passed in.
+            trait_name = name_IN
+            
+        #-- END check to see where name comes from --#
+        
+        # make sure we have a name
+        if ( ( trait_name is not None ) and ( trait_name != "" ) ):
+        
+            # init
+            is_updated = False
+        
+            # look up name in Entity's trait set.
+            trait_qs = self.entity_trait_set.filter( name = trait_name )
+            trait_count = trait_qs.count()
+            
+            # what have we got?
+            if ( trait_count == 0 ):
+            
+                # does not exist.  Create new.
+                trait_instance = Entity_Trait()
+                trait_instance.entity = self
+                trait_instance.name = trait_name
+                
+                # save()
+                trait_instance.save()
+                
+            elif ( trait_count == 1 ):
+            
+                # one exists.  Retrieve it.
+                trait_instance = trait_qs.get()
+                
+            else:
+            
+                # more than one.  Error.
+                print( "There are {} traits for the requested name {}.  Not right.  Dropping out.".format( trait_count, name_IN ) )
+                trait_instance = None
+                
+            #-- END retrieve Entity_Trait instance. --#
+            
+            if ( trait_instance is not None ):
+            
+                # update values from those passed in.
+                
+                # do we have a trait definition?
+                if ( entity_type_trait_IN is not None ):
+                
+                    # we do - use it to set name and other metadata details.
+                    trait_instance.set_entity_type_trait( entity_type_trait_IN )
+                    is_updated = True
+                    
+                else:
+                
+                    # no - set manually.
+
+                    # --> trait_type
+                    if ( trait_type_IN is not None ):
+                    
+                        trait_instance.trait_type = trait_type_IN
+                        is_updated = True
+                        
+                    #-- END trait_type --#
+
+                    # --> slug
+                    if ( slug_IN is not None ):
+                    
+                        trait_instance.slug = slug_IN
+                        is_updated = True
+                        
+                    #-- END slug --#
+
+                    # --> label
+                    if ( label_IN is not None ):
+                    
+                        trait_instance.label = label_IN
+                        is_updated = True
+                        
+                    #-- END label --#
+    
+                    # --> description
+                    if ( description_IN is not None ):
+                    
+                        trait_instance.description = description_IN
+                        is_updated = True
+                        
+                    #-- END description --#
+
+                #-- END check to see if trait definition from trait type passed in --#
+            
+                # --> value
+                if ( value_IN is not None ):
+                
+                    trait_instance.value = value_IN
+                    is_updated = True
+                    
+                #-- END value --#
+                
+                # --> value_json
+                if ( value_json_IN is not None ):
+                
+                    trait_instance.value_json = value_json_IN
+                    is_updated = True
+                    
+                #-- END value_json --#
+
+                # --> term
+                if ( term_IN is not None ):
+                
+                    trait_instance.term = term_IN
+                    is_updated = True
+                    
+                #-- END term --#
+                
+                # do we need to save?
+                if ( is_updated == True ):
+                
+                    # yes.  save()
+                    trait_instance.save()
+                    
+                #-- END check to see if we need to save() --#
+
+            #-- END check to see if we have an instance. --#
+            
+            instance_OUT = trait_instance
+
+        else:
+        
+            # error
+            print( "ERROR - no trait name passed in, can't process." )
+            instance_OUT = None
+
+        #-- END check to see if slug passed in --#
+
+        return instance_OUT
+
+    #-- END method set_entity_trait() --#
+
+
 #-- END model Entity --#
 
 
@@ -717,7 +939,7 @@ class Entity_Identifier_Type( Abstract_Identifier_Type ):
     #name = models.CharField( max_length = 255, null = True, blank = True )
     #source = models.CharField( max_length = 255, null = True, blank = True )
     #notes = models.TextField( blank = True, null = True )
-    type_list = models.ManyToManyField( 'Entity_Type', blank = True, null = True )
+    type_list = models.ManyToManyField( 'Entity_Type', blank = True )
 
     # meta class so we know this is an abstract class.
     class Meta:
@@ -1052,11 +1274,17 @@ class Entity_Trait( Abstract_Trait ):
 
 
     entity = models.ForeignKey( "Entity", on_delete = models.CASCADE )
+    entity_type_trait = models.ForeignKey( "Entity_Type_Trait", on_delete = models.SET_NULL, blank = True, null = True )
     
 
     #----------------------------------------------------------------------
     # instance methods
     #----------------------------------------------------------------------
+
+
+    #---------------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #---------------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
@@ -1068,6 +1296,72 @@ class Entity_Trait( Abstract_Trait ):
 
     
     # use parent def __str__( self ):
+
+
+    #----------------------------------------------------------------------
+    # ! ----> instance methods
+    #----------------------------------------------------------------------
+
+
+    def set_entity_type_trait( self, instance_IN ):
+        
+        '''
+        Accepts Entity_Trait_Type instance that defines the trait we are setting
+            for the
+        '''
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        entity_type_trait_spec = None
+        my_trait_type = None
+        my_name = None
+        my_slug = None
+        my_label = None
+        my_description = None
+        
+        entity_type_trait_spec = instance_IN
+        if ( entity_type_trait_spec is not None ):
+        
+            # not None.  Store it...
+            self.entity_type_trait = entity_type_trait_spec
+            
+            # set other values from it.
+            
+            # ----> trait_type
+            my_trait_type = entity_type_trait_spec.trait_type
+            self.trait_type = my_trait_type
+            
+            # ----> name
+            my_name = entity_type_trait_spec.name
+            self.name = my_name            
+
+            # ----> slug
+            my_slug = entity_type_trait_spec.slug
+            self.slug = my_slug            
+            
+            # ----> label
+            my_label = entity_type_trait_spec.label
+            self.label = my_label            
+            
+            # ----> description
+            my_description = entity_type_trait_spec.description
+            self.description = my_description            
+        
+        else:
+        
+            # None - just set to None.
+            self.entity_type_trait = entity_type_trait_spec
+        
+        #-- END check to see if None --#
+
+        # return the type
+        instance_OUT = entity_type_trait_spec
+        
+        return instance_OUT
+    
+    #-- END method set_entity_type_trait() --#
 
 #-- END model Entity_Trait --#
 
@@ -1087,9 +1381,9 @@ class Entity_Type( Abstract_Type ):
 
 
 
-    #----------------------------------------------------------------------
-    # instance methods
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #---------------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
@@ -1101,6 +1395,60 @@ class Entity_Type( Abstract_Type ):
 
     # just use the stuff in the parent class.
     
+
+    #----------------------------------------------------------------------
+    # ! ----> instance methods
+    #----------------------------------------------------------------------
+
+
+    def get_trait_spec( self, slug_IN ):
+        
+        '''
+        Retrieve trait specification associated with this type for the slug
+            passed in.  If no match, output message and return None.
+        '''
+    
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me - "get_trait_spec"
+        trait_spec = None
+        
+        # make sure we have a slug
+        if ( ( slug_IN is not None ) and ( slug_IN != "" ) ):
+        
+            try:
+            
+                # look up type using slug
+                trait_spec = self.entity_type_trait_spec.get( slug = slug_IN )
+
+            except User.MultipleObjectsReturned as mor:
+            
+                print( "Multiple instances returned for slug {}.  Impossible!".format( slug_IN ) )
+                trait_spec = None
+            
+            except User.ObjectDoesNotExist as odne:
+            
+                print( "No instance found for slug {}.".format( slug_IN ) )
+                trait_spec = None
+                
+            #-- END try-except --#
+
+        else:
+        
+            # error
+            print( "ERROR - no slug passed in, can't process." )
+            trait_spec = None
+
+        #-- END check to see if slug passed in --#     
+        
+        instance_OUT = trait_spec   
+        
+        return instance_OUT
+
+    #-- END method get_trait_spec() --#
+
 #-- END model Entity_Type --#
 
 
@@ -1114,17 +1462,17 @@ class Entity_Type_Trait( Abstract_Related_Type_Trait ):
     '''
 
 
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------------
     # model fields and meta
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------------
 
 
     related_type = models.ForeignKey( "Entity_Type", on_delete = models.CASCADE )
 
 
-    #----------------------------------------------------------------------
-    # instance methods
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #---------------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
@@ -1135,6 +1483,11 @@ class Entity_Type_Trait( Abstract_Related_Type_Trait ):
     #-- END method __init__() --#
 
     # just use the stuff in the parent class.
+
+
+    #---------------------------------------------------------------------------
+    # instance methods
+    #---------------------------------------------------------------------------
 
 
 #-- END model Entity_Type_Trait --#
