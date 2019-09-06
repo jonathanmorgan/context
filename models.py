@@ -21,6 +21,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 # Django imports
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
+#from django.core.exceptions import DoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
@@ -924,6 +927,180 @@ class Entity( Abstract_Context_With_JSON ):
     #-- END method set_entity_trait() --#
 
 
+    def set_identifier( self,
+                        uuid_IN,
+                        name_IN = None,
+                        id_type_IN = None,
+                        source_IN = None,
+                        notes_IN = None,
+                        entity_identifier_type_IN = None ):    
+
+        '''
+        Accepts identifier UUID value, optional details, and optional identifier
+            type instance reference.  Creates entity identifier, stores
+            information passed in inside.
+            
+        preconditions: Entity must already be saved for this to work.
+        
+        postconditions: Throws exception if type not found.
+        '''
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me = "set_entity_trait"
+        trait_name = None
+        trait_qs = None
+        trait_count = None
+        trait_instance = None
+        is_updated = None
+        
+        # if trait definition passed in, get name from there.
+        if ( entity_type_trait_IN is not None ):
+        
+            # got one - it takes precedence.
+            trait_name = entity_type_trait_IN.name
+            
+        else:
+        
+            # no trait definition, use name passed in.
+            trait_name = name_IN
+            
+        #-- END check to see where name comes from --#
+        
+        # make sure we have a name
+        if ( ( trait_name is not None ) and ( trait_name != "" ) ):
+        
+            # init
+            is_updated = False
+        
+            # look up name in Entity's trait set.
+            trait_qs = self.entity_trait_set.filter( name = trait_name )
+            trait_count = trait_qs.count()
+            
+            # what have we got?
+            if ( trait_count == 0 ):
+            
+                # does not exist.  Create new.
+                trait_instance = Entity_Trait()
+                trait_instance.entity = self
+                trait_instance.name = trait_name
+                
+                # save()
+                trait_instance.save()
+                
+            elif ( trait_count == 1 ):
+            
+                # one exists.  Retrieve it.
+                trait_instance = trait_qs.get()
+                
+            else:
+            
+                # more than one.  Error.
+                print( "There are {} traits for the requested name {}.  Not right.  Dropping out.".format( trait_count, name_IN ) )
+                trait_instance = None
+                
+            #-- END retrieve Entity_Trait instance. --#
+            
+            if ( trait_instance is not None ):
+            
+                # update values from those passed in.
+                
+                # do we have a trait definition?
+                if ( entity_type_trait_IN is not None ):
+                
+                    # we do - use it to set name and other metadata details.
+                    trait_instance.set_entity_type_trait( entity_type_trait_IN )
+                    is_updated = True
+                    
+                else:
+                
+                    # no - set manually.
+
+                    # --> trait_type
+                    if ( trait_type_IN is not None ):
+                    
+                        trait_instance.trait_type = trait_type_IN
+                        is_updated = True
+                        
+                    #-- END trait_type --#
+
+                    # --> slug
+                    if ( slug_IN is not None ):
+                    
+                        trait_instance.slug = slug_IN
+                        is_updated = True
+                        
+                    #-- END slug --#
+
+                    # --> label
+                    if ( label_IN is not None ):
+                    
+                        trait_instance.label = label_IN
+                        is_updated = True
+                        
+                    #-- END label --#
+    
+                    # --> description
+                    if ( description_IN is not None ):
+                    
+                        trait_instance.description = description_IN
+                        is_updated = True
+                        
+                    #-- END description --#
+
+                #-- END check to see if trait definition from trait type passed in --#
+            
+                # --> value
+                if ( value_IN is not None ):
+                
+                    trait_instance.value = value_IN
+                    is_updated = True
+                    
+                #-- END value --#
+                
+                # --> value_json
+                if ( value_json_IN is not None ):
+                
+                    trait_instance.value_json = value_json_IN
+                    is_updated = True
+                    
+                #-- END value_json --#
+
+                # --> term
+                if ( term_IN is not None ):
+                
+                    trait_instance.term = term_IN
+                    is_updated = True
+                    
+                #-- END term --#
+                
+                # do we need to save?
+                if ( is_updated == True ):
+                
+                    # yes.  save()
+                    trait_instance.save()
+                    
+                #-- END check to see if we need to save() --#
+
+            #-- END check to see if we have an instance. --#
+            
+            instance_OUT = trait_instance
+
+        else:
+        
+            # error
+            print( "ERROR - no trait name passed in, can't process." )
+            instance_OUT = None
+
+        #-- END check to see if slug passed in --#
+
+        return instance_OUT
+
+    #-- END method set_entity_trait() --#
+
+
 #-- END model Entity --#
 
 
@@ -932,7 +1109,7 @@ class Entity( Abstract_Context_With_JSON ):
 class Entity_Identifier_Type( Abstract_Identifier_Type ):
 
     #----------------------------------------------------------------------
-    # model fields and meta
+    # ! ----> model fields and meta
     #----------------------------------------------------------------------
 
 
@@ -950,8 +1127,57 @@ class Entity_Identifier_Type( Abstract_Identifier_Type ):
 
 
     #----------------------------------------------------------------------
-    # methods
+    # ! ----> class methods
     #----------------------------------------------------------------------
+
+
+    @classmethod
+    def get_type_for_name( cls, type_name_IN ):
+        
+        # return reference
+        type_OUT = None
+        
+        # declare variables
+        me = "Entity_Identifier_Type.get_type_for_name"
+        type_qs = None
+        type_instance = None
+        
+        # make sure we have a type name
+        if ( ( type_name_IN is not None ) and ( type_name_IN != "" ) ):
+        
+            # we have a type name.  Try to retrieve it.
+            type_qs = cls.objects.filter( name = type_name_IN )
+            
+            try:
+            
+                # look up type using slug
+                type_instance = type_qs.get()
+
+            except cls.MultipleObjectsReturned as mor:
+            
+                print( "In {}: Multiple instances returned for name {}.  Unfortunate!".format( me, type_name_IN ) )
+                type_instance = None
+            
+            except cls.DoesNotExist as dne:
+            
+                print( "In {}: No instance found for name {}.".format( me, type_name_IN ) )
+                type_instance = None
+                
+            #-- END try-except --#
+        
+        #-- END check to see if type name passed in --#
+        
+        type_OUT = type_instance
+        
+        return type_OUT
+        
+    #-- END class method get_type_for_name() --#
+
+    
+    #----------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #----------------------------------------------------------------------
+
 
     def __init__( self, *args, **kwargs ):
         
@@ -963,12 +1189,22 @@ class Entity_Identifier_Type( Abstract_Identifier_Type ):
     # just use the parent stuff.
     
 
+    #----------------------------------------------------------------------
+    # ! ----> instance methods
+    #----------------------------------------------------------------------
+    
+
 #= End Entity_Identifier_Type Model ======================================================
 
 
 # Entity_Identifier model
 @python_2_unicode_compatible
 class Entity_Identifier( Abstract_UUID ):
+
+    #----------------------------------------------------------------------
+    # ! ----> model fields and meta
+    #----------------------------------------------------------------------
+
 
     #name = models.CharField( max_length = 255, null = True, blank = True )
     #uuid = models.TextField( blank = True, null = True )
@@ -978,8 +1214,9 @@ class Entity_Identifier( Abstract_UUID ):
     entity = models.ForeignKey( Entity, on_delete = models.CASCADE )
     entity_identifier_type = models.ForeignKey( Entity_Identifier_Type, blank = True, null = True, on_delete = models.SET_NULL )
 
+
     #----------------------------------------------------------------------
-    # methods
+    # ! ----> overridden built-in methods
     #----------------------------------------------------------------------
 
 
@@ -1052,6 +1289,122 @@ class Entity_Identifier( Abstract_UUID ):
         return string_OUT
         
     #-- END method __str__() --#
+
+
+    #----------------------------------------------------------------------
+    # ! ----> instance methods
+    #----------------------------------------------------------------------
+
+    
+    def set_entity_identifier_type( self,
+                                    entity_identifier_type_IN,
+                                    do_use_to_update_fields_IN = True ):
+
+        '''
+        Accepts entity identifier instance.  Stores it internally, then if not
+            None and we have been asked to update, updates other fields from it.
+            
+        postconditions: Returns the type instance that was stored.
+        '''
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me = "set_entity_identifier_type"
+        my_name = None
+        my_source = None
+        my_notes = None
+        
+        # store what was passed in.
+        self.entity_identifier_type = entity_identifier_type_IN
+        instance_OUT = self.entity_identifier_type
+        
+        # are we to update other fields?
+        if ( do_use_to_update_fields_IN == True ):
+        
+            # was anything passed in?
+            if ( entity_identifier_type_IN is not None ):
+            
+                # yes - set other values from it.
+                
+                # ----> name
+                my_name = entity_identifier_type_IN.name
+                self.name = my_name            
+    
+                # ----> source
+                my_source = entity_identifier_type_IN.source
+                self.source = my_source            
+                
+                # ----> notes - not for now...
+                #my_notes = entity_type_trait_spec.notes
+                #self.notes = my_notes            
+                
+            else:
+            
+                # None - print a message.
+                print( "In {}: nothing passed in, so not updating anything - should we clear things out?  Not right now...".format( me ) )
+            
+            #-- END check to see if anything passed in. --#
+
+        #-- END check to see if we are to update --#
+
+        return instance_OUT
+
+    #-- END method set_entity_identifier_type() --#
+
+
+    def set_identifier_type_from_name( self,
+                                       entity_identifier_type_name_IN,
+                                       do_use_to_update_fields_IN = True ):
+
+        '''
+        Accepts entity identifier name value.  Looks up type for that name, if
+            found, calls set_entity_identifier_type and passes it the found
+            instance.
+            
+        postconditions: Returns type for name passed in, or None if there was
+            a problem with the lookup.
+        '''
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me = "set_identifier_type_from_name"
+        type_instance = None
+        
+        # do we have a name?
+        if ( ( entity_identifier_type_name_IN is not None ) and ( entity_identifier_type_name_IN != "" ) ):
+        
+            # yes - try looking up type using name.
+            try:
+            
+                # look up type using slug
+                type_instance = Entity_Identifier_Type.objects.get( name = entity_identifier_type_name_IN )
+                
+                # set type
+                self.set_entity_identifier_type( type_instance, do_use_to_update_fields_IN )
+
+            except Entity_Identifier_Type.MultipleObjectsReturned as mor:
+            
+                print( "In {}: Multiple instances returned for name \"{}\".  Unexpected!".format( me, entity_identifier_type_name_IN ) )
+                type_instance = None
+            
+            except Entity_Identifier_Type.DoesNotExist as dne:
+            
+                print( "In {}: No instance found for name \"{}\".".format( me, entity_identifier_type_name_IN ) )
+                type_instance = None
+                
+            #-- END try-except --#
+
+        #-- END check to see if we are to update --#
+
+        instance_OUT = type_instance
+
+        return instance_OUT
+
+    #-- END method set_identifier_type_from_name() --#
 
 
 #= End Entity_Identifier Model ======================================================
@@ -1421,16 +1774,16 @@ class Entity_Type( Abstract_Type ):
             try:
             
                 # look up type using slug
-                trait_spec = self.entity_type_trait_spec.get( slug = slug_IN )
+                trait_spec = self.entity_type_trait_set.get( slug = slug_IN )
 
-            except User.MultipleObjectsReturned as mor:
+            except Entity_Type_Trait.MultipleObjectsReturned as mor:
             
-                print( "Multiple instances returned for slug {}.  Impossible!".format( slug_IN ) )
+                print( "In {}: Multiple instances returned for slug {}.  Impossible!".format( me, slug_IN ) )
                 trait_spec = None
             
-            except User.ObjectDoesNotExist as odne:
+            except Entity_Type_Trait.DoesNotExist as dne:
             
-                print( "No instance found for slug {}.".format( slug_IN ) )
+                print( "In {}: No instance found for slug {}.".format( me, slug_IN ) )
                 trait_spec = None
                 
             #-- END try-except --#
@@ -1438,7 +1791,7 @@ class Entity_Type( Abstract_Type ):
         else:
         
             # error
-            print( "ERROR - no slug passed in, can't process." )
+            print( "In {}: ERROR - no slug passed in, can't process.".format( me ) )
             trait_spec = None
 
         #-- END check to see if slug passed in --#     
