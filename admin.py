@@ -166,11 +166,12 @@ class EntityAdmin( admin.ModelAdmin ):
         Entity_EntityTraitInline
     ]
 
-    list_display = ( 'id', 'name' )
+    list_display = ( 'id', 'name', 'last_modified' )
     list_display_links = ( 'id', 'name' )
     #list_filter = [ 'location' ]
     search_fields = [ 'name', 'details_json', 'notes', 'id' ]
     #date_hierarchy = 'pub_date'
+    ordering = [ '-last_modified' ]
 
 #-- END EntityAdmin admin model --#
 
@@ -189,15 +190,15 @@ class Entity_Identifier_TypeAdmin( admin.ModelAdmin ):
         (
             None,
             { 
-                'fields' : [ 'name', 'source', 'type_list', 'tags', 'notes' ]
+                'fields' : [ 'name', 'label', 'source', 'type_list', 'tags', 'notes' ]
             },
         ),
     ]
 
-    list_display = ( 'id', 'name', 'source', 'type_list_to_string', 'last_modified' )
-    list_display_links = ( 'id', 'name' )
+    list_display = ( 'id', 'name', 'label', 'source', 'type_list_to_string', 'last_modified' )
+    list_display_links = ( 'id', 'name', 'label' )
     list_filter = [ 'source' ]
-    search_fields = [ 'name', 'source', 'notes', 'id' ]
+    search_fields = [ 'name', 'label', 'source', 'notes', 'id' ]
     #date_hierarchy = 'pub_date'
     ordering = [ '-last_modified' ]
 

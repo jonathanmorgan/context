@@ -44,71 +44,10 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
     TYPE_NAME_TO_ID_MAP[ TYPE_NAME_ARTICLE_SOURCENET_ID ] = 3
     TYPE_NAME_TO_ID_MAP[ TYPE_NAME_ARTICLE_NEWSBANK_ID ] = 4
     
-    # Test Entity information
-    TEST_ENTITY_NAME = "calliope"
-    
-    # Test Entity_Identifier default information
-    TEST_ENTITY_IDENTIFIER_NAME = "calliope_type"
-    TEST_ENTITY_IDENTIFIER_UUID = "123456"
-    TEST_ENTITY_IDENTIFIER_ID_TYPE = "made-up"
-    TEST_ENTITY_IDENTIFIER_SOURCE = "my_brain"
-    TEST_ENTITY_IDENTIFIER_NOTE = "default initialization notes"
-
 
     #----------------------------------------------------------------------
     # ! ----> class methods
     #----------------------------------------------------------------------
-
-
-    @classmethod
-    def create_test_entity( cls ):
-        
-        # return reference
-        instance_OUT = None
-        
-        # declare variables
-        entity_instance = None
-        
-        # create entity
-        entity_instance = Entity()
-        
-        # set some values
-        entity_instance.name = cls.TEST_ENTITY_NAME
-        entity_instance.save()
-        
-        # return it
-        instance_OUT = entity_instance
-        return instance_OUT
-
-    #-- END method create_test_entity() --#
-
-
-    @classmethod
-    def create_test_entity_identifier( cls, entity_instance_IN ):
-        
-        # return reference
-        instance_OUT = None
-        
-        # declare variables
-        identifier_instance = None
-        
-        # create entity
-        identifier_instance = Entity_Identifier()
-        
-        # set some values
-        identifier_instance.name = cls.TEST_ENTITY_IDENTIFIER_NAME
-        identifier_instance.uuid = cls.TEST_ENTITY_IDENTIFIER_UUID
-        identifier_instance.id_type = cls.TEST_ENTITY_IDENTIFIER_ID_TYPE
-        identifier_instance.source = cls.TEST_ENTITY_IDENTIFIER_SOURCE
-        identifier_instance.note = cls.TEST_ENTITY_IDENTIFIER_NOTE
-        identifier_instance.entity = entity_instance_IN
-        identifier_instance.save()
-        
-        # return it
-        instance_OUT = identifier_instance
-        return instance_OUT
-
-    #-- END method create_test_entity_identifier() --#
 
 
     #----------------------------------------------------------------------------
@@ -178,10 +117,10 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         print( '====> In {}.{}'.format( self.CLASS_NAME, me ) )
         
         # create Entity
-        entity_instance = self.create_test_entity()
+        entity_instance = TestHelper.create_test_entity()
         
         # create an Entity_Identifier instance
-        identifier_instance = self.create_test_entity_identifier( entity_instance )
+        identifier_instance = TestHelper.create_test_entity_identifier( entity_instance )
         
         # store None, telling it not to update.
         stored_type = identifier_instance.set_entity_identifier_type( None, do_use_to_update_fields_IN = False )
@@ -279,10 +218,10 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         print( '====> In {}.{}'.format( self.CLASS_NAME, me ) )
         
         # create Entity
-        entity_instance = self.create_test_entity()
+        entity_instance = TestHelper.create_test_entity()
         
         # create an Entity_Identifier instance
-        identifier_instance = self.create_test_entity_identifier( entity_instance )
+        identifier_instance = TestHelper.create_test_entity_identifier( entity_instance )
         
         # store DNE name, telling it not to update.
         stored_type = identifier_instance.set_identifier_type_from_name( self.TYPE_NAME_DOES_NOT_EXIST, do_use_to_update_fields_IN = False )

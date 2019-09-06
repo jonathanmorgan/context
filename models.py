@@ -124,7 +124,8 @@ class Abstract_Identifier_Type( Abstract_Context_Parent ):
     #----------------------------------------------------------------------
 
 
-    name = models.CharField( max_length = 255, null = True, blank = True )
+    name = models.SlugField( unique = True )
+    label = models.CharField( max_length = 255, null = True, blank = True )
     source = models.CharField( max_length = 255, null = True, blank = True )
     notes = models.TextField( blank = True, null = True )
     #type_list = models.ManyToManyField( Entity_Type )
@@ -763,9 +764,18 @@ class Entity( Abstract_Context_With_JSON ):
                           entity_type_trait_IN = None ):
 
         '''
-        Accepts entity type slug.  Looks up type for that entity, adds it to
-            those associated with this entity, then returns Type.
-            
+        Accepts details of a trait we want to set for a given entity.
+        
+            - Checks to see if the entity already has a trait with the name passed in.
+            - If entity_type_trait_IN is set, the name from this type supersedes the
+            name passed in.
+            - If existing trait exists, loads it into instance. If not, creates one.
+            - then, updates based on the values passed in.
+                - If trait specification passed in, updates meta information (not
+            value) from there.
+                - If not, updates from other parameters passed in.
+                - Updates value of the trait based on parameters passed in.
+
         preconditions: Entity must already be saved for this to work.
         
         postconditions: Throws exception if type not found.
@@ -824,7 +834,7 @@ class Entity( Abstract_Context_With_JSON ):
             else:
             
                 # more than one.  Error.
-                print( "There are {} traits for the requested name {}.  Not right.  Dropping out.".format( trait_count, name_IN ) )
+                print( "There are {} traits for the requested name {}.  Not right.  Dropping out.".format( trait_count, trait_name ) )
                 trait_instance = None
                 
             #-- END retrieve Entity_Trait instance. --#
@@ -950,155 +960,131 @@ class Entity( Abstract_Context_With_JSON ):
         
         # declare variables
         me = "set_entity_trait"
-        trait_name = None
-        trait_qs = None
-        trait_count = None
-        trait_instance = None
+        id_name = None
+        id_qs = None
+        id_count = None
+        id_instance = None
         is_updated = None
         
         # if trait definition passed in, get name from there.
-        if ( entity_type_trait_IN is not None ):
+        if ( entity_identifier_type_IN is not None ):
         
             # got one - it takes precedence.
-            trait_name = entity_type_trait_IN.name
+            id_name = entity_identifier_type_IN.name
             
         else:
         
             # no trait definition, use name passed in.
-            trait_name = name_IN
+            id_name = name_IN
             
         #-- END check to see where name comes from --#
         
         # make sure we have a name
-        if ( ( trait_name is not None ) and ( trait_name != "" ) ):
+        if ( ( id_name is not None ) and ( id_name != "" ) ):
         
             # init
             is_updated = False
         
-            # look up name in Entity's trait set.
-            trait_qs = self.entity_trait_set.filter( name = trait_name )
-            trait_count = trait_qs.count()
+            # look up name in Entity's identifier set.
+            id_qs = self.entity_identifier_set.filter( name = id_name )
+            id_count = id_qs.count()
             
             # what have we got?
-            if ( trait_count == 0 ):
+            if ( id_count == 0 ):
             
                 # does not exist.  Create new.
-                trait_instance = Entity_Trait()
-                trait_instance.entity = self
-                trait_instance.name = trait_name
+                id_instance = Entity_Identifier()
+                id_instance.entity = self
+                id_instance.name = id_name
                 
                 # save()
-                trait_instance.save()
+                id_instance.save()
                 
-            elif ( trait_count == 1 ):
+            elif ( id_count == 1 ):
             
                 # one exists.  Retrieve it.
-                trait_instance = trait_qs.get()
+                id_instance = id_qs.get()
                 
             else:
             
                 # more than one.  Error.
-                print( "There are {} traits for the requested name {}.  Not right.  Dropping out.".format( trait_count, name_IN ) )
-                trait_instance = None
+                print( "There are {} identifiers for the requested name {}.  Not right.  Dropping out.".format( id_count, id_name ) )
+                id_instance = None
                 
-            #-- END retrieve Entity_Trait instance. --#
+            #-- END retrieve Entity_Identifier instance. --#
             
-            if ( trait_instance is not None ):
+            if ( id_instance is not None ):
             
                 # update values from those passed in.
                 
-                # do we have a trait definition?
-                if ( entity_type_trait_IN is not None ):
+                # do we have an identifier type?
+                if ( entity_identifier_type_IN is not None ):
                 
                     # we do - use it to set name and other metadata details.
-                    trait_instance.set_entity_type_trait( entity_type_trait_IN )
+                    id_instance.set_entity_identifier_type( entity_identifier_type_IN )
                     is_updated = True
                     
                 else:
                 
                     # no - set manually.
 
-                    # --> trait_type
-                    if ( trait_type_IN is not None ):
+                    # --> id_type
+                    if ( id_type_IN is not None ):
                     
-                        trait_instance.trait_type = trait_type_IN
+                        id_instance.id_type = id_type_IN
                         is_updated = True
                         
-                    #-- END trait_type --#
+                    #-- END id_type --#
 
-                    # --> slug
-                    if ( slug_IN is not None ):
+                    # --> source
+                    if ( source_IN is not None ):
                     
-                        trait_instance.slug = slug_IN
+                        id_instance.source = source_IN
                         is_updated = True
                         
-                    #-- END slug --#
+                    #-- END source --#
 
-                    # --> label
-                    if ( label_IN is not None ):
+                    # --> notes
+                    if ( notes_IN is not None ):
                     
-                        trait_instance.label = label_IN
+                        id_instance.notes = notes_IN
                         is_updated = True
                         
-                    #-- END label --#
-    
-                    # --> description
-                    if ( description_IN is not None ):
-                    
-                        trait_instance.description = description_IN
-                        is_updated = True
-                        
-                    #-- END description --#
+                    #-- END notes --#
 
                 #-- END check to see if trait definition from trait type passed in --#
             
-                # --> value
-                if ( value_IN is not None ):
+                # --> UUID
+                if ( uuid_IN is not None ):
                 
-                    trait_instance.value = value_IN
+                    id_instance.uuid = uuid_IN
                     is_updated = True
                     
-                #-- END value --#
-                
-                # --> value_json
-                if ( value_json_IN is not None ):
-                
-                    trait_instance.value_json = value_json_IN
-                    is_updated = True
-                    
-                #-- END value_json --#
-
-                # --> term
-                if ( term_IN is not None ):
-                
-                    trait_instance.term = term_IN
-                    is_updated = True
-                    
-                #-- END term --#
+                #-- END UUID --#
                 
                 # do we need to save?
                 if ( is_updated == True ):
                 
                     # yes.  save()
-                    trait_instance.save()
+                    id_instance.save()
                     
                 #-- END check to see if we need to save() --#
 
             #-- END check to see if we have an instance. --#
             
-            instance_OUT = trait_instance
+            instance_OUT = id_instance
 
         else:
         
             # error
-            print( "ERROR - no trait name passed in, can't process." )
+            print( "ERROR - no identifier name passed in, can't process." )
             instance_OUT = None
 
-        #-- END check to see if slug passed in --#
+        #-- END check to see if id name passed in --#
 
         return instance_OUT
 
-    #-- END method set_entity_trait() --#
+    #-- END method set_identifier() --#
 
 
 #-- END model Entity --#
@@ -1765,7 +1751,7 @@ class Entity_Type( Abstract_Type ):
         instance_OUT = None
         
         # declare variables
-        me - "get_trait_spec"
+        me = "get_trait_spec"
         trait_spec = None
         
         # make sure we have a slug

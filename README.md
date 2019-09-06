@@ -173,6 +173,14 @@ Specific sets of tests:
     
             python manage.py test context.tests.models.test_Entity_Identifier_Type_model
 
+    - test Entity_Identifier model
+    
+            python manage.py test context.tests.models.test_Entity_Identifier_model
+
+    - test Entity model
+    
+            python manage.py test context.tests.models.test_Entity_model
+
 ## Test data
 
 There is a set of test data stored in the `fixtures` folder inside this django application.  The files:
