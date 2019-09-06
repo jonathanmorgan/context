@@ -1,0 +1,867 @@
+[
+{
+    "model": "context.entity_identifier_type",
+    "pk": 1,
+    "fields": {
+        "create_date": "2019-08-21T18:48:26.149Z",
+        "last_modified": "2019-08-21T18:51:36.511Z",
+        "name": "person_sourcenet_id",
+        "source": "sourcenet",
+        "notes": "Django integer ID of a person from context_text \"sourcenet\" research.",
+        "type_list": [
+            1
+        ]
+    }
+},
+{
+    "model": "context.entity_identifier_type",
+    "pk": 2,
+    "fields": {
+        "create_date": "2019-08-21T18:50:53.991Z",
+        "last_modified": "2019-08-21T18:51:20.309Z",
+        "name": "person_open_calais_uuid",
+        "source": "Open Calais v.2",
+        "notes": "The OpenCalais identifier for people that is returned as part of their API results.",
+        "type_list": [
+            1
+        ]
+    }
+},
+{
+    "model": "context.entity_identifier_type",
+    "pk": 3,
+    "fields": {
+        "create_date": "2019-08-21T18:52:25.856Z",
+        "last_modified": "2019-08-21T18:52:25.856Z",
+        "name": "article_sourcenet_id",
+        "source": "sourcenet",
+        "notes": "Django application unique integer identifier for articles, from context_text application hosting sourcenet data.",
+        "type_list": [
+            5
+        ]
+    }
+},
+{
+    "model": "context.entity_identifier_type",
+    "pk": 4,
+    "fields": {
+        "create_date": "2019-08-21T18:53:28.998Z",
+        "last_modified": "2019-08-21T18:53:28.998Z",
+        "name": "article_newsbank_id",
+        "source": "Newsbank",
+        "notes": "Identifier given to a particular article by Newsbank, from its internal data store.",
+        "type_list": [
+            5
+        ]
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 1,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-08T03:15:21.542Z",
+        "last_modified": "2019-08-21T16:34:50.883Z",
+        "slug": "quoted",
+        "name": "quoted",
+        "related_model": null,
+        "description": "The \"from\" person quoted the \"to\" person in a publication.  FROM reporter TO source THROUGH article.",
+        "parent_type": 4,
+        "relation_from_entity_type": 1,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": 5
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 2,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-08T04:13:41.044Z",
+        "last_modified": "2019-08-21T16:35:04.599Z",
+        "slug": "mentioned",
+        "name": "mentioned",
+        "related_model": null,
+        "description": "Mentioned in an article.  FROM reporter/author TO subject THROUGH article.",
+        "parent_type": 4,
+        "relation_from_entity_type": 1,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": 5
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 3,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-21T16:30:32.870Z",
+        "last_modified": "2019-08-21T17:23:04.274Z",
+        "slug": "shared_byline",
+        "name": "Shared Byline",
+        "related_model": null,
+        "description": "Shared Byline on an article - joint authors - FROM author TO author THROUGH article.",
+        "parent_type": 4,
+        "relation_from_entity_type": 1,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": 5
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 4,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-21T16:33:27.995Z",
+        "last_modified": "2019-08-21T17:24:07.374Z",
+        "slug": "article_container",
+        "name": "Article Container",
+        "related_model": null,
+        "description": "Parent for relations based on entities being mentioned in the same article.  To start, just people, but eventually, for example, could also include location.",
+        "parent_type": null,
+        "relation_from_entity_type": null,
+        "relation_to_entity_type": null,
+        "relation_through_entity_type": null
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 5,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-21T17:19:59.516Z",
+        "last_modified": "2019-08-21T17:23:33.321Z",
+        "slug": "author",
+        "name": "Author",
+        "related_model": null,
+        "description": "Author/Reporter of an article - FROM article TO reporter.",
+        "parent_type": 4,
+        "relation_from_entity_type": 5,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": null
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 6,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-21T17:21:23.169Z",
+        "last_modified": "2019-08-21T17:21:52.910Z",
+        "slug": "subject",
+        "name": "subject",
+        "related_model": null,
+        "description": "Subject of a story.  FROM article TO subject person.",
+        "parent_type": 4,
+        "relation_from_entity_type": 5,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": null
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 7,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-21T17:25:11.926Z",
+        "last_modified": "2019-08-21T17:25:11.926Z",
+        "slug": "source",
+        "name": "Source",
+        "related_model": null,
+        "description": "Source quoted in an article - FROM article TO source person.",
+        "parent_type": 4,
+        "relation_from_entity_type": 5,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": null
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 8,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-21T17:26:31.765Z",
+        "last_modified": "2019-08-21T17:26:31.765Z",
+        "slug": "same_article_sources",
+        "name": "Same Article Sources",
+        "related_model": null,
+        "description": "Sources in the same article, FROM source person TO source person THROUGH article.",
+        "parent_type": 4,
+        "relation_from_entity_type": 1,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": 5
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 9,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-21T17:28:15.852Z",
+        "last_modified": "2019-08-21T17:28:15.852Z",
+        "slug": "same_article_subjects",
+        "name": "Same Article Subjects",
+        "related_model": null,
+        "description": "Two people who are in a particular article together (includes subjects and sources).",
+        "parent_type": 4,
+        "relation_from_entity_type": 1,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": 5
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 10,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-09-03T18:25:50.624Z",
+        "last_modified": "2019-09-03T18:29:03.776Z",
+        "slug": "newspaper_reporter",
+        "name": "Newspaper Reporter",
+        "related_model": null,
+        "description": "Reporter at a newspaper, evidence of which is byline on an article in that newspaper.  SO newspaper TO person (reporter) THROUGH article.",
+        "parent_type": 4,
+        "relation_from_entity_type": 7,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": 5
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 11,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-09-03T18:28:54.222Z",
+        "last_modified": "2019-09-03T18:28:54.222Z",
+        "slug": "newspaper_source",
+        "name": "Newspaper Source",
+        "related_model": null,
+        "description": "Person quoted in an article published by a newspaper.  SO newspaper TO person (source) THROUGH article.",
+        "parent_type": 4,
+        "relation_from_entity_type": 7,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": 5
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 12,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-09-03T18:30:22.630Z",
+        "last_modified": "2019-09-03T18:30:22.630Z",
+        "slug": "newspaper_subject",
+        "name": "Newspaper Subject",
+        "related_model": null,
+        "description": "Subject of an article published in a given newspaper.  FROM newspaper TO person (subject, including sources) THROUGH article.",
+        "parent_type": 4,
+        "relation_from_entity_type": 7,
+        "relation_to_entity_type": 1,
+        "relation_through_entity_type": 5
+    }
+},
+{
+    "model": "context.entity_relation_type",
+    "pk": 13,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-09-03T18:31:18.076Z",
+        "last_modified": "2019-09-03T18:31:18.076Z",
+        "slug": "newspaper_article",
+        "name": "Newspaper Article",
+        "related_model": null,
+        "description": "Article published in a particular newspaper.  FROM newspaper TO article.",
+        "parent_type": null,
+        "relation_from_entity_type": 7,
+        "relation_to_entity_type": 5,
+        "relation_through_entity_type": null
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 1,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-08T03:15:21.767Z",
+        "last_modified": "2019-08-08T03:15:38.484Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 1
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 2,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-08T04:13:41.229Z",
+        "last_modified": "2019-08-08T04:13:41.229Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 2
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 3,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-21T16:33:28.028Z",
+        "last_modified": "2019-08-21T16:33:28.028Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 4
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 4,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-21T17:14:59.164Z",
+        "last_modified": "2019-08-21T17:14:59.164Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 3
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 5,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-21T17:19:59.532Z",
+        "last_modified": "2019-08-21T17:19:59.532Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 5
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 6,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-21T17:21:23.186Z",
+        "last_modified": "2019-08-21T17:21:52.918Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 6
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 7,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-21T17:25:11.946Z",
+        "last_modified": "2019-08-21T17:25:11.946Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 7
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 8,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-21T17:26:31.783Z",
+        "last_modified": "2019-08-21T17:26:31.783Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 8
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 9,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-21T17:28:15.869Z",
+        "last_modified": "2019-08-21T17:28:15.869Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 9
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 10,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-09-03T18:25:50.642Z",
+        "last_modified": "2019-09-03T18:27:33.880Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": true,
+        "trait_type": 1,
+        "related_type": 10
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 11,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-09-03T18:28:54.239Z",
+        "last_modified": "2019-09-03T18:28:54.239Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": true,
+        "trait_type": 1,
+        "related_type": 11
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 12,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-09-03T18:30:22.646Z",
+        "last_modified": "2019-09-03T18:30:22.646Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": true,
+        "trait_type": 1,
+        "related_type": 12
+    }
+},
+{
+    "model": "context.entity_relation_type_trait",
+    "pk": 13,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-09-03T18:31:18.094Z",
+        "last_modified": "2019-09-03T18:31:18.094Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date of Article",
+        "description": "",
+        "required": true,
+        "trait_type": 1,
+        "related_type": 13
+    }
+},
+{
+    "model": "context.entity_type",
+    "pk": 1,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-04-25T03:04:00.744Z",
+        "last_modified": "2019-08-08T03:06:23.498Z",
+        "slug": "person",
+        "name": "Person",
+        "related_model": null,
+        "description": "a person!",
+        "parent_type": null
+    }
+},
+{
+    "model": "context.entity_type",
+    "pk": 2,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-07T19:57:10.091Z",
+        "last_modified": "2019-08-07T20:07:33.637Z",
+        "slug": "reporter",
+        "name": "Reporter",
+        "related_model": "context_text.models.Person",
+        "description": "Journalism reporter.  Could be author (so in byline), could be in the \"additional information contributed by\" at the bottom of an article, could even be a source.",
+        "parent_type": 1
+    }
+},
+{
+    "model": "context.entity_type",
+    "pk": 3,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-07T20:23:24.538Z",
+        "last_modified": "2019-08-07T20:23:24.538Z",
+        "slug": "subject",
+        "name": "Subject",
+        "related_model": null,
+        "description": "Subject of a story - someone mentioned or discussed in a story, might or might not have been quoted.",
+        "parent_type": 1
+    }
+},
+{
+    "model": "context.entity_type",
+    "pk": 4,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-07T20:25:34.441Z",
+        "last_modified": "2019-08-07T20:26:29.199Z",
+        "slug": "source",
+        "name": "Source",
+        "related_model": null,
+        "description": "A person who is the source of information in a news story.  For this project, these are named subjects of stories who are also quoted, either directly or indirectly.",
+        "parent_type": 3
+    }
+},
+{
+    "model": "context.entity_type",
+    "pk": 5,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-07T20:27:52.121Z",
+        "last_modified": "2019-08-07T20:27:52.121Z",
+        "slug": "article",
+        "name": "Article",
+        "related_model": null,
+        "description": "Article, used to detect reporters, subjects, and sources.",
+        "parent_type": null
+    }
+},
+{
+    "model": "context.entity_type",
+    "pk": 6,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-09-03T18:21:27.845Z",
+        "last_modified": "2019-09-03T18:21:27.845Z",
+        "slug": "organization",
+        "name": "Organization",
+        "related_model": null,
+        "description": "Any type of organized group (of organizations, of people, etc.).",
+        "parent_type": null
+    }
+},
+{
+    "model": "context.entity_type",
+    "pk": 7,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-09-03T18:22:29.597Z",
+        "last_modified": "2019-09-03T18:22:29.597Z",
+        "slug": "newspaper",
+        "name": "newspaper",
+        "related_model": null,
+        "description": "A newspaper, which can be used to cluster articles, employees, sources, etc.",
+        "parent_type": 6
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 1,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T19:57:10.128Z",
+        "last_modified": "2019-08-07T20:07:33.647Z",
+        "name": "first_name",
+        "slug": "first_name",
+        "label": "First Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 2
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 2,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T20:07:33.653Z",
+        "last_modified": "2019-08-07T20:07:33.654Z",
+        "name": "middle_name",
+        "slug": "middle_name",
+        "label": "Middle Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 2
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 3,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T20:07:33.660Z",
+        "last_modified": "2019-08-07T20:07:33.660Z",
+        "name": "last_name",
+        "slug": "last_name",
+        "label": "Last Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 2
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 4,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T20:23:24.580Z",
+        "last_modified": "2019-08-07T20:23:24.580Z",
+        "name": "first_name",
+        "slug": "first_name",
+        "label": "First Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 3
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 5,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T20:23:24.590Z",
+        "last_modified": "2019-08-07T20:23:24.590Z",
+        "name": "middle_name",
+        "slug": "middle_name",
+        "label": "Middle Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 3
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 6,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T20:23:24.601Z",
+        "last_modified": "2019-08-07T20:23:24.601Z",
+        "name": "last_name",
+        "slug": "last_name",
+        "label": "Last Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 3
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 7,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T20:25:34.455Z",
+        "last_modified": "2019-08-07T20:25:34.455Z",
+        "name": "first_name",
+        "slug": "first_name",
+        "label": "First Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 4
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 8,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T20:25:34.460Z",
+        "last_modified": "2019-08-07T20:26:29.207Z",
+        "name": "middle_name",
+        "slug": "middle_name",
+        "label": "Middle Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 4
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 9,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T20:26:29.216Z",
+        "last_modified": "2019-08-07T20:26:29.216Z",
+        "name": "last_name",
+        "slug": "last_name",
+        "label": "Last Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 4
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 10,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-07T20:27:52.137Z",
+        "last_modified": "2019-08-07T20:27:52.137Z",
+        "name": "pub_date",
+        "slug": "pub_date",
+        "label": "Publication Date",
+        "description": "",
+        "required": false,
+        "trait_type": 2,
+        "related_type": 5
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 11,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-08T00:53:07.440Z",
+        "last_modified": "2019-08-08T00:53:07.440Z",
+        "name": "first_name",
+        "slug": "first_name",
+        "label": "First Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 1
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 12,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-08T00:53:07.511Z",
+        "last_modified": "2019-08-08T03:06:12.331Z",
+        "name": "middle_name",
+        "slug": "middle_name",
+        "label": "Middle Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 1
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 13,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-08-08T03:06:12.369Z",
+        "last_modified": "2019-08-08T03:06:23.513Z",
+        "name": "last_name",
+        "slug": "last_name",
+        "label": "Last Name",
+        "description": "",
+        "required": false,
+        "trait_type": 1,
+        "related_type": 1
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 14,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-09-03T18:21:27.900Z",
+        "last_modified": "2019-09-03T18:21:27.900Z",
+        "name": "name",
+        "slug": "name",
+        "label": "name",
+        "description": "",
+        "required": true,
+        "trait_type": 1,
+        "related_type": 6
+    }
+},
+{
+    "model": "context.entity_type_trait",
+    "pk": 15,
+    "fields": {
+        "notes": null,
+        "create_date": "2019-09-03T18:22:29.613Z",
+        "last_modified": "2019-09-03T18:22:29.613Z",
+        "name": "name",
+        "slug": "name",
+        "label": "name",
+        "description": "",
+        "required": true,
+        "trait_type": 1,
+        "related_type": 7
+    }
+},
+{
+    "model": "context.trait_type",
+    "pk": 1,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-07T19:58:00.996Z",
+        "last_modified": "2019-08-07T19:58:56.829Z",
+        "slug": "text",
+        "name": "text",
+        "related_model": null,
+        "description": "",
+        "vocabulary": null
+    }
+},
+{
+    "model": "context.trait_type",
+    "pk": 2,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-07T19:58:26.382Z",
+        "last_modified": "2019-08-07T19:58:49.417Z",
+        "slug": "date",
+        "name": "date",
+        "related_model": null,
+        "description": "",
+        "vocabulary": null
+    }
+},
+{
+    "model": "context.trait_type",
+    "pk": 3,
+    "fields": {
+        "notes": "",
+        "create_date": "2019-08-07T19:58:40.321Z",
+        "last_modified": "2019-08-07T19:58:40.321Z",
+        "slug": "datetime",
+        "name": "datetime",
+        "related_model": null,
+        "description": "",
+        "vocabulary": null
+    }
+}
+]
