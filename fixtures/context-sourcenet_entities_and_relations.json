@@ -6,6 +6,7 @@
         "create_date": "2019-08-21T18:48:26.149Z",
         "last_modified": "2019-08-21T18:51:36.511Z",
         "name": "person_sourcenet_id",
+        "label": null,
         "source": "sourcenet",
         "notes": "Django integer ID of a person from context_text \"sourcenet\" research.",
         "type_list": [
@@ -20,6 +21,7 @@
         "create_date": "2019-08-21T18:50:53.991Z",
         "last_modified": "2019-08-21T18:51:20.309Z",
         "name": "person_open_calais_uuid",
+        "label": null,
         "source": "Open Calais v.2",
         "notes": "The OpenCalais identifier for people that is returned as part of their API results.",
         "type_list": [
@@ -34,6 +36,7 @@
         "create_date": "2019-08-21T18:52:25.856Z",
         "last_modified": "2019-08-21T18:52:25.856Z",
         "name": "article_sourcenet_id",
+        "label": null,
         "source": "sourcenet",
         "notes": "Django application unique integer identifier for articles, from context_text application hosting sourcenet data.",
         "type_list": [
@@ -48,8 +51,37 @@
         "create_date": "2019-08-21T18:53:28.998Z",
         "last_modified": "2019-08-21T18:53:28.998Z",
         "name": "article_newsbank_id",
+        "label": null,
         "source": "Newsbank",
         "notes": "Identifier given to a particular article by Newsbank, from its internal data store.",
+        "type_list": [
+            5
+        ]
+    }
+},
+{
+    "model": "context.entity_identifier_type",
+    "pk": 5,
+    "fields": {
+        "create_date": "2019-09-12T19:07:00.095Z",
+        "last_modified": "2019-09-12T19:07:00.095Z",
+        "name": "permalink",
+        "label": "permalink",
+        "source": "various",
+        "notes": "can be applied to any entity type.",
+        "type_list": []
+    }
+},
+{
+    "model": "context.entity_identifier_type",
+    "pk": 6,
+    "fields": {
+        "create_date": "2019-09-12T19:08:28.725Z",
+        "last_modified": "2019-09-12T22:09:20.555Z",
+        "name": "article_archive_identifier",
+        "label": "article_archive_identifier",
+        "source": null,
+        "notes": "Could be from any archive.",
         "type_list": [
             5
         ]
@@ -61,11 +93,11 @@
     "fields": {
         "notes": "",
         "create_date": "2019-08-08T03:15:21.542Z",
-        "last_modified": "2019-08-21T16:34:50.883Z",
+        "last_modified": "2019-09-04T18:35:00.662Z",
         "slug": "quoted",
         "name": "quoted",
         "related_model": null,
-        "description": "The \"from\" person quoted the \"to\" person in a publication.  FROM reporter TO source THROUGH article.",
+        "description": "The \"from\" person quoted the \"to\" person in a publication.  FROM reporter TO source THROUGH article",
         "parent_type": 4,
         "relation_from_entity_type": 1,
         "relation_to_entity_type": 1,
@@ -214,11 +246,11 @@
     "fields": {
         "notes": "",
         "create_date": "2019-09-03T18:25:50.624Z",
-        "last_modified": "2019-09-03T18:29:03.776Z",
+        "last_modified": "2019-09-04T18:51:07.834Z",
         "slug": "newspaper_reporter",
         "name": "Newspaper Reporter",
         "related_model": null,
-        "description": "Reporter at a newspaper, evidence of which is byline on an article in that newspaper.  SO newspaper TO person (reporter) THROUGH article.",
+        "description": "Reporter at a newspaper, evidence of which is byline on an article in that newspaper.  FROM newspaper TO person (reporter) THROUGH article.",
         "parent_type": 4,
         "relation_from_entity_type": 7,
         "relation_to_entity_type": 1,
@@ -231,11 +263,11 @@
     "fields": {
         "notes": "",
         "create_date": "2019-09-03T18:28:54.222Z",
-        "last_modified": "2019-09-03T18:28:54.222Z",
+        "last_modified": "2019-09-04T18:51:18.471Z",
         "slug": "newspaper_source",
         "name": "Newspaper Source",
         "related_model": null,
-        "description": "Person quoted in an article published by a newspaper.  SO newspaper TO person (source) THROUGH article.",
+        "description": "Person quoted in an article published by a newspaper.  FROM newspaper TO person (source) THROUGH article.",
         "parent_type": 4,
         "relation_from_entity_type": 7,
         "relation_to_entity_type": 1,

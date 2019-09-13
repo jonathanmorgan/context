@@ -253,7 +253,7 @@ class TestHelper( object ):
         
 
     @classmethod
-    def standardSetUp( cls, test_case_IN = None ):
+    def standardSetUp( cls, test_case_IN = None, fixture_list_IN = FIXTURE_LIST ):
         
         """
         setup tasks.  Call function that we'll re-use.
@@ -265,9 +265,10 @@ class TestHelper( object ):
         # declare variables
         me = "standardSetUp"
         status_instance = None
+        fixture_list = None
         current_fixture = ""
         
-        print( "\nIn TestHelper." + me + "(): starting standardSetUp." )
+        print( "\nIn context.TestHelper." + me + "(): starting standardSetUp." )
         
         # see if test case passed in.  If so, set status variables on it.
         if ( test_case_IN is not None ):
@@ -287,8 +288,18 @@ class TestHelper( object ):
         status_instance.setup_error_count = 0
         status_instance.setup_error_list = []
         
-        # loop over fixtures in cls.FIXTURE_LIST
-        for current_fixture in cls.FIXTURE_LIST:
+        # get fixture list
+        fixture_list = fixture_list_IN
+        if ( ( fixture_list is None ) or ( len( fixture_list ) <= 0 ) ):
+        
+            # no list passed in.  Use default.
+            fixture_list = cls.FIXTURE_LIST
+            
+        #-- END check to see if list passed in --#
+        
+        # loop over fixtures in fixture_list
+        print( "Fixture list: {}".format( fixture_list ) )
+        for current_fixture in fixture_list:
         
             try:
             

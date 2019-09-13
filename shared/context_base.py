@@ -34,6 +34,7 @@ from python_utilities.rate_limited.basic_rate_limited import BasicRateLimited
 # classes (in alphabetical order by name)
 #===============================================================================
 
+# object --> LoggingHelper --> ExceptionHelper --> BasicRateLimited --> ContextBase
 class ContextBase( BasicRateLimited ):
 
 

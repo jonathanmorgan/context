@@ -668,6 +668,72 @@ class Entity( Abstract_Context_With_JSON ):
     
 
     #----------------------------------------------------------------------
+    # ! ----> class methods
+    #----------------------------------------------------------------------
+
+
+    @classmethod
+    def get_entity_for_identifier( self,
+                                   uuid_IN,
+                                   id_name_IN = None,
+                                   id_source_IN = None,
+                                   id_type_IN = None ):
+                                       
+        # return reference
+        entity_OUT = None
+        
+        # declare variables
+        entity_qs = None
+        entity_count = None
+        
+        # start with uuid
+        entity_qs = Entity.objects.filter( entity_identifier_set__uuid = uuid_IN )
+        
+        # got a name?
+        if ( id_name_IN is not None ):
+        
+            # also filter on name
+            entity_qs = entity_qs.filter( entity_identifier_set__name = id_name_IN )
+            
+        #-- END check to see if name --#
+        
+        # got a type?
+        if ( id_type_IN is not None ):
+        
+            # also filter on type
+            entity_qs = entity_qs.filter( entity_identifier_set__entity_identifier_type = id_type_IN )
+            
+        #-- END check to see if type --#
+        
+        # got a source?
+        if ( id_source_IN is not None ):
+        
+            # also filter on source
+            entity_qs = entity_qs.filter( entity_identifier_set__source = id_source_IN )
+            
+        #-- END check to see if source --#
+        
+        # call get(), return result (throws exception if no match).
+        entity_count = entity_qs.count()
+        if ( entity_count == 1 ):
+        
+            # call get() and return result.
+            entity_OUT = entity_qs.get()
+            
+        else:
+        
+            # either no match or multiple matches.  Either way, return None.
+            print( "Entity count = {} for uuid: {}; name: {}; source: {}; type: {}".format( entity_count, uuid_IN, id_name_IN, id_source_IN, id_type_IN ) )
+            entity_OUT = None
+            
+        #-- END check to see if entity count is 1. --#
+        
+        return entity_OUT
+        
+    #-- END class method get_entity_for_identifier() --#
+
+
+    #----------------------------------------------------------------------
     # ! ----> overridden built-in methods
     #----------------------------------------------------------------------
 

@@ -156,6 +156,14 @@ class EntityModelTest( django.test.TestCase ):
     #-- END test method test_set_entity_identifier_type() --#
 
 
+    def test_get_entity_for_identifier( self ):
+        
+        # ! TODO
+        pass
+        
+    #-- END test method test_get_entity_for_identifier --#
+        
+    
     def test_set_entity_trait( self ):
 
         '''
