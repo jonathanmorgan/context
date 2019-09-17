@@ -49,8 +49,9 @@ Debugging code, shared across all models.
 '''
 
 DEBUG = True
+DEFAULT_LOGGER_NAME = "context.models"
 
-def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "" ):
+def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = DEFAULT_LOGGER_NAME ):
     
     '''
     Accepts message string.  If debug is on, logs it.  If not,
@@ -58,52 +59,20 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
     '''
     
     # declare variables
-    my_message = ""
-    my_logger = None
-    my_logger_name = ""
+    do_print = False
 
     # got a message?
     if ( message_IN ):
     
         # only print if debug is on.
-        if ( DEBUG == True ):
+        do_print = DEBUG
         
-            my_message = message_IN
-        
-            # got a method?
-            if ( method_IN ):
-            
-                # We do - append to front of message.
-                my_message = "In " + method_IN + ": " + my_message
-                
-            #-- END check to see if method passed in --#
-            
-            # indent?
-            if ( indent_with_IN ):
-                
-                my_message = indent_with_IN + my_message
-                
-            #-- END check to see if we indent. --#
-        
-            # debug is on.  Start logging rather than using print().
-            #print( my_message )
-            
-            # got a logger name?
-            my_logger_name = "context.models"
-            if ( ( logger_name_IN is not None ) and ( logger_name_IN != "" ) ):
-            
-                # use logger name passed in.
-                my_logger_name = logger_name_IN
-                
-            #-- END check to see if logger name --#
-                
-            # get logger
-            my_logger = LoggingHelper.get_a_logger( my_logger_name )
-            
-            # log debug.
-            my_logger.debug( my_message )
-        
-        #-- END check to see if debug is on --#
+        # call LoggingHelper method
+        LoggingHelper.output_debug( message_IN,
+                                    method_IN = method_IN,
+                                    indent_with_IN = indent_with_IN,
+                                    logger_name_IN = logger_name_IN,
+                                    do_print_IN = do_print )
     
     #-- END check to see if message. --#
 
@@ -668,12 +637,20 @@ class Entity( Abstract_Context_With_JSON ):
     
 
     #----------------------------------------------------------------------
+    # ! ----> class variables
+    #----------------------------------------------------------------------
+
+
+    DEBUG = False
+
+
+    #----------------------------------------------------------------------
     # ! ----> class methods
     #----------------------------------------------------------------------
 
 
     @classmethod
-    def get_entity_for_identifier( self,
+    def get_entity_for_identifier( cls,
                                    uuid_IN,
                                    id_name_IN = None,
                                    id_source_IN = None,
@@ -683,50 +660,141 @@ class Entity( Abstract_Context_With_JSON ):
         entity_OUT = None
         
         # declare variables
-        entity_qs = None
-        entity_count = None
+        me = "Entity.get_entity_for_identifier"
+        debug_flag = cls.DEBUG
+        debug_message = None
+        entity_id_qs = None
+        entity_id_count = None
+        entity_id_instance = None
+        entity_instance = None
+        entity_id = None
+        entity_id_set = None
+        entity_id_set_count = None
+        
+        if ( debug_flag == True ):
+            print( "Inputs: uuid: {}; name: {}; source: {}; type: {}.".format( uuid_IN, id_name_IN, id_source_IN, id_type_IN ) )
+        #-- END DEBUG --#            
         
         # start with uuid
-        entity_qs = Entity.objects.filter( entity_identifier_set__uuid = uuid_IN )
+        entity_id_qs = Entity_Identifier.objects.filter( uuid = uuid_IN )
+        
+        if ( debug_flag == True ):
+            print( "after UUID filter (uuid_IN = {}), result count: {}".format( uuid_IN, entity_id_qs.count() ) )
+        #-- END DEBUG --#
         
         # got a name?
         if ( id_name_IN is not None ):
         
             # also filter on name
-            entity_qs = entity_qs.filter( entity_identifier_set__name = id_name_IN )
+            entity_id_qs = entity_id_qs.filter( name = id_name_IN )
             
         #-- END check to see if name --#
+        
+        if ( debug_flag == True ):
+            print( "after name filter (id_name_IN = {}), result count: {}".format( id_name_IN, entity_id_qs.count() ) )
+        #-- END DEBUG --#
         
         # got a type?
         if ( id_type_IN is not None ):
         
             # also filter on type
-            entity_qs = entity_qs.filter( entity_identifier_set__entity_identifier_type = id_type_IN )
+            entity_id_qs = entity_id_qs.filter( entity_identifier_type = id_type_IN )
             
         #-- END check to see if type --#
+        
+        if ( debug_flag == True ):
+            print( "after type filter (id_type_IN = {}), result count: {}".format( id_type_IN, entity_id_qs.count() ) )
+        #-- END DEBUG --#
         
         # got a source?
         if ( id_source_IN is not None ):
         
             # also filter on source
-            entity_qs = entity_qs.filter( entity_identifier_set__source = id_source_IN )
+            entity_id_qs = entity_id_qs.filter( source = id_source_IN )
             
         #-- END check to see if source --#
         
-        # call get(), return result (throws exception if no match).
-        entity_count = entity_qs.count()
-        if ( entity_count == 1 ):
+        if ( debug_flag == True ):
+            print( "after source filter (id_source_IN = {}), result count: {}".format( id_source_IN, entity_id_qs.count() ) )
+        #-- END DEBUG --#
         
-            # call get() and return result.
-            entity_OUT = entity_qs.get()
+        # How many identifiers match?
+        entity_id_count = entity_id_qs.count()
+        
+        # if one, retrieve Entity and return it.
+        if ( entity_id_count == 1 ):
+        
+            # call get()
+            entity_id_instance = entity_id_qs.get()
+            
+            # retrieve related entity
+            entity_instance = entity_id_instance.entity
+            
+            # return it
+            entity_OUT = entity_instance
+            
+        elif ( entity_id_count > 1 ):
+        
+            # either no match or multiple matches.  Either way, return None.
+            if ( debug_flag == True ):
+                print( "Entity identifier count = {} for uuid: {}; name: {}; source: {}; type: {}.".format( entity_id_count, uuid_IN, id_name_IN, id_source_IN, id_type_IN ) )
+            #-- END DEBUG --#
+            
+            # loop and see if they all have same entity.
+            entity_id_set = set()
+            for entity_id_instance in entity_id_qs:
+            
+                # get entity and its ID
+                entity_instance = entity_id_instance.entity
+                entity_id = entity_instance.id
+                
+                # if not already in set, add it.
+                if ( entity_id not in entity_id_set ):
+                
+                    # add it.
+                    entity_id_set.add( entity_id )
+                    
+                #-- END check to see if ID in set. --#
+                
+            #-- END loop over identifiers --#
+            
+            # how many things in set?
+            entity_id_set_count = len( entity_id_set )
+            if ( entity_id_set_count == 1 ):
+            
+                # all are the same entity, so return it (still set from loop).
+                entity_OUT = entity_instance
+                
+            else:
+            
+                # multiple entities match.  Print, then return None.
+                if ( debug_flag == True ):
+                    print( "Multiple entities match for uuid: {}; name: {}; source: {}; type: {}.  IDs: {}".format( entity_id_count, uuid_IN, id_name_IN, id_source_IN, id_type_IN, entity_id_set ) )
+                #-- END DEBUG --#
+                
+                entity_OUT = None
+                
+            #-- END check to see if all identifiers refer to the same entity. --#
+            
+        elif ( entity_id_count == 0 ):
+        
+            # no matches.
+            if ( debug_flag == True ):
+                print( "No matches for uuid: {}; name: {}; source: {}; type: {}.".format( uuid_IN, id_name_IN, id_source_IN, id_type_IN ) )
+            #-- END DEBUG --#
+            
+            entity_OUT = None
             
         else:
         
-            # either no match or multiple matches.  Either way, return None.
-            print( "Entity count = {} for uuid: {}; name: {}; source: {}; type: {}".format( entity_count, uuid_IN, id_name_IN, id_source_IN, id_type_IN ) )
+            # ERROR - not 0 or 1 or > 1.
+            if ( debug_flag == True ):
+                print( "Inconceivable! - Entity identifier count = {} for uuid: {}; name: {}; source: {}; type: {}.".format( entity_id_count, uuid_IN, id_name_IN, id_source_IN, id_type_IN ) )
+            #-- END DEBUG --#
+
             entity_OUT = None
-            
-        #-- END check to see if entity count is 1. --#
+        
+        #-- END check to see if entity identifier count is 1. --#
         
         return entity_OUT
         
@@ -1179,6 +1247,14 @@ class Entity_Identifier_Type( Abstract_Identifier_Type ):
 
 
     #----------------------------------------------------------------------
+    # ! ----> class variables
+    #----------------------------------------------------------------------
+
+
+    DEBUG = False
+
+
+    #----------------------------------------------------------------------
     # ! ----> class methods
     #----------------------------------------------------------------------
 
@@ -1191,6 +1267,7 @@ class Entity_Identifier_Type( Abstract_Identifier_Type ):
         
         # declare variables
         me = "Entity_Identifier_Type.get_type_for_name"
+        error_message = None
         type_qs = None
         type_instance = None
         
@@ -1207,12 +1284,20 @@ class Entity_Identifier_Type( Abstract_Identifier_Type ):
 
             except cls.MultipleObjectsReturned as mor:
             
-                print( "In {}: Multiple instances returned for name {}.  Unfortunate!".format( me, type_name_IN ) )
+                if ( cls.DEBUG == True ):
+                    error_message = "Multiple instances returned for name {}.  Unfortunate!".format( type_name_IN )
+                    output_debug( error_message, method_IN = me )
+                #-- END DEBUG --#
+                
                 type_instance = None
             
             except cls.DoesNotExist as dne:
             
-                print( "In {}: No instance found for name {}.".format( me, type_name_IN ) )
+                if ( cls.DEBUG == True ):
+                    error_message = "No instance found for name {}.".format( type_name_IN )
+                    output_debug( error_message, method_IN = me )
+                #-- END DEBUG --#
+                
                 type_instance = None
                 
             #-- END try-except --#
@@ -1298,42 +1383,42 @@ class Entity_Identifier( Abstract_UUID ):
 
         if ( self.name ):
         
-            string_OUT += prefix_string + self.name
+            string_OUT += "{}name: {}".format( prefix_string, self.name )
             prefix_string = " - "
             
         #-- END check to see if name. --#
             
         if ( self.source ):
         
-            string_OUT += prefix_string + " ( " + self.source + " )"
+            string_OUT += "{}source: {}".format( prefix_string, self.source )
             prefix_string = " - "
             
         #-- END check to see if source. --#
             
         if ( self.uuid ):
         
-            string_OUT += prefix_string + self.uuid
+            string_OUT += "{}uuid: {}".format( prefix_string, self.uuid )
             prefix_string = " - "
             
         #-- END check to see if uuid. --#
             
         if ( self.id_type ):
         
-            string_OUT += "{} ( id_type: {} )".format( prefix_string, self.id_type )
+            string_OUT += "{}id_type: {}".format( prefix_string, self.id_type )
             prefix_string = " - "
             
         #-- END check to see if id_type. --#
             
         if ( self.entity ):
         
-            string_OUT += "{} Entity: {}".format( prefix_string, self.entity.id )
+            string_OUT += "{}Entity ID: {}".format( prefix_string, self.entity.id )
             prefix_string = " - "
             
         #-- END check to see if id_type. --#
             
         if ( self.entity_identifier_type ):
         
-            string_OUT += "{} Type: {}".format( prefix_string, self.entity_identifier_type )
+            string_OUT += "{}Type: {}".format( prefix_string, self.entity_identifier_type )
             prefix_string = " - "
             
         #-- END check to see if id_type. --#
@@ -1341,6 +1426,14 @@ class Entity_Identifier( Abstract_UUID ):
         return string_OUT
         
     #-- END method __str__() --#
+
+
+    #----------------------------------------------------------------------
+    # ! ----> class variables
+    #----------------------------------------------------------------------
+
+
+    DEBUG = False
 
 
     #----------------------------------------------------------------------
@@ -1390,7 +1483,7 @@ class Entity_Identifier( Abstract_UUID ):
                 
                 # ----> notes - not for now...
                 #my_notes = entity_type_trait_spec.notes
-                #self.notes = my_notes            
+                #self.notes = my_notes        
                 
             else:
             
@@ -1423,7 +1516,7 @@ class Entity_Identifier( Abstract_UUID ):
         instance_OUT = None
         
         # declare variables
-        me = "set_identifier_type_from_name"
+        me = "Entity_Identifier.set_identifier_type_from_name"
         type_instance = None
         
         # do we have a name?
@@ -1440,12 +1533,20 @@ class Entity_Identifier( Abstract_UUID ):
 
             except Entity_Identifier_Type.MultipleObjectsReturned as mor:
             
-                print( "In {}: Multiple instances returned for name \"{}\".  Unexpected!".format( me, entity_identifier_type_name_IN ) )
+                if ( self.DEBUG == True ):
+                    error_message = "Multiple instances returned for name \"{}\".  Unfortunate!".format( entity_identifier_type_name_IN )
+                    output_debug( error_message, method_IN = me )
+                #-- END DEBUG --#
+
                 type_instance = None
             
             except Entity_Identifier_Type.DoesNotExist as dne:
             
-                print( "In {}: No instance found for name \"{}\".".format( me, entity_identifier_type_name_IN ) )
+                if ( self.DEBUG == True ):
+                    error_message = "No instance found for name \"{}\".".format( entity_identifier_type_name_IN )
+                    output_debug( error_message, method_IN = me )
+                #-- END DEBUG --#
+
                 type_instance = None
                 
             #-- END try-except --#

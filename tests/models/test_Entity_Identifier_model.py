@@ -78,7 +78,7 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         error_count = -1
         error_message = ""
         
-        print( '====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
         
         # get setup error count
         setup_error_count = self.setup_error_count
@@ -114,7 +114,7 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         test_name = None
         test_source = None
         
-        print( '====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
         
         # create Entity
         entity_instance = TestHelper.create_test_entity()
@@ -215,7 +215,7 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         test_name = None
         test_source = None
         
-        print( '====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
         
         # create Entity
         entity_instance = TestHelper.create_test_entity()

@@ -227,11 +227,11 @@ class TestHelper( object ):
     
     
     @classmethod
-    def output_debug( cls, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "" ):
+    def output_debug( cls, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = "", do_print_IN = False ):
         
         '''
-        Accepts message string.  If debug is on, logs it.  If not,
-           does nothing for now.
+        Accepts message string and other optional logging things.  Logs the
+            debug message.
         '''
         
         # declare variables
@@ -239,13 +239,8 @@ class TestHelper( object ):
         # got a message?
         if ( message_IN ):
         
-            # only print if debug is on.
-            if ( cls.DEBUG == True ):
-            
-                # use Logging Helper to log messages.
-                LoggingHelper.output_debug( message_IN, method_IN, indent_with_IN, logger_name_IN )
-            
-            #-- END check to see if debug is on --#
+            # use Logging Helper to log messages.
+            LoggingHelper.output_debug( message_IN, method_IN, indent_with_IN, logger_name_IN, do_print_IN = do_print_IN )
         
         #-- END check to see if message. --#
     
@@ -297,8 +292,11 @@ class TestHelper( object ):
             
         #-- END check to see if list passed in --#
         
+        if ( cls.DEBUG == True ):
+            print( "----> Fixture list: {}".format( fixture_list ) )
+        #-- END DEBUG --#
+
         # loop over fixtures in fixture_list
-        print( "Fixture list: {}".format( fixture_list ) )
         for current_fixture in fixture_list:
         
             try:
