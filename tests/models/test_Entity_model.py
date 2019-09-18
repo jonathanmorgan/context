@@ -69,6 +69,9 @@ class EntityModelTest( django.test.TestCase ):
     ENTITY_ID_UUID_NO_MATCH = "calliope_1234567890"
     ENTITY_ID_NAME_NO_MATCH = "hunterlane"
     ENTITY_ID_SOURCE_NO_MATCH = "chiquita_brain_fuel"
+    ENTITY_TRAIT_NAME_NO_MATCH = "garbleflarbleflub"
+    ENTITY_TRAIT_SLUG_NO_MATCH = "garbleflarbleflubstub"
+    ENTITY_TRAIT_LABEL_NO_MATCH = "garbleflarbleflubstubstomp"
 
 
     #----------------------------------------------------------------------
@@ -188,6 +191,12 @@ class EntityModelTest( django.test.TestCase ):
         result_entity_id = None
         bad_identifier_type = None
         
+        # declare variables - test values
+        test_id_uuid = None
+        test_id_name = None
+        test_id_source = None
+        test_id_type = None
+        
         # debug
         debug_flag = self.DEBUG
         eiqs = None
@@ -248,7 +257,7 @@ class EntityModelTest( django.test.TestCase ):
         # ==> Just UUID
 
         if ( debug_flag == True ):
-            print( "\n--------> Retrieve entity just based on UUID: {}".format( my_identifier_uuid ) )
+            print( "\n--------> Retrieve entity based on:" )
             print( " - UUID: {}".format( my_identifier_uuid ) )
         #-- END DEBUG --#
 
@@ -338,48 +347,51 @@ class EntityModelTest( django.test.TestCase ):
         #======================================================================#
         
         # ==> Just UUID
+        test_id_uuid = self.ENTITY_ID_UUID_NO_MATCH
 
         if ( debug_flag == True ):
-            print( "\n--------> Retrieve entity just based on UUID: {}".format( self.ENTITY_ID_UUID_NO_MATCH ) )
-            print( " - UUID: {}".format( self.ENTITY_ID_UUID_NO_MATCH ) )
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - UUID: {}".format( test_id_uuid ) )
         #-- END DEBUG --#
 
-        result_entity = Entity.get_entity_for_identifier( self.ENTITY_ID_UUID_NO_MATCH )
+        result_entity = Entity.get_entity_for_identifier( test_id_uuid )
         
         # instance should be None
-        error_string = "Getting entity for uuid: {}, should return None, not Entity instance.".format( self.ENTITY_ID_UUID_NO_MATCH )
+        error_string = "Getting entity for uuid: {}, should return None, not Entity instance.".format( test_id_uuid )
         self.assertIsNone( result_entity, msg = error_string )
         
         # ==> UUID plus ID name
+        test_id_name = self.ENTITY_ID_NAME_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
             print( " - UUID: {}".format( my_identifier_uuid ) )
-            print( " - ID name: {}".format( self.ENTITY_ID_NAME_NO_MATCH ) )
+            print( " - ID name: {}".format( test_id_name ) )
         #-- END DEBUG --#
 
         result_entity = Entity.get_entity_for_identifier( my_identifier_uuid,
-                                                          id_name_IN = self.ENTITY_ID_NAME_NO_MATCH )
+                                                          id_name_IN = test_id_name )
         
         # instance should be None
-        error_string = "Getting entity for uuid: {} and name: {}, should return None, not Entity instance.".format( my_identifier_uuid, self.ENTITY_ID_NAME_NO_MATCH )
+        error_string = "Getting entity for uuid: {} and name: {}, should return None, not Entity instance.".format( my_identifier_uuid, test_id_name )
         self.assertIsNone( result_entity, msg = error_string )
         
         # ==> UUID plus ID name plus source
+        test_id_source = self.ENTITY_ID_SOURCE_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
             print( " - UUID: {}".format( my_identifier_uuid ) )
             print( " - ID name: {}".format( my_identifier_name ) )
-            print( " - source: {}".format( self.ENTITY_ID_SOURCE_NO_MATCH ) )
+            print( " - source: {}".format( test_id_source ) )
         #-- END DEBUG --#
         
         result_entity = Entity.get_entity_for_identifier( my_identifier_uuid,
                                                           id_name_IN = my_identifier_name,
-                                                          id_source_IN = self.ENTITY_ID_SOURCE_NO_MATCH )
+                                                          id_source_IN = test_id_source )
         
         # instance should be None
-        error_string = "Getting entity for uuid: {} and name: {} and source: {}, should return None, not Entity instance.".format( my_identifier_uuid, my_identifier_name, self.ENTITY_ID_SOURCE_NO_MATCH )
+        error_string = "Getting entity for uuid: {} and name: {} and source: {}, should return None, not Entity instance.".format( my_identifier_uuid, my_identifier_name, test_id_source )
         self.assertIsNone( result_entity, msg = error_string )
 
         # ==> UUID plus ID name plus source plus type instance
@@ -405,11 +417,413 @@ class EntityModelTest( django.test.TestCase ):
     #-- END test method test_get_entity_for_identifier --#
         
     
+    def test_get_entity_trait( self ):
+
+        '''
+        Things to test passing to the method:
+
+            get_entity_trait( self,
+                              name_IN,
+                              slug_IN = None,
+                              label_IN = None,
+                              entity_type_trait_IN = None ):        
+        '''
+
+        # declare variables
+        me = "test_get_entity_trait"
+        entity_instance = None
+        entity_type = None
+        trait_name = None
+        trait_instance = None
+        entity_type_trait = None
+        my_trait_id = None
+        my_trait_name = None
+        my_trait_slug = None
+        my_trait_label = None
+        result_trait = None
+        result_trait_id = None
+        
+        # declare variables - test values
+        test_trait_name = None
+        test_trait_slug = None
+        test_trait_label = None
+        test_trait_type = None
+        
+        # debug
+        debug_flag = self.DEBUG
+
+        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+
+        # build a "person" entity.
+        entity_instance = TestHelper.create_test_entity()
+        entity_type = entity_instance.add_entity_type( self.ENTITY_TYPE_SLUG_PERSON )
+        
+        # add a test trait
+        trait_instance = TestHelper.create_test_entity_trait( entity_instance )
+        
+        # set a type on the trait.
+        entity_type_trait = entity_type.get_trait_spec( self.ENTITY_TRAIT_NAME_FIRST_NAME )
+        trait_instance.set_entity_type_trait( entity_type_trait )
+        trait_instance.save()
+        
+        # trait details
+        my_trait_id = trait_instance.id
+        my_trait_name = trait_instance.name
+        my_trait_slug = trait_instance.slug
+        my_trait_label = trait_instance.label
+        
+        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( "trait_instance: {}".format( trait_instance ) )
+
+        #======================================================================#
+        # ! try to get entity trait - good matches
+        #======================================================================#
+        
+        # ==> Just name
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve trait based on:" )
+            print( " - name: {}".format( my_trait_name ) )
+        #-- END DEBUG --#
+
+        result_trait = entity_instance.get_entity_trait( my_trait_name )
+        
+        # instance should not be None
+        error_string = "Getting trait for name: {}, should return Entity_Trait instance, not None.".format( my_trait_name )
+        self.assertIsNotNone( result_trait, msg = error_string )
+
+        # trait ID should match my_trait_id.
+        result_trait_id = result_trait.id
+        should_be = my_trait_id
+        error_string = "Returned Trait has ID {}, should have ID {}".format( result_trait_id, should_be )
+        self.assertEqual( result_trait_id, should_be, msg = error_string )
+        
+        # ==> name plus slug
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve trait based on:" )
+            print( " - name: {}".format( my_trait_name ) )
+            print( " - slug: {}".format( my_trait_slug ) )
+        #-- END DEBUG --#
+
+        result_trait = entity_instance.get_entity_trait( my_trait_name,
+                                                         slug_IN = my_trait_slug )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {} and slug: {}, should return Entity instance, not None.".format( my_trait_name, my_trait_slug )
+        self.assertIsNotNone( result_trait, msg = error_string )
+
+        # trait ID should match my_trait_id.
+        result_trait_id = result_trait.id
+        should_be = my_trait_id
+        error_string = "Returned Trait has ID {}, should have ID {}".format( result_trait_id, should_be )
+        self.assertEqual( result_trait_id, should_be, msg = error_string )
+        
+        # ==> name plus slug plus label
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve trait based on:" )
+            print( " - name: {}".format( my_trait_name ) )
+            print( " - slug: {}".format( my_trait_slug ) )
+            print( " - label: {}".format( my_trait_label ) )
+        #-- END DEBUG --#
+        
+        result_trait = entity_instance.get_entity_trait( my_trait_name,
+                                                         slug_IN = my_trait_slug,
+                                                         label_IN = my_trait_label )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {}, slug: {} and label: {}, should return Entity instance, not None.".format( my_trait_name, my_trait_slug, my_trait_label )
+        self.assertIsNotNone( result_trait, msg = error_string )
+
+        # trait ID should match my_trait_id.
+        result_trait_id = result_trait.id
+        should_be = my_trait_id
+        error_string = "Returned Trait has ID {}, should have ID {}".format( result_trait_id, should_be )
+        self.assertEqual( result_trait_id, should_be, msg = error_string )
+        
+        # ==> name plus slug plus label plus Entity_Type_Trait instance
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve trait based on:" )
+            print( " - name: {}".format( my_trait_name ) )
+            print( " - slug: {}".format( my_trait_slug ) )
+            print( " - label: {}".format( my_trait_label ) )
+            print( " - Entity_Type_Trait: {}".format( entity_type_trait ) )
+        #-- END DEBUG --#
+        
+        result_trait = entity_instance.get_entity_trait( my_trait_name,
+                                                         slug_IN = my_trait_slug,
+                                                         label_IN = my_trait_label,
+                                                         entity_type_trait_IN = entity_type_trait )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {}, slug: {}, label: {}, and Entity_Type_Trait: {}, should return Entity instance, not None.".format( my_trait_name, my_trait_slug, my_trait_label, entity_type_trait )
+        self.assertIsNotNone( result_trait, msg = error_string )
+
+        # trait ID should match my_trait_id.
+        result_trait_id = result_trait.id
+        should_be = my_trait_id
+        error_string = "Returned Trait has ID {}, should have ID {}".format( result_trait_id, should_be )
+        self.assertEqual( result_trait_id, should_be, msg = error_string )
+                
+        #======================================================================#
+        # ! try to get entity trait - bad matches
+        #======================================================================#
+        
+        # ==> Just name
+        test_trait_name = self.ENTITY_TRAIT_NAME_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve trait based on:" )
+            print( " - name: {}".format( test_trait_name ) )
+        #-- END DEBUG --#
+
+        result_trait = entity_instance.get_entity_trait( test_trait_name )
+        
+        # instance should not be None
+        error_string = "Getting trait for name: {}, should return None, not Entity_Trait instance.".format( test_trait_name )
+        self.assertIsNone( result_trait, msg = error_string )
+
+        # ==> name plus slug
+        test_trait_slug = self.ENTITY_TRAIT_SLUG_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve trait based on:" )
+            print( " - name: {}".format( my_trait_name ) )
+            print( " - slug: {}".format( test_trait_slug ) )
+        #-- END DEBUG --#
+
+        result_trait = entity_instance.get_entity_trait( my_trait_name,
+                                                         slug_IN = test_trait_slug )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {} and slug: {}, should return Entity instance, not None.".format( my_trait_name, test_trait_slug )
+        self.assertIsNone( result_trait, msg = error_string )
+
+        # ==> name plus slug plus label
+        test_trait_label = self.ENTITY_TRAIT_LABEL_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve trait based on:" )
+            print( " - name: {}".format( my_trait_name ) )
+            print( " - slug: {}".format( my_trait_slug ) )
+            print( " - label: {}".format( test_trait_label ) )
+        #-- END DEBUG --#
+        
+        result_trait = entity_instance.get_entity_trait( my_trait_name,
+                                                         slug_IN = my_trait_slug,
+                                                         label_IN = test_trait_label )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {}, slug: {} and label: {}, should return Entity instance, not None.".format( my_trait_name, my_trait_slug, test_trait_label )
+        self.assertIsNone( result_trait, msg = error_string )
+
+        # ==> name plus slug plus label plus Entity_Type_Trait instance
+        test_entity_type_trait = entity_type.get_trait_spec( self.ENTITY_TRAIT_NAME_LAST_NAME )
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve trait based on:" )
+            print( " - name: {}".format( my_trait_name ) )
+            print( " - slug: {}".format( my_trait_slug ) )
+            print( " - label: {}".format( my_trait_label ) )
+            print( " - Entity_Type_Trait: {}".format( test_entity_type_trait ) )
+        #-- END DEBUG --#
+        
+        result_trait = entity_instance.get_entity_trait( my_trait_name,
+                                                         slug_IN = my_trait_slug,
+                                                         label_IN = my_trait_label,
+                                                         entity_type_trait_IN = test_entity_type_trait )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {}, slug: {}, label: {}, and Entity_Type_Trait: {}, should return Entity instance, not None.".format( my_trait_name, my_trait_slug, my_trait_label, test_entity_type_trait )
+        self.assertIsNone( result_trait, msg = error_string )
+        
+    #-- END test method test_get_entity_trait() --#
+
+
+    def test_get_identifier( self ):
+        
+        '''
+        Test using the default test entity and entity identifier.  Identifier
+            has the following values:
+            - # Test Entity_Identifier default information
+            - TEST_ENTITY_IDENTIFIER_NAME = "calliope_type"
+            - TEST_ENTITY_IDENTIFIER_UUID = "123456"
+            - TEST_ENTITY_IDENTIFIER_ID_TYPE = "made-up"
+            - TEST_ENTITY_IDENTIFIER_SOURCE = "my_brain"
+            - TEST_ENTITY_IDENTIFIER_NOTE = "default initialization notes"
+        '''
+        
+        # declare variables
+        me = "test_get_entity_for_identifier"
+        my_entity = None
+        my_entity_id = None
+        my_entity_identifier = None
+        my_identifier_id = None
+        my_identifier_uuid = None
+        my_identifier_name = None
+        my_identifier_source = None
+        result_identifier = None
+        result_identifier_id = None
+        bad_identifier_type = None
+        
+        # declare variables - test values
+        test_id_name = None
+        test_id_source = None
+        test_id_type = None
+                
+        # debug
+        debug_flag = self.DEBUG
+        eiqs = None
+        
+        # create test entity, with test identifier.
+        my_entity = TestHelper.create_test_entity()
+        my_entity_id = my_entity.id
+        
+        # create identifier
+        my_entity_identifier = TestHelper.create_test_entity_identifier( my_entity )
+        
+        # set type and update identifier from it (must then save())
+        my_identifier_type = my_entity_identifier.set_identifier_type_from_name( self.TYPE_NAME_PERSON_SOURCENET_ID, do_use_to_update_fields_IN = True )
+        my_entity_identifier.save()
+
+        # identifier details
+        my_identifier_id = my_entity_identifier.id
+        my_identifier_uuid = my_entity_identifier.uuid
+        my_identifier_name = my_entity_identifier.name
+        my_identifier_source = my_entity_identifier.source
+        
+        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( "my_entity_identifier: {}".format( my_entity_identifier ) )
+
+        #======================================================================#
+        # ! try to get identifier - good matches
+        #======================================================================#
+        
+        # ==> name
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+        #-- END DEBUG --#
+
+        result_identifier = my_entity.get_identifier( my_identifier_name )
+        
+        # instance should not be None
+        error_string = "Getting identifier for name: {}, should return Entity_Identifier instance, not None.".format( my_identifier_name )
+        self.assertIsNotNone( result_identifier, msg = error_string )
+
+        # entity identifier ID should match my_entity_id.
+        found = result_identifier.id
+        should_be = my_identifier_id
+        error_string = "identifier has ID {}, should have ID {}".format( found, should_be )
+        self.assertEqual( found, should_be, msg = error_string )
+        
+        # ==> UUID plus ID name plus source
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = my_identifier_source )
+        
+        # instance should not be None
+        error_string = "Getting identifier for name: {} and source: {}, should return Entity_Identifier instance, not None.".format( my_identifier_name, my_identifier_source )
+        self.assertIsNotNone( result_identifier, msg = error_string )
+
+        # entity identifier ID should match my_entity_id.
+        found = result_identifier.id
+        should_be = my_identifier_id
+        error_string = "identifier has ID {}, should have ID {}".format( found, should_be )
+        self.assertEqual( found, should_be, msg = error_string )
+        
+        # ==> UUID plus ID name plus source plus type instance
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = my_identifier_source,
+                                                      id_type_IN = my_identifier_type )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {} and source: {} and id type: {}, should return Entity_Identifier instance, not None.".format( my_identifier_name, my_identifier_source, my_identifier_type )
+        self.assertIsNotNone( result_identifier, msg = error_string )
+
+        # entity identifier ID should match my_entity_id.
+        found = result_identifier.id
+        should_be = my_identifier_id
+        error_string = "identifier has ID {}, should have ID {}".format( found, should_be )
+        self.assertEqual( found, should_be, msg = error_string )
+        
+        #======================================================================#
+        # ! try to get identifier - bad matches
+        #======================================================================#
+        
+        # ==> name
+        test_id_name = self.ENTITY_ID_NAME_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( test_id_name ) )
+        #-- END DEBUG --#
+
+        result_identifier = my_entity.get_identifier( test_id_name )
+        
+        # instance should be None
+        error_string = "Getting entity identifier for name: {}, should return None, not Entity_Identifier instance.".format( my_identifier_uuid, test_id_name )
+        self.assertIsNone( result_identifier, msg = error_string )
+        
+        # ==> UUID plus ID name plus source
+        test_id_source = self.ENTITY_ID_SOURCE_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( test_id_source ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = test_id_source )
+        
+        # instance should be None
+        error_string = "Getting entity identifier for name: {} and source: {}, should return None, not Entity_Identifier instance.".format( my_identifier_name, test_id_source )
+        self.assertIsNone( result_identifier, msg = error_string )
+
+        # ==> UUID plus ID name plus source plus type instance
+        bad_identifier_type = Entity_Identifier_Type.get_type_for_name( self.TYPE_NAME_ARTICLE_NEWSBANK_ID )
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( bad_identifier_type ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = my_identifier_source,
+                                                      id_type_IN = bad_identifier_type )
+        
+        # instance should be None
+        error_string = "Getting entity identifier for name: {} and source: {} and id type: {}, should return None, not Entity_Identifier instance.".format( my_identifier_name, my_identifier_source, bad_identifier_type )
+        self.assertIsNone( result_identifier, msg = error_string )
+
+    #-- END test method test_get_identifier --#
+        
+    
     def test_set_entity_trait( self ):
 
         '''
         Things to test passing to the method:
-            def set_entity_trait( self,
+            set_entity_trait( self,
                           name_IN,
                           value_IN,
                           slug_IN = None,

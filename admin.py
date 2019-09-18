@@ -39,7 +39,7 @@ admin.site.register( Entity_Relation_Identifier )
 admin.site.register( Entity_Relation_Type_Trait )
 #admin.site.register( Entity_Trait )
 #admin.site.register( Entity_Type )
-admin.site.register( Entity_Type_Trait )
+#admin.site.register( Entity_Type_Trait )
 admin.site.register( Entity_Types )
 #admin.site.register( Term )
 admin.site.register( Term_Relation )
@@ -544,6 +544,49 @@ class Entity_TypeAdmin( admin.ModelAdmin ):
 #-- END Entity_TypeAdmin admin model --#
 
 admin.site.register( Entity_Type, Entity_TypeAdmin )
+
+
+#-------------------------------------------------------------------------------
+# ! --> Entity_Type_Trait admin definition
+#-------------------------------------------------------------------------------
+
+
+class Entity_Type_TraitAdmin( admin.ModelAdmin ):
+
+    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
+    #    are looking to make ajax selects form fields for; 2nd argument is a
+    #    dict of pairs of field names in the model in argument 1 (with no quotes
+    #    around them) mapped to lookup channels used to service them (lookup
+    #    channels are defined in settings.py, implenented in a separate module -
+    #    in this case, implemented in context.lookups.py
+    #form = make_ajax_form( Trait_Type, dict( vocabulary = 'vocabulary' ) )
+    autocomplete_fields = [ 'trait_type', 'related_type' ]
+
+    fieldsets = [
+        (
+            None,
+            { 
+                'fields' : [ 'slug', 'name', 'label', 'trait_type', 'related_type', 'required', 'tags' ]
+            },
+        ),
+        (
+            "More details (Optional)",
+            {
+                "fields" : [ 'description', 'notes' ],
+                "classes" : ( "collapse", )
+            }
+        ),
+    ]
+
+    list_display = ( 'id', 'slug', 'name', 'label', 'trait_type', 'related_type', 'required', 'last_modified' )
+    list_display_links = ( 'id', 'slug', 'name', 'label' )
+    list_filter = [ 'related_type', 'trait_type' ]
+    search_fields = [ 'slug', 'name', 'label', 'trait_type', 'related_type', 'description', 'notes', 'id' ]
+    date_hierarchy = 'last_modified'
+
+#-- END TermAdmin admin model --#
+
+admin.site.register( Entity_Type_Trait, Entity_Type_TraitAdmin )
 
 
 #-------------------------------------------------------------------------------

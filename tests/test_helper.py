@@ -27,11 +27,13 @@ from django.core.management import call_command
 from django_config.models import Config_Property
 
 # python_utilities - logging
+from python_utilities.exceptions.exception_helper import ExceptionHelper
 from python_utilities.logging.logging_helper import LoggingHelper
 
 # context_text imports
 from context.models import Entity
 from context.models import Entity_Identifier
+from context.models import Entity_Trait
 
 #================================================================================
 # Shared variables and functions
@@ -69,6 +71,14 @@ class TestHelper( object ):
     TEST_ENTITY_IDENTIFIER_ID_TYPE = "made-up"
     TEST_ENTITY_IDENTIFIER_SOURCE = "my_brain"
     TEST_ENTITY_IDENTIFIER_NOTE = "default initialization notes"
+    
+    # Test Entity_Trait default information
+    TEST_ENTITY_TRAIT_NAME = "calliope_status"
+    TEST_ENTITY_TRAIT_SLUG = TEST_ENTITY_TRAIT_NAME
+    TEST_ENTITY_TRAIT_VALUE = "calliope_status_value"
+    TEST_ENTITY_TRAIT_VALUE_JSON = "{ 'calliope_status': 'calliope_status_value' }"
+    TEST_ENTITY_TRAIT_LABEL = "important"
+    TEST_ENTITY_TRAIT_DESCRIPTION = "The calliope status for this important thing."    
 
 
     #----------------------------------------------------------------------------
@@ -135,6 +145,51 @@ class TestHelper( object ):
         return instance_OUT
 
     #-- END method create_test_entity_identifier() --#
+
+
+    @classmethod
+    def create_test_entity_trait( cls, entity_instance_IN ):
+        
+        '''
+        Contents:
+        
+        #entity = models.ForeignKey( "Entity", on_delete = models.CASCADE )
+        name = models.CharField( max_length = 255 )
+        slug = models.SlugField( blank = True, null = True )
+        value = models.CharField( max_length = 255, blank = True, null = True )
+        value_json = JSONField( blank = True, null = True )
+        label = models.CharField( max_length = 255, blank = True, null = True )
+        description = models.TextField( blank = True )
+    
+        # context
+        trait_type = models.ForeignKey( "Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
+        term = models.ForeignKey( "Term", on_delete = models.SET_NULL, blank = True, null = True )
+        '''
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        trait_instance = None
+        
+        # create entity
+        trait_instance = Entity_Trait()
+        
+        # set some values
+        trait_instance.name = cls.TEST_ENTITY_TRAIT_NAME
+        trait_instance.slug = cls.TEST_ENTITY_TRAIT_SLUG
+        trait_instance.value = cls.TEST_ENTITY_TRAIT_VALUE
+        trait_instance.value_json = cls.TEST_ENTITY_TRAIT_VALUE_JSON
+        trait_instance.label = cls.TEST_ENTITY_TRAIT_LABEL
+        trait_instance.description = cls.TEST_ENTITY_TRAIT_DESCRIPTION
+        trait_instance.entity = entity_instance_IN
+        trait_instance.save()
+        
+        # return it
+        instance_OUT = trait_instance
+        return instance_OUT
+
+    #-- END method create_test_entity_trait() --#
 
 
     @classmethod
@@ -262,6 +317,7 @@ class TestHelper( object ):
         status_instance = None
         fixture_list = None
         current_fixture = ""
+        exception_message = None
         
         print( "\nIn context.TestHelper." + me + "(): starting standardSetUp." )
         
@@ -308,6 +364,13 @@ class TestHelper( object ):
                 # looks like there was a problem.
                 status_instance.setup_error_count += 1
                 status_instance.setup_error_list.append( current_fixture )
+                
+                # log Exception
+                exception_message = "Exception thrown loading fixture {}".format( current_fixture )
+                ExceptionHelper.log_exception( e,
+                                               message_IN = exception_message,
+                                               method_IN = me,
+                                               do_print_IN = True )
                 
             #-- END try/except --#
             
