@@ -318,9 +318,9 @@ class Abstract_Relation( Abstract_Context_With_JSON ):
 @python_2_unicode_compatible
 class Abstract_Trait( Abstract_Context_Parent ):
 
-    #----------------------------------------------------------------------
-    # model fields and meta
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------------
+    # ! ----> model fields and meta
+    #---------------------------------------------------------------------------
 
 
     #entity = models.ForeignKey( "Entity", on_delete = models.CASCADE )
@@ -336,9 +336,10 @@ class Abstract_Trait( Abstract_Context_Parent ):
     term = models.ForeignKey( "Term", on_delete = models.SET_NULL, blank = True, null = True )
 
 
-    #----------------------------------------------------------------------
-    # Meta
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------------
+    # ! ----> Meta
+    #---------------------------------------------------------------------------
+
 
     # Meta-data for this class.
     class Meta:
@@ -347,9 +348,120 @@ class Abstract_Trait( Abstract_Context_Parent ):
         
     #-- END class Meta --#
 
+
     #----------------------------------------------------------------------
-    # instance methods
+    # ! ----> class variables
     #----------------------------------------------------------------------
+
+
+    DEBUG = False
+
+
+    #----------------------------------------------------------------------
+    # ! ----> class methods
+    #----------------------------------------------------------------------
+
+
+    @classmethod
+    def filter_trait_qs( cls,
+                         trait_qs_IN,
+                         name_IN,
+                         slug_IN = None,
+                         label_IN = None,
+                         *args,
+                         **kwargs ):
+        
+        '''
+        Shared method to perform filtering of trait QuerySets based on fields
+            contained in this abstract class.  Should be called first in child
+            filter methods, then they can do additional filtering from there.
+        '''
+        
+        # return reference
+        trait_qs_OUT = None
+        
+        # declare variables
+        me = "filter_trait_qs"
+        debug_flag = cls.DEBUG
+        debug_message = None
+        trait_qs = None
+        trait_count = None
+        trait_instance = None        
+        
+        if ( debug_flag == True ):
+            debug_message = "Inputs: trait_qs: {}; name: {}; slug: {}; label: {}".format( trait_qs_IN, name_IN, slug_IN, label_IN )
+            output_debug(  debug_message, me )
+        #-- END DEBUG --#
+        
+        # init
+        trait_qs = trait_qs_IN
+        
+        # make sure we have a QuerySet
+        if ( trait_qs is not None ):
+            
+            # make sure we have a name
+            if ( ( name_IN is not None ) and ( name_IN != "" ) ):
+            
+                # look up name in Entity's trait set.
+                trait_qs = trait_qs.filter( name = name_IN )
+                trait_count = trait_qs.count()
+                
+            #-- END check to see if name. --#
+                
+            if ( debug_flag == True ):
+                debug_message = "after name filter (name_IN = {}), result count: {}".format( name_IN, trait_qs.count() )
+                output_debug( debug_message, me )
+            #-- END DEBUG --#
+            
+            # got a slug?
+            if ( slug_IN is not None ):
+            
+                # also filter on slug
+                trait_qs = trait_qs.filter( slug = slug_IN )
+                
+            #-- END check to see if slug --#
+            
+            if ( debug_flag == True ):
+                debug_message = "after slug filter (slug_IN = {}), result count: {}".format( slug_IN, trait_qs.count() )
+                output_debug( debug_message, me )
+            #-- END DEBUG --#
+            
+            # got a label?
+            if ( label_IN is not None ):
+            
+                # also filter on label
+                trait_qs = trait_qs.filter( label = label_IN )
+                
+            #-- END check to see if label --#
+            
+            if ( debug_flag == True ):
+                debug_message = "after label filter (label_IN = {}), result count: {}".format( label_IN, trait_qs.count() )
+                output_debug( debug_message, me )
+            #-- END DEBUG --#
+            
+            # How many traits match?
+            trait_count = trait_qs.count()
+                            
+            # return QuerySet
+            trait_qs_OUT = trait_qs
+                    
+        else:
+        
+            # error
+            debug_message = "ERROR - no trait QuerySet passed in, can't process."
+            output_debug( debug_message, me )
+            trait_qs_OUT = trait_qs_IN
+            
+        #-- END check to see if QuerySet passed in --#
+
+        return trait_qs_OUT
+        
+    #-- END class method filter_trait_qs() --#
+    
+
+    #---------------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #---------------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
@@ -361,6 +473,12 @@ class Abstract_Trait( Abstract_Context_Parent ):
 
     
     # use parent def __str__( self ):
+
+
+    #---------------------------------------------------------------------------
+    # ! ----> instance methods
+    #---------------------------------------------------------------------------
+    
 
 #-- END model Abstract_Trait --#
 
@@ -927,39 +1045,10 @@ class Entity( Abstract_Context_With_JSON ):
         if ( ( name_IN is not None ) and ( name_IN != "" ) ):
         
             # look up name in Entity's trait set.
-            trait_qs = self.entity_trait_set.filter( name = name_IN )
-            trait_count = trait_qs.count()
+            trait_qs = self.entity_trait_set.all()
             
-            if ( debug_flag == True ):
-                debug_message = "after name filter (name_IN = {}), result count: {}".format( name_IN, trait_qs.count() )
-                output_debug( debug_message, me )
-            #-- END DEBUG --#
-            
-            # got a slug?
-            if ( slug_IN is not None ):
-            
-                # also filter on slug
-                trait_qs = trait_qs.filter( slug = slug_IN )
-                
-            #-- END check to see if slug --#
-            
-            if ( debug_flag == True ):
-                debug_message = "after slug filter (slug_IN = {}), result count: {}".format( slug_IN, trait_qs.count() )
-                output_debug( debug_message, me )
-            #-- END DEBUG --#
-            
-            # got a label?
-            if ( label_IN is not None ):
-            
-                # also filter on label
-                trait_qs = trait_qs.filter( label = label_IN )
-                
-            #-- END check to see if label --#
-            
-            if ( debug_flag == True ):
-                debug_message = "after label filter (label_IN = {}), result count: {}".format( label_IN, trait_qs.count() )
-                output_debug( debug_message, me )
-            #-- END DEBUG --#
+            # filter on name, slug, and label.
+            trait_qs = Abstract_Trait.filter_trait_qs( trait_qs, name_IN, slug_IN = slug_IN, label_IN = label_IN )
             
             # got an Entity_Type_Trait instance?
             if ( entity_type_trait_IN is not None ):
