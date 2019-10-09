@@ -1011,6 +1011,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "identifier with name {} --> count {} should = {}".format( id_name, id_count, should_be )
         self.assertEqual( id_count, should_be, msg = error_string )
 
+        # ! ==> create an identifier with a type.
+        
         # create an identifier with a type.  Make sure the meta-information was updated.
         id_name = "SSN"
         id_uuid = "123456789"
@@ -1044,7 +1046,7 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "identifier UUID {} --> should be {}".format( id_stored_uuid, should_be )
         self.assertEqual( id_stored_uuid, should_be, msg = error_string )
         
-        # update the identifier's UUID.  Make sure the value changes.
+        # ! ==> update the identifier's UUID.  Make sure the value changes.
         id_name = entity_identifier_type.name
         id_uuid = "6"
         id_instance = entity_instance.set_identifier( id_uuid, name_IN = id_name, entity_identifier_type_IN = entity_identifier_type )
@@ -1086,7 +1088,43 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "trait value {} --> should NOT be {}".format( id_stored_uuid, should_not_be )
         self.assertNotEqual( id_stored_uuid, should_not_be, msg = error_string )
 
-        # add a trait with a trait type that includes a vocabulary, and then a term...?
+        # ! ==> create an identifier with a type, override source.
+        
+        # create an identifier with a type.  Make sure the meta-information was updated.
+        id_name = "opencalais_ID"
+        id_uuid = "1234567abcdefgjlmnqrswz"
+        id_source = "all_trains"
+        original_id_uuid = id_uuid
+        entity_identifier_type = Entity_Identifier_Type.get_type_for_name( self.ID_TYPE_NAME_OPENCALAIS )
+        id_instance = entity_instance.set_identifier( id_uuid, name_IN = id_name, source_IN = id_source, entity_identifier_type_IN = entity_identifier_type )
+        original_id_id = id_instance.id
+        id_stored_name = id_instance.name
+        id_stored_source = id_instance.source
+        id_stored_uuid = id_instance.uuid
+        
+        # check id count
+        id_qs = entity_instance.entity_identifier_set.all()
+        id_count = id_qs.count()
+        should_be = 3
+        error_string = "identifier count {} should = {}".format( id_count, should_be )
+        self.assertEqual( id_count, should_be, msg = error_string )
+
+        # stored name, source, and id_type should be set from specification.
+        should_be = entity_identifier_type.name
+        error_string = "identifier name {} --> should be {}".format( id_stored_name, should_be )
+        self.assertEqual( id_stored_name, should_be, msg = error_string )
+        
+        # source
+        should_be = id_source
+        error_string = "identifier source {} --> should be {}".format( id_stored_source, should_be )
+        self.assertEqual( id_stored_source, should_be, msg = error_string )
+        
+        # value should be set, too.
+        should_be = id_uuid
+        error_string = "identifier UUID {} --> should be {}".format( id_stored_uuid, should_be )
+        self.assertEqual( id_stored_uuid, should_be, msg = error_string )
+        
+        # ! TODO - add a trait with a trait type that includes a vocabulary, and then a term...?
         
     #-- END test method test_set_identifier() --#
 

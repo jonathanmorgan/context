@@ -177,6 +177,10 @@ Specific sets of tests:
     
             python manage.py test context.tests.models.test_Entity_Identifier_model
 
+    - test Entity_Trait model
+    
+            python manage.py test context.tests.models.test_Entity_Trait_model
+
     - test Entity model
     
             python manage.py test context.tests.models.test_Entity_model

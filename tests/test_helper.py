@@ -76,7 +76,7 @@ class TestHelper( object ):
     TEST_ENTITY_TRAIT_NAME = "calliope_status"
     TEST_ENTITY_TRAIT_SLUG = TEST_ENTITY_TRAIT_NAME
     TEST_ENTITY_TRAIT_VALUE = "calliope_status_value"
-    TEST_ENTITY_TRAIT_VALUE_JSON = "{ 'calliope_status': 'calliope_status_value' }"
+    TEST_ENTITY_TRAIT_VALUE_JSON = '{ "calliope_status": "calliope_status_value" }'
     TEST_ENTITY_TRAIT_LABEL = "important"
     TEST_ENTITY_TRAIT_DESCRIPTION = "The calliope status for this important thing."    
 

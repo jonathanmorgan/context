@@ -17,6 +17,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 # Imports
 #================================================================================
 
+# python imports
+import datetime
+import json
 
 # Django imports
 from django.contrib.auth.models import User
@@ -48,7 +51,7 @@ from context.shared.models import Abstract_UUID
 Debugging code, shared across all models.
 '''
 
-DEBUG = True
+DEBUG = False
 DEFAULT_LOGGER_NAME = "context.models"
 
 def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = DEFAULT_LOGGER_NAME ):
@@ -479,6 +482,167 @@ class Abstract_Trait( Abstract_Context_Parent ):
     # ! ----> instance methods
     #---------------------------------------------------------------------------
     
+    
+    def get_trait_value( self ):
+
+        '''
+        Retrieves the trait's value.  If value contains a "term", that takes
+            precedence over the "value, so returns the Term's value.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        term_instance = None
+        my_value = None
+        my_value_json = None
+        
+        # got a term instance?
+        term_instance = self.term
+        if ( term_instance is not None ):
+        
+            # there is a term.  Return its value.
+            value_OUT = term_instance.value
+            
+        else:
+        
+            # no term.  Is there a value?  If so, return it.
+            my_value = self.value
+            my_value_json = self.value_json
+            if ( my_value is not None ):
+                
+                # there is a value.  Return it.
+                value_OUT = self.value
+                
+            elif ( my_value_json is not None ):
+            
+                # no value, but there is JSON.  Return it.
+                value_OUT = self.value_json
+                
+            else:
+            
+                # no value or JSON value.  Return None.
+                value_OUT = None
+                
+            #-- END check to see if value or value JSON --#
+            
+        #-- END check to see if term instance --#
+        
+        return value_OUT
+        
+    #-- END method get_trait_value --#
+
+
+    def get_trait_value_as_str( self ):
+        
+        '''
+        retrieve value, cast to str, then return.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # get value.
+        value_OUT = self.get_trait_value()
+        
+        # convert to string.
+        value_OUT = str( value_OUT )
+        
+        return value_OUT
+        
+    #-- END method get_trait_value_as_str() --#
+    
+
+    def get_trait_value_as_int( self ):
+        
+        '''
+        retrieve value, cast to int, then return.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # get value.
+        value_OUT = self.get_trait_value()
+        
+        # convert to int.
+        value_OUT = int( value_OUT )
+        
+        return value_OUT
+        
+    #-- END method get_trait_value_as_int() --#
+    
+
+    def get_trait_value_as_datetime( self, datetime_format_string_IN ):
+        
+        '''
+        retrieve value, convert to datetime using format string passed in,
+            return the result.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # get value.
+        value_OUT = self.get_trait_value()
+        
+        # convert to int.
+        value_OUT = datetime.datetime.strptime( value_OUT, datetime_format_string_IN )
+        
+        return value_OUT
+        
+    #-- END method get_trait_value_as_datetime() --#
+    
+
+    def get_trait_value_as_json( self ):
+        
+        '''
+        retrieve value, convert to datetime using format string passed in,
+            return the result.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # get value.
+        value_OUT = self.get_trait_value()
+        
+        # convert to int.
+        value_OUT = json.loads( value_OUT )
+        
+        return value_OUT
+        
+    #-- END method get_trait_value_as_json() --#
+    
+
+    def get_value_json( self, do_parse_IN = True ):
+
+        '''
+        Retrieves the trait's value.  If value contains a "term", that takes
+            precedence over the "value, so returns the Term's value.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        
+        # get from instance
+        value_OUT = self.value_json
+
+        # are we to parse?
+        if ( do_parse_IN == True ):
+        
+            # yes.
+            value_OUT = json.loads( value_OUT )
+            
+        #-- END check if we are to parse --#
+        
+        return value_OUT
+        
+    #-- END method get_value_json --#
+
 
 #-- END model Abstract_Trait --#
 
@@ -1496,36 +1660,34 @@ class Entity( Abstract_Context_With_JSON ):
                     id_instance.set_entity_identifier_type( entity_identifier_type_IN )
                     is_updated = True
                     
-                else:
+                #-- END check to see if type passed in. --#
                 
-                    # no - set manually.
+                # then, update with other parameters if they are passed in.
 
-                    # --> id_type
-                    if ( id_type_IN is not None ):
+                # --> id_type
+                if ( id_type_IN is not None ):
+                
+                    id_instance.id_type = id_type_IN
+                    is_updated = True
                     
-                        id_instance.id_type = id_type_IN
-                        is_updated = True
-                        
-                    #-- END id_type --#
+                #-- END id_type --#
 
-                    # --> source
-                    if ( source_IN is not None ):
+                # --> source
+                if ( source_IN is not None ):
+                
+                    id_instance.source = source_IN
+                    is_updated = True
                     
-                        id_instance.source = source_IN
-                        is_updated = True
-                        
-                    #-- END source --#
+                #-- END source --#
 
-                    # --> notes
-                    if ( notes_IN is not None ):
+                # --> notes
+                if ( notes_IN is not None ):
+                
+                    id_instance.notes = notes_IN
+                    is_updated = True
                     
-                        id_instance.notes = notes_IN
-                        is_updated = True
-                        
-                    #-- END notes --#
+                #-- END notes --#
 
-                #-- END check to see if trait definition from trait type passed in --#
-            
                 # --> UUID
                 if ( uuid_IN is not None ):
                 
