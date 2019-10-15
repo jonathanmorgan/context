@@ -39,6 +39,8 @@ from python_utilities.logging.logging_helper import LoggingHelper
 from python_utilities.strings.string_helper import StringHelper
 
 # context imports
+from context.models import Abstract_Context_With_JSON
+from context.models import Entity
 from context.shared.person_details import PersonDetails
 
 
@@ -51,7 +53,7 @@ from context.shared.person_details import PersonDetails
 Debugging code, shared across all models.
 '''
 
-DEBUG = True
+DEBUG = False
 DEFAULT_LOGGER_NAME = "context.shared.models"
 
 def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = DEFAULT_LOGGER_NAME ):
@@ -87,173 +89,52 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
 #================================================================================
 
 
-# Abstract_Context_Parent model
+# Abstract_Entity_Container model
 @python_2_unicode_compatible
-class Abstract_Context_Parent( models.Model ):
+class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
-    #----------------------------------------------------------------------
-    # model fields and meta
-    #----------------------------------------------------------------------
-
-    notes = models.TextField( blank = True, null = True )
-    
-    # tags!
-    tags = TaggableManager( blank = True )
-
-    # time stamps.
-    create_date = models.DateTimeField( auto_now_add = True )
-    last_modified = models.DateTimeField( auto_now = True )
-
-    #----------------------------------------------------------------------
-    # Meta
-    #----------------------------------------------------------------------
-
-    # Meta-data for this class.
-    class Meta:
-
-        abstract = True
-        ordering = [ 'last_modified' ]
-        
-    #-- END class Meta --#
-
-    #----------------------------------------------------------------------
-    # instance methods
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------------
+    # ! ----> model fields and meta
+    #---------------------------------------------------------------------------
 
 
-    def __init__( self, *args, **kwargs ):
-        
-        # call parent __init()__ first.
-        super( Abstract_Context_Parent, self ).__init__( *args, **kwargs )
-
-    #-- END method __init__() --#
-
-
-    def __str__( self ):
- 
-        # return reference
-        string_OUT = ''
-        
-        # declare variables
-        string_list = []
-        
-        # id
-        if ( self.id is not None ):
-        
-            string_list.append( str( self.id ) )
-            
-        #-- END check to see if ID --#
-        
-        string_list.append( "Abstract_Context_Parent __str__() method" )
-        string_list.append( "write a child version!" )
- 
-        string_OUT += " - ".join( string_list )
- 
-        return string_OUT
-
-    #-- END method __str__() --#
-
-#-- END abstract model Abstract_Context_Parent --#
-
-
-# Abstract_Context_With_JSON model
-@python_2_unicode_compatible
-class Abstract_Context_With_JSON( Abstract_Context_Parent ):
-
-    #----------------------------------------------------------------------
-    # model fields and meta
-    #----------------------------------------------------------------------
-
-    # from parent:
-    #notes = models.TextField( blank = True, null = True )
-    
-    # tags!
-    #tags = TaggableManager( blank = True )
-
-    # time stamps.
-    #create_date = models.DateTimeField( auto_now_add = True )
-    #last_modified = models.DateTimeField( auto_now = True )
-
-    # JSON field to hold structured related information.
-    details_json = JSONField( blank = True, null = True )
-    
-
-    #----------------------------------------------------------------------
-    # Meta
-    #----------------------------------------------------------------------
-
-    # Meta-data for this class.
-    class Meta:
-
-        abstract = True
-        ordering = [ 'last_modified' ]
-        
-    #-- END class Meta --#
-
-    #----------------------------------------------------------------------
-    # instance methods
-    #----------------------------------------------------------------------
-
-
-    def __init__( self, *args, **kwargs ):
-        
-        # call parent __init()__ first.
-        super( Abstract_Context_With_JSON, self ).__init__( *args, **kwargs )
-
-    #-- END method __init__() --#
-
-
-    def __str__( self ):
- 
-        # return reference
-        string_OUT = ''
-        
-        # declare variables
-        string_list = []
-        
-        # id
-        if ( self.id is not None ):
-        
-            string_list.append( str( self.id ) )
-            
-        #-- END check to see if ID --#
-        
-        string_list.append( "Abstract_Context_With_JSON __str__() method" )
-        string_list.append( "write a child version!" )
- 
-        string_OUT += " - ".join( string_list )
- 
-        return string_OUT
-
-    #-- END method __str__() --#
-
-#-- END abstract model Abstract_Context_With_JSON --#
-
-
-# Abstract_UUID model
-@python_2_unicode_compatible
-class Abstract_UUID( models.Model ):
-
-    name = models.CharField( max_length = 255, null = True, blank = True )
-    uuid = models.TextField( blank = True, null = True )
-    id_type = models.CharField( max_length = 255, null = True, blank = True )
-    source = models.CharField( max_length = 255, null = True, blank = True )
-    notes = models.TextField( blank = True, null = True )
+    entity = models.ForeignKey( Entity, on_delete = models.SET_NULL, blank = True, null = True )
 
     # meta class so we know this is an abstract class.
     class Meta:
+
         abstract = True
-        ordering = [ 'id_type', 'source', 'name', 'uuid' ]
+        
+    #-- END class Meta --#
+
+
 
     #----------------------------------------------------------------------
-    # methods
+    # ! ----> class variables
     #----------------------------------------------------------------------
+
+
+    #----------------------------------------------------------------------
+    # NOT instance variables
+    # Class variables - overriden by __init__() per instance if same names, but
+    #    if not set there, shared!
+    #----------------------------------------------------------------------
+
+
+    #----------------------------------------------------------------------
+    # ! ----> class methods
+    #----------------------------------------------------------------------
+
+
+    #---------------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #---------------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
         
         # call parent __init()__ first.
-        super( Abstract_UUID, self ).__init__( *args, **kwargs )
+        super( Abstract_Entity_Container, self ).__init__( *args, **kwargs )
 
         # then, initialize variable.
         self.bs_helper = None
@@ -262,55 +143,97 @@ class Abstract_UUID( models.Model ):
 
 
     def __str__( self ):
-        
+
         # return reference
         string_OUT = ""
         
-        # declare variables
-        prefix_string = ""
+        string_OUT = self.to_string()
         
-        if ( self.id ):
-        
-            # yes. output.
-            string_OUT += str( self.id )
-            prefix_string = " - "
-
-        #-- END check to see if ID --#
-
-        if ( self.name ):
-        
-            string_OUT += prefix_string + self.name
-            prefix_string = " - "
-            
-        #-- END check to see if name. --#
-            
-        if ( self.source ):
-        
-            string_OUT += prefix_string + " ( " + self.source + " )"
-            prefix_string = " - "
-            
-        #-- END check to see if source. --#
-            
-        if ( self.uuid ):
-        
-            string_OUT += prefix_string + self.uuid
-            prefix_string = " - "
-            
-        #-- END check to see if uuid. --#
-            
-        if ( self.id_type ):
-        
-            string_OUT += "{} ( {} )".format( prefix_string, self.id_type )
-            prefix_string = " - "
-            
-        #-- END check to see if id_type. --#
-            
         return string_OUT
-        
+
     #-- END method __str__() --#
 
 
-#= End Abstract_UUID Model ======================================================
+    #---------------------------------------------------------------------------
+    # ! ----> instance methods
+    #---------------------------------------------------------------------------
+    
+    
+    def get_entity( self, *args, **kwargs ):
+        
+        '''
+        Returns entity nested in this instance.
+        Preconditions: None
+        Postconditions: None
+        
+        Returns the entity stored in the instance.
+        '''
+        
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        me = "get_entity"
+
+        # return the content.
+        value_OUT = self.entity
+                
+        return value_OUT
+
+    #-- END method get_entity() --#
+
+
+    def set_entity( self, value_IN = "", *args, **kwargs ):
+        
+        '''
+        Accepts a reference to an Entity instance.  Stores it in this instance's
+            entity variable.
+        Preconditions: None
+        Postconditions: None
+        
+        Returns the entity as it is stored in the instance.
+        '''
+        
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        me = "set_entity"
+
+        # set the value in the instance.
+        self.entity = value_IN
+        
+        # return the entity.
+        value_OUT = self.entity
+                
+        return value_OUT
+
+    #-- END method set_entity() --#
+    
+
+    def to_string( self ):
+
+        # return reference
+        string_OUT = ""
+        
+        if ( self.id ):
+            
+            string_OUT += str( self.id ) + " - "
+            
+        #-- END check to see if ID --#
+             
+        if ( self.entity ):
+        
+            string_OUT += self.entity
+            
+        #-- END check to see if content_description --#
+        
+        return string_OUT
+
+    #-- END method to_string() --#
+
+
+#-- END abstract Abstract_Entity_Container model --#
 
 
 # Abstract_Related_Content model
@@ -735,7 +658,7 @@ class Abstract_Location( models.Model ):
 
 # AbstractOrganization model
 @python_2_unicode_compatible
-class Abstract_Organization( models.Model ):
+class Abstract_Organization( Abstract_Entity_Container ):
 
     name = models.CharField( max_length = 255 )
     description = models.TextField( blank = True )
@@ -769,11 +692,12 @@ class Abstract_Organization( models.Model ):
 
 # Abstract_Person_Parent model
 @python_2_unicode_compatible
-class Abstract_Person_Parent( models.Model ):
+class Abstract_Person_Parent( Abstract_Entity_Container ):
 
     #----------------------------------------------------------------------
-    # model fields and meta
+    # ! ----> model fields and meta
     #----------------------------------------------------------------------
+
 
     # moving title up from Article_Person
     title = models.CharField( max_length = 255, blank = True, null = True )
@@ -781,14 +705,20 @@ class Abstract_Person_Parent( models.Model ):
     #organization = models.ForeignKey( Organization, on_delete = models.SET_NULL, blank = True, null = True )
     organization_string = models.CharField( max_length = 255, blank = True, null = True )
     more_organization = models.TextField( blank = True, null = True )
-    notes = models.TextField( blank = True, null = True )
     
     # field to store how person was captured.
     capture_method = models.CharField( max_length = 255, blank = True, null = True )
 
+    # moved up to parent
+    #notes = models.TextField( blank = True, null = True )
+    #create_date = models.DateTimeField( auto_now_add = True )
+    #last_modified = models.DateTimeField( auto_now = True )
+
+
     #----------------------------------------------------------------------
-    # Meta
+    # ! ----> Meta
     #----------------------------------------------------------------------
+
 
     # Meta-data for this class.
     class Meta:
@@ -797,9 +727,10 @@ class Abstract_Person_Parent( models.Model ):
         
     #-- END class Meta --#
 
-    #----------------------------------------------------------------------
-    # ! instance methods
-    #----------------------------------------------------------------------
+
+    #---------------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #---------------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
@@ -847,6 +778,11 @@ class Abstract_Person_Parent( models.Model ):
         return string_OUT
 
     #-- END method __str__() --#
+
+
+    #----------------------------------------------------------------------
+    # ! ----> instance methods
+    #----------------------------------------------------------------------
 
 
     def set_capture_method( self, value_IN = "", overwrite_IN = False ):
@@ -1369,15 +1305,15 @@ class Abstract_Person( Abstract_Person_Parent ):
     gender = models.CharField( max_length = 6, choices = GENDER_CHOICES, blank = True, null = True )
     nameparser_pickled = models.TextField( blank = True, null = True )
     is_ambiguous = models.BooleanField( default = False )
+
     # moved up to parent
     #notes = models.TextField( blank = True, null = True )
+    #create_date = models.DateTimeField( auto_now_add = True )
+    #last_modified = models.DateTimeField( auto_now = True )
     
     # field to store how source was captured - moved up to parent.
     # capture_method = models.CharField( max_length = 255, blank = True, null = True )
 
-    # time stamps.
-    create_date = models.DateTimeField( auto_now_add = True )
-    last_modified = models.DateTimeField( auto_now = True )
 
     # Meta-data for this class.
     class Meta:

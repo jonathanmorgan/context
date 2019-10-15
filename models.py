@@ -36,11 +36,6 @@ from taggit.managers import TaggableManager
 # python_utilities - logging
 from python_utilities.logging.logging_helper import LoggingHelper
 
-# shared abstract models.
-from context.shared.models import Abstract_Context_Parent
-from context.shared.models import Abstract_Context_With_JSON
-from context.shared.models import Abstract_UUID
-
 
 #================================================================================
 # Shared variables and functions
@@ -85,6 +80,149 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
 #================================================================================
 # ! ==> Abstract Models
 #================================================================================
+
+
+# Abstract_Context_Parent model
+@python_2_unicode_compatible
+class Abstract_Context_Parent( models.Model ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+    notes = models.TextField( blank = True, null = True )
+    
+    # tags!
+    tags = TaggableManager( blank = True )
+
+    # time stamps.
+    create_date = models.DateTimeField( auto_now_add = True )
+    last_modified = models.DateTimeField( auto_now = True )
+
+    #----------------------------------------------------------------------
+    # Meta
+    #----------------------------------------------------------------------
+
+    # Meta-data for this class.
+    class Meta:
+
+        abstract = True
+        ordering = [ 'last_modified' ]
+        
+    #-- END class Meta --#
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Context_Parent, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        string_list.append( "Abstract_Context_Parent __str__() method" )
+        string_list.append( "write a child version!" )
+ 
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+
+#-- END abstract model Abstract_Context_Parent --#
+
+
+# Abstract_Context_With_JSON model
+@python_2_unicode_compatible
+class Abstract_Context_With_JSON( Abstract_Context_Parent ):
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+    # from parent:
+    #notes = models.TextField( blank = True, null = True )
+    
+    # tags!
+    #tags = TaggableManager( blank = True )
+
+    # time stamps.
+    #create_date = models.DateTimeField( auto_now_add = True )
+    #last_modified = models.DateTimeField( auto_now = True )
+
+    # JSON field to hold structured related information.
+    details_json = JSONField( blank = True, null = True )
+    
+
+    #----------------------------------------------------------------------
+    # Meta
+    #----------------------------------------------------------------------
+
+    # Meta-data for this class.
+    class Meta:
+
+        abstract = True
+        ordering = [ 'last_modified' ]
+        
+    #-- END class Meta --#
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Context_With_JSON, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        string_list.append( "Abstract_Context_With_JSON __str__() method" )
+        string_list.append( "write a child version!" )
+ 
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+
+#-- END abstract model Abstract_Context_With_JSON --#
 
 
 # Abstract_Identifier_Type model
@@ -231,6 +369,99 @@ class Abstract_Identifier_Type( Abstract_Context_Parent ):
     
 
 #= End Abstract_Identifier_Type Model ======================================================
+
+
+# Abstract_Related_Type_Trait model
+@python_2_unicode_compatible
+class Abstract_Related_Type_Trait( Abstract_Context_Parent ):
+
+
+    '''
+    Used to capture the traits that should be associated with an entity relation
+        type.
+    '''
+
+
+    #----------------------------------------------------------------------
+    # model fields and meta
+    #----------------------------------------------------------------------
+
+
+    related_type = None
+    name = models.CharField( max_length = 255 )
+    slug = models.SlugField()
+    label = models.CharField( max_length = 255, blank = True, null = True )
+    description = models.TextField( blank = True )
+    required = models.BooleanField( default = False )
+
+    # context
+    trait_type = models.ForeignKey( "Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
+
+
+    #----------------------------------------------------------------------
+    # Meta
+    #----------------------------------------------------------------------
+
+
+    # Meta-data for this class.
+    class Meta:
+
+        abstract = True
+        ordering = [ 'last_modified' ]
+        
+    #-- END class Meta --#
+
+
+    #----------------------------------------------------------------------
+    # instance methods
+    #----------------------------------------------------------------------
+
+
+    def __init__( self, *args, **kwargs ):
+        
+        # call parent __init()__ first.
+        super( Abstract_Related_Type_Trait, self ).__init__( *args, **kwargs )
+
+    #-- END method __init__() --#
+
+    
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got name?
+        if ( self.name is not None ):
+        
+            string_list.append( str( self.name ) )
+            
+        #-- END check for name. --#
+
+        # got slug?
+        if ( self.slug is not None ):
+        
+            string_list.append( "( {} )".format( str( self.slug ) ) )
+            
+        #-- END check to see if slug. --#
+        
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+
+
+#-- END model Abstract_Related_Type_Trait --#
 
 
 # Abstract_Relation model
@@ -728,97 +959,87 @@ class Abstract_Type( Abstract_Context_Parent ):
 #-- END model Abstract_Type --#
 
 
-# Abstract_Related_Type_Trait model
+# Abstract_UUID model
 @python_2_unicode_compatible
-class Abstract_Related_Type_Trait( Abstract_Context_Parent ):
+class Abstract_UUID( models.Model ):
 
+    name = models.CharField( max_length = 255, null = True, blank = True )
+    uuid = models.TextField( blank = True, null = True )
+    id_type = models.CharField( max_length = 255, null = True, blank = True )
+    source = models.CharField( max_length = 255, null = True, blank = True )
+    notes = models.TextField( blank = True, null = True )
 
-    '''
-    Used to capture the traits that should be associated with an entity relation
-        type.
-    '''
-
-
-    #----------------------------------------------------------------------
-    # model fields and meta
-    #----------------------------------------------------------------------
-
-
-    related_type = None
-    name = models.CharField( max_length = 255 )
-    slug = models.SlugField()
-    label = models.CharField( max_length = 255, blank = True, null = True )
-    description = models.TextField( blank = True )
-    required = models.BooleanField( default = False )
-
-    # context
-    trait_type = models.ForeignKey( "Trait_Type", on_delete = models.SET_NULL, blank = True, null = True )
-
-
-    #----------------------------------------------------------------------
-    # Meta
-    #----------------------------------------------------------------------
-
-
-    # Meta-data for this class.
+    # meta class so we know this is an abstract class.
     class Meta:
-
         abstract = True
-        ordering = [ 'last_modified' ]
-        
-    #-- END class Meta --#
-
+        ordering = [ 'id_type', 'source', 'name', 'uuid' ]
 
     #----------------------------------------------------------------------
-    # instance methods
+    # methods
     #----------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
         
         # call parent __init()__ first.
-        super( Abstract_Related_Type_Trait, self ).__init__( *args, **kwargs )
+        super( Abstract_UUID, self ).__init__( *args, **kwargs )
 
+        # then, initialize variable.
+        self.bs_helper = None
+        
     #-- END method __init__() --#
 
-    
+
     def __str__( self ):
- 
+        
         # return reference
-        string_OUT = ''
+        string_OUT = ""
         
         # declare variables
-        string_list = []
+        prefix_string = ""
         
-        # id
-        if ( self.id is not None ):
+        if ( self.id ):
         
-            string_list.append( str( self.id ) )
-            
+            # yes. output.
+            string_OUT += str( self.id )
+            prefix_string = " - "
+
         #-- END check to see if ID --#
-        
-        # got name?
-        if ( self.name is not None ):
-        
-            string_list.append( str( self.name ) )
-            
-        #-- END check for name. --#
 
-        # got slug?
-        if ( self.slug is not None ):
+        if ( self.name ):
         
-            string_list.append( "( {} )".format( str( self.slug ) ) )
+            string_OUT += prefix_string + self.name
+            prefix_string = " - "
             
-        #-- END check to see if slug. --#
+        #-- END check to see if name. --#
+            
+        if ( self.source ):
         
-        string_OUT += " - ".join( string_list )
- 
+            string_OUT += prefix_string + " ( " + self.source + " )"
+            prefix_string = " - "
+            
+        #-- END check to see if source. --#
+            
+        if ( self.uuid ):
+        
+            string_OUT += prefix_string + self.uuid
+            prefix_string = " - "
+            
+        #-- END check to see if uuid. --#
+            
+        if ( self.id_type ):
+        
+            string_OUT += "{} ( {} )".format( prefix_string, self.id_type )
+            prefix_string = " - "
+            
+        #-- END check to see if id_type. --#
+            
         return string_OUT
-
+        
     #-- END method __str__() --#
 
 
-#-- END model Abstract_Related_Type_Trait --#
+#= End Abstract_UUID Model ======================================================
 
 
 # Abstract_Work_Log model
