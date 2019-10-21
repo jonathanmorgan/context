@@ -137,7 +137,8 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
         super( Abstract_Entity_Container, self ).__init__( *args, **kwargs )
 
         # then, initialize variable.
-        self.bs_helper = None
+        self.my_entity_name_prefix = None
+        self.my_entity_type_slug = None
         
     #-- END method __init__() --#
 
@@ -181,6 +182,25 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
         return value_OUT
 
     #-- END method get_entity() --#
+
+
+    def load_entity( self, do_create_if_none_IN = True, *args, **kwargs ):
+        
+        '''
+        Tries to find the entity for this class instance in context.  If it
+            finds a match, stores it in instance, and returns it.
+        Preconditions: None
+        Postconditions: None
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        print( "ERROR - you need to implement your load_entity() method." )
+                
+        return value_OUT
+
+    #-- END method load_entity() --#
 
 
     def set_entity( self, value_IN = "", *args, **kwargs ):
@@ -231,6 +251,28 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
         return string_OUT
 
     #-- END method to_string() --#
+
+
+    def update_entity( self, *args, **kwargs ):
+        
+        '''
+        Looks for entity for this instance in context.  If not found, creates a
+            a new one and stores it in this instance.  Then, updates the entity
+            based on information in this model instance.  Returns the entity.
+        Preconditions: None
+        Postconditions: If no associated entity in context, creates one and
+            stores it internally.  Updates the entity in context based on
+            current contents of this instance.
+        '''
+        
+        # return reference
+        value_OUT = None
+        
+        print( "ERROR - you need to implement your update_entity() method." )
+                
+        return value_OUT
+
+    #-- END method update_entity() --#
 
 
 #-- END abstract Abstract_Entity_Container model --#
