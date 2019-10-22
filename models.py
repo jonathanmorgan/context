@@ -20,6 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 # python imports
 import datetime
 import json
+import logging
 
 # Django imports
 from django.contrib.auth.models import User
@@ -48,6 +49,35 @@ Debugging code, shared across all models.
 
 DEBUG = False
 DEFAULT_LOGGER_NAME = "context.models"
+
+def output_log_message( message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = DEFAULT_LOGGER_NAME, log_level_code_IN = logging.DEBUG, do_print_IN = False ):
+    
+    '''
+    Accepts message string.  If debug is on, logs it.  If not,
+       does nothing for now.
+    '''
+    
+    # declare variables
+    do_print = False
+
+    # got a message?
+    if ( message_IN ):
+    
+        # only print if debug is on.
+        do_print = DEBUG
+        
+        # call LoggingHelper method
+        LoggingHelper.log_message( message_IN,
+                                   method_IN = method_IN,
+                                   indent_with_IN = indent_with_IN,
+                                   logger_name_IN = logger_name_IN,
+                                   log_level_code_IN = log_level_code_IN,
+                                   do_print_IN = do_print_IN )
+    
+    #-- END check to see if message. --#
+
+#-- END method output_log_message() --#
+
 
 def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = DEFAULT_LOGGER_NAME ):
     
