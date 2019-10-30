@@ -1,7 +1,5 @@
 django
 django-ajax-selects
-django-basic-config
 django-json-widget
 django-taggit
 psycopg2
-python-utilities-jsm
