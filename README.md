@@ -1,6 +1,6 @@
 # context
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3523266.svg)](https://doi.org/10.5281/zenodo.3523266)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3523031.svg)](https://doi.org/10.5281/zenodo.3523031)
 
 Generalized django application framework for tracking entities and traits of and relations between them.
 
