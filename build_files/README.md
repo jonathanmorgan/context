@@ -26,7 +26,23 @@
 
 - [https://packaging.python.org/tutorials/packaging-projects/](https://packaging.python.org/tutorials/packaging-projects/)
 - semantic versioning: [https://semver.org/](https://semver.org/)
-- More details on all the options for setup.py: [https://packaging.python.org/guides/distributing-packages-using-setuptools/](https://packaging.python.org/guides/distributing-packages-using-setuptools/)
 - creating releases on github.com: [https://help.github.com/en/github/administering-a-repository/creating-releases](https://help.github.com/en/github/administering-a-repository/creating-releases)
 - making your code citable: [https://guides.github.com/activities/citable-code/](https://guides.github.com/activities/citable-code/)
 - packaging django apps: [https://docs.djangoproject.com/en/dev/intro/reusable-apps/](https://docs.djangoproject.com/en/dev/intro/reusable-apps/)
+
+## setup.py
+
+- More details on all the options for setup.py: https://packaging.python.org/guides/distributing-packages-using-setuptools/
+- Requirements: https://packaging.python.org/discussions/install-requires-vs-requirements/#install-requires-vs-requirements-files
+
+    - Must include hard requirements on the "install_requires" variable in call to setup(), not enough to have a requirements.txt file.
+
+- MANIFEST.in:
+
+    - Notes on manifest files from Visual Studio Code plugin: https://marketplace.visualstudio.com/items?itemName=benspaulding.python-manifest-template
+    - Actual manifest file template: https://github.com/benspaulding/vscode-python-manifest-template/blob/master/example/MANIFEST.in
+
+- Including the data files in MANIFEST.in in your package:
+
+    - https://setuptools.readthedocs.io/en/latest/setuptools.html#including-data-files
+    - Variables "package_data" and "include_package_data".

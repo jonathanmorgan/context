@@ -30,7 +30,12 @@ urlpatterns = [
     url( r'^index$', context.views.index, name = "context-index" ),
 
     # link the default authentication page to the admin login page.
-    url( r'^accounts/login/$', auth_views.LoginView.as_view( template_name = "registration/login.html" ), name = "context-login" ),
+    url( r'^accounts/login/$', auth_views.LoginView.as_view(), name = "context-login" ),
+
+    #url( r'^accounts/login/$', auth_views.LoginView.as_view( template_name = "registration/login.html" ), name = "context-login" ),
+    # Note: removed `template = "registration/index.html"` from the call to as_view, since:
+    # - it doesn't work when project is installed as a package.
+    # - it isn't needed - "registration/login.html" is the default.
     
     # created a view to log people out that redirects to server root.    
     url( r'^accounts/logout/$', context.views.logout, name = "context-logout" ),

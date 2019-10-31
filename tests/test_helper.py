@@ -53,7 +53,7 @@ class TestHelper( object ):
 
 
     # fixtures paths, in order they should be loaded.
-    FIXTURE_UNIT_TEST_CONTEXT_METADATA = "context/fixtures/context-sourcenet_entities_and_relations.json"
+    FIXTURE_UNIT_TEST_CONTEXT_METADATA = "context-sourcenet_entities_and_relations.json"
     FIXTURE_LIST = []
     FIXTURE_LIST.append( FIXTURE_UNIT_TEST_CONTEXT_METADATA )
     
