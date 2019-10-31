@@ -1,0 +1,7 @@
+include LICENSE
+include README.md
+recursive-include context/docs/*
+recursive-include context/build_files/*
+#recursive-include fixtures/*
+recursive-include static/*
+recursive-include templates/*
