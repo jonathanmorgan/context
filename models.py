@@ -1984,7 +1984,9 @@ class Entity_Identifier_Type( Abstract_Identifier_Type ):
     #----------------------------------------------------------------------
 
 
-    #name = models.CharField( max_length = 255, null = True, blank = True )
+    # inherited:
+    #name = models.SlugField( unique = True )
+    #label = models.CharField( max_length = 255, null = True, blank = True )
     #source = models.CharField( max_length = 255, null = True, blank = True )
     #notes = models.TextField( blank = True, null = True )
     type_list = models.ManyToManyField( 'Entity_Type', blank = True )

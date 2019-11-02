@@ -88,6 +88,36 @@
     }
 },
 {
+    "model": "context.entity_identifier_type",
+    "pk": 7,
+    "fields": {
+        "create_date": "2019-11-01T15:16:47.994Z",
+        "last_modified": "2019-11-01T15:16:47.994Z",
+        "name": "newspaper_sourcenet_id",
+        "label": "newspaper_sourcenet_id",
+        "source": "sourcenet",
+        "notes": "Django ID for a given newspaper.",
+        "type_list": [
+            7
+        ]
+    }
+},
+{
+    "model": "context.entity_identifier_type",
+    "pk": 8,
+    "fields": {
+        "create_date": "2019-11-01T15:27:29.526Z",
+        "last_modified": "2019-11-01T15:27:29.526Z",
+        "name": "newspaper_newsbank_code",
+        "label": "newspaper_newsbank_code",
+        "source": "Newsbank",
+        "notes": "3-letter code assigned to a given paper by NewsBank.",
+        "type_list": [
+            7
+        ]
+    }
+},
+{
     "model": "context.entity_relation_type",
     "pk": 1,
     "fields": {
