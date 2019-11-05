@@ -118,6 +118,21 @@
     }
 },
 {
+    "model": "context.entity_identifier_type",
+    "pk": 9,
+    "fields": {
+        "create_date": "2019-11-05T15:48:29.370Z",
+        "last_modified": "2019-11-05T15:48:29.370Z",
+        "name": "organization_sourcenet_id",
+        "label": "organization_sourcenet_id",
+        "source": "sourcenet",
+        "notes": "Sourcenet django ID for organization record.",
+        "type_list": [
+            6
+        ]
+    }
+},
+{
     "model": "context.entity_relation_type",
     "pk": 1,
     "fields": {

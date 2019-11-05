@@ -155,6 +155,9 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
         your project's tests.  Use the context_text Article model test file as a
         template:  `context_text/tests/models/test_Article_model.py` at
         https://github.com/jonathanmorgan/context_text.
+    - If you create one or more new Entity Identifier Types for your entity,
+        make sure to add them to the database, and then if you use fixtures for
+        testing, to whatever fixtures you use.
     '''
 
     #---------------------------------------------------------------------------
@@ -886,17 +889,27 @@ class Abstract_Location( models.Model ):
 
     
     def __str__( self ):
+
         # return reference
         string_OUT = ''
         delimiter = ''
 
         # see what we can place in the string.
-        if ( self.name != '' ):
-            string_OUT = '"' + self.name + '"'
+        if ( self.id is not None ):
+
+            string_OUT = "{} - ".format( self.id )
+            
+        #-- END check to see if ID --#
+
+        if ( ( self.name is not None ) and ( self.name != '' ) ):
+
+            string_OUT += '"{}"'.format( self.name )
             delimiter = ', '
+            
+        #-- END check to see if name --#
 
         if ( self.address != '' ):
-            string_OUT = string_OUT + delimiter + self.address
+            string_OUT += delimiter + self.address
             delimiter = ', '
 
         if ( self.city != '' ):
@@ -916,6 +929,8 @@ class Abstract_Location( models.Model ):
             delimiter = ', '
 
         return string_OUT
+        
+    #-- END method __str__() --#
 
 #= End Abstract_Location Model ===========================================================
 
@@ -946,10 +961,28 @@ class Abstract_Organization( Abstract_Entity_Container ):
 
     
     def __str__( self ):
-        string_OUT = self.name
-        return string_OUT
-    #-- END method __str_() --#
 
+        # return reference
+        string_OUT = ''
+        delimiter = ''
+
+        # see what we can place in the string.
+        if ( self.id is not None ):
+
+            string_OUT = "{} - ".format( self.id )
+            
+        #-- END check to see if ID --#
+
+        if ( ( self.name is not None ) and ( self.name != '' ) ):
+
+            string_OUT += "{}".format( self.name )
+            delimiter = ', '
+            
+        #-- END check to see if name --#
+
+        return string_OUT
+
+    #-- END method __str_() --#
 
 #= End Abstract_Organization Model ======================================================
 

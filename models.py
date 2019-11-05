@@ -993,6 +993,11 @@ class Abstract_Type( Abstract_Context_Parent ):
 @python_2_unicode_compatible
 class Abstract_UUID( models.Model ):
 
+    #---------------------------------------------------------------------------
+    # ! ----> model fields and meta
+    #---------------------------------------------------------------------------
+
+
     name = models.CharField( max_length = 255, null = True, blank = True )
     uuid = models.TextField( blank = True, null = True )
     id_type = models.CharField( max_length = 255, null = True, blank = True )
@@ -1004,9 +1009,10 @@ class Abstract_UUID( models.Model ):
         abstract = True
         ordering = [ 'id_type', 'source', 'name', 'uuid' ]
 
-    #----------------------------------------------------------------------
-    # methods
-    #----------------------------------------------------------------------
+
+    #---------------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #---------------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
@@ -1038,28 +1044,28 @@ class Abstract_UUID( models.Model ):
 
         if ( self.name ):
         
-            string_OUT += prefix_string + self.name
+            string_OUT += "{}name: {}".format( prefix_string, self.name )
             prefix_string = " - "
             
         #-- END check to see if name. --#
             
         if ( self.source ):
         
-            string_OUT += prefix_string + " ( " + self.source + " )"
+            string_OUT += "{}source: {}".format( prefix_string, self.source )
             prefix_string = " - "
             
         #-- END check to see if source. --#
             
         if ( self.uuid ):
         
-            string_OUT += prefix_string + self.uuid
+            string_OUT += "{}uuid: {}".format( prefix_string, self.uuid )
             prefix_string = " - "
             
         #-- END check to see if uuid. --#
             
         if ( self.id_type ):
         
-            string_OUT += "{} ( {} )".format( prefix_string, self.id_type )
+            string_OUT += "{}id_type: {}".format( prefix_string, self.id_type )
             prefix_string = " - "
             
         #-- END check to see if id_type. --#
@@ -1067,6 +1073,11 @@ class Abstract_UUID( models.Model ):
         return string_OUT
         
     #-- END method __str__() --#
+
+
+    #---------------------------------------------------------------------------
+    # ! ----> instance methods
+    #---------------------------------------------------------------------------
 
 
 #= End Abstract_UUID Model ======================================================
@@ -1538,7 +1549,10 @@ class Entity( Abstract_Context_With_JSON ):
     def get_identifier( self,
                         id_name_IN,
                         id_source_IN = None,
-                        id_type_IN = None ):
+                        id_id_type_IN = None,
+                        id_type_IN = None,
+                        id_uuid_IN = None,
+                        id_notes_IN = None ):
                                        
         # return reference
         instance_OUT = None
@@ -1556,7 +1570,7 @@ class Entity( Abstract_Context_With_JSON ):
             output_debug( debug_message, me )
         #-- END DEBUG --#            
         
-        # start with uuid
+        # ! ----> start with name
         entity_id_qs = self.entity_identifier_set.filter( name = id_name_IN )
         
         if ( debug_flag == True ):
@@ -1564,7 +1578,20 @@ class Entity( Abstract_Context_With_JSON ):
             output_debug( debug_message, me )
         #-- END DEBUG --#
         
-        # got a type?
+        # ! ----> got an id_type string?
+        if ( id_id_type_IN is not None ):
+        
+            # also filter on type
+            entity_id_qs = entity_id_qs.filter( id_type = id_id_type_IN )
+            
+        #-- END check to see if type --#
+        
+        if ( debug_flag == True ):
+            debug_message = "after type filter (id_type_IN = {}), result count: {}".format( id_type_IN, entity_id_qs.count() )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # ! ----> got a type?
         if ( id_type_IN is not None ):
         
             # also filter on type
@@ -1577,11 +1604,37 @@ class Entity( Abstract_Context_With_JSON ):
             output_debug( debug_message, me )
         #-- END DEBUG --#
         
-        # got a source?
+        # ! ----> got a source?
         if ( id_source_IN is not None ):
         
             # also filter on source
             entity_id_qs = entity_id_qs.filter( source = id_source_IN )
+            
+        #-- END check to see if source --#
+        
+        if ( debug_flag == True ):
+            debug_message = "after source filter (id_source_IN = {}), result count: {}".format( id_source_IN, entity_id_qs.count() )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # ! ----> got a UUID (value)?
+        if ( id_uuid_IN is not None ):
+        
+            # also filter on source
+            entity_id_qs = entity_id_qs.filter( uuid = id_uuid_IN )
+            
+        #-- END check to see if source --#
+        
+        if ( debug_flag == True ):
+            debug_message = "after source filter (id_source_IN = {}), result count: {}".format( id_source_IN, entity_id_qs.count() )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # ! ----> got notes?
+        if ( id_notes_IN is not None ):
+        
+            # also filter on source
+            entity_id_qs = entity_id_qs.filter( notes = id_notes_IN )
             
         #-- END check to see if source --#
         

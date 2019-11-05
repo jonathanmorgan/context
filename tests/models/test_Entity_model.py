@@ -66,9 +66,15 @@ class EntityModelTest( django.test.TestCase ):
     ID_TYPE_NAME_OPENCALAIS = "person_open_calais_uuid"
     
     # test data
+    
+    # Entity_Identifier
     ENTITY_ID_UUID_NO_MATCH = "calliope_1234567890"
     ENTITY_ID_NAME_NO_MATCH = "hunterlane"
     ENTITY_ID_SOURCE_NO_MATCH = "chiquita_brain_fuel"
+    ENTITY_ID_ID_TYPE_NO_MATCH = "shady_salads"
+    ENTITY_ID_NOTES_NO_MATCH = "these notes should not match."
+    
+    # Entity_Trait
     ENTITY_TRAIT_NAME_NO_MATCH = "garbleflarbleflub"
     ENTITY_TRAIT_SLUG_NO_MATCH = "garbleflarbleflubstub"
     ENTITY_TRAIT_LABEL_NO_MATCH = "garbleflarbleflubstubstomp"
@@ -656,7 +662,7 @@ class EntityModelTest( django.test.TestCase ):
         '''
         
         # declare variables
-        me = "test_get_entity_for_identifier"
+        me = "test_get_identifier"
         my_entity = None
         my_entity_id = None
         my_entity_identifier = None
@@ -664,9 +670,12 @@ class EntityModelTest( django.test.TestCase ):
         my_identifier_uuid = None
         my_identifier_name = None
         my_identifier_source = None
+        my_identifier_id_type = None
+        my_identifier_notes = None
         result_identifier = None
         result_identifier_id = None
         bad_identifier_type = None
+        bad_identifier_id_type = None
         
         # declare variables - test values
         test_id_name = None
@@ -693,15 +702,18 @@ class EntityModelTest( django.test.TestCase ):
         my_identifier_uuid = my_entity_identifier.uuid
         my_identifier_name = my_entity_identifier.name
         my_identifier_source = my_entity_identifier.source
+        my_identifier_id_type = my_entity_identifier.id_type
+        my_identifier_notes = my_entity_identifier.notes
         
         print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
         print( "my_entity_identifier: {}".format( my_entity_identifier ) )
 
         #======================================================================#
-        # ! try to get identifier - good matches
+        # ! ==> try to get identifier - good matches
         #======================================================================#
         
-        # ==> name
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -720,7 +732,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "identifier has ID {}, should have ID {}".format( found, should_be )
         self.assertEqual( found, should_be, msg = error_string )
         
-        # ==> UUID plus ID name plus source
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -741,7 +754,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "identifier has ID {}, should have ID {}".format( found, should_be )
         self.assertEqual( found, should_be, msg = error_string )
         
-        # ==> UUID plus ID name plus source plus type instance
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source plus type instance
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -763,12 +777,97 @@ class EntityModelTest( django.test.TestCase ):
         should_be = my_identifier_id
         error_string = "identifier has ID {}, should have ID {}".format( found, should_be )
         self.assertEqual( found, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source plus type instance plus id_type
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( my_identifier_id_type ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = my_identifier_source,
+                                                      id_type_IN = my_identifier_type,
+                                                      id_id_type_IN = my_identifier_id_type )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {} and source: {} and id type: {}, should return Entity_Identifier instance, not None.".format( my_identifier_name, my_identifier_source, my_identifier_type )
+        self.assertIsNotNone( result_identifier, msg = error_string )
+
+        # entity identifier ID should match my_entity_id.
+        found = result_identifier.id
+        should_be = my_identifier_id
+        error_string = "identifier has ID {}, should have ID {}".format( found, should_be )
+        self.assertEqual( found, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source plus type instance plus id_type plus notes
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( my_identifier_id_type ) )
+            print( " - notes: {}".format( my_identifier_notes ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = my_identifier_source,
+                                                      id_type_IN = my_identifier_type,
+                                                      id_id_type_IN = my_identifier_id_type,
+                                                      id_notes_IN = my_identifier_notes )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {} and source: {} and id type: {}, should return Entity_Identifier instance, not None.".format( my_identifier_name, my_identifier_source, my_identifier_type )
+        self.assertIsNotNone( result_identifier, msg = error_string )
+
+        # entity identifier ID should match my_entity_id.
+        found = result_identifier.id
+        should_be = my_identifier_id
+        error_string = "identifier has ID {}, should have ID {}".format( found, should_be )
+        self.assertEqual( found, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source plus type instance plus id_type plus notes plus uuid
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( my_identifier_id_type ) )
+            print( " - notes: {}".format( my_identifier_notes ) )
+            print( " - uuid: {}".format( my_identifier_uuid ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = my_identifier_source,
+                                                      id_type_IN = my_identifier_type,
+                                                      id_id_type_IN = my_identifier_id_type,
+                                                      id_notes_IN = my_identifier_notes,
+                                                      id_uuid_IN = my_identifier_uuid )
+        
+        # instance should not be None
+        error_string = "Getting entity for name: {} and source: {} and id type: {}, should return Entity_Identifier instance, not None.".format( my_identifier_name, my_identifier_source, my_identifier_type )
+        self.assertIsNotNone( result_identifier, msg = error_string )
+
+        # entity identifier ID should match my_entity_id.
+        found = result_identifier.id
+        should_be = my_identifier_id
+        error_string = "identifier has ID {}, should have ID {}".format( found, should_be )
+        self.assertEqual( found, should_be, msg = error_string )
         
         #======================================================================#
-        # ! try to get identifier - bad matches
+        # ! ==> try to get identifier - bad matches
         #======================================================================#
         
-        # ==> name
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name
         test_id_name = self.ENTITY_ID_NAME_NO_MATCH
 
         if ( debug_flag == True ):
@@ -782,7 +881,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "Getting entity identifier for name: {}, should return None, not Entity_Identifier instance.".format( my_identifier_uuid, test_id_name )
         self.assertIsNone( result_identifier, msg = error_string )
         
-        # ==> UUID plus ID name plus source
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source
         test_id_source = self.ENTITY_ID_SOURCE_NO_MATCH
 
         if ( debug_flag == True ):
@@ -798,7 +898,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "Getting entity identifier for name: {} and source: {}, should return None, not Entity_Identifier instance.".format( my_identifier_name, test_id_source )
         self.assertIsNone( result_identifier, msg = error_string )
 
-        # ==> UUID plus ID name plus source plus type instance
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source plus type instance
         bad_identifier_type = Entity_Identifier_Type.get_type_for_name( self.TYPE_NAME_ARTICLE_NEWSBANK_ID )
 
         if ( debug_flag == True ):
@@ -813,7 +914,76 @@ class EntityModelTest( django.test.TestCase ):
                                                       id_type_IN = bad_identifier_type )
         
         # instance should be None
-        error_string = "Getting entity identifier for name: {} and source: {} and id type: {}, should return None, not Entity_Identifier instance.".format( my_identifier_name, my_identifier_source, bad_identifier_type )
+        error_string = "Getting entity identifier for name: {} and source: {} and type: {}, should return None, not Entity_Identifier instance.".format( my_identifier_name, my_identifier_source, bad_identifier_type )
+        self.assertIsNone( result_identifier, msg = error_string )
+
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source plus type instance plus id_type
+        bad_identifier_id_type = self.ENTITY_ID_ID_TYPE_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( bad_identifier_id_type ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = my_identifier_source,
+                                                      id_type_IN = my_identifier_type,
+                                                      id_id_type_IN = bad_identifier_id_type )
+        
+        # instance should be None
+        error_string = "Getting entity identifier for name: {} and source: {} and type: {}, and id_type: {} should return None, not Entity_Identifier instance.".format( my_identifier_name, my_identifier_source, my_identifier_type, bad_identifier_id_type )
+        self.assertIsNone( result_identifier, msg = error_string )
+        
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source plus type instance plus id_type plus notes
+        bad_identifier_notes = self.ENTITY_ID_NOTES_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( my_identifier_id_type ) )
+            print( " - notes: {}".format( bad_identifier_notes ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = my_identifier_source,
+                                                      id_type_IN = my_identifier_type,
+                                                      id_id_type_IN = my_identifier_id_type,
+                                                      id_notes_IN = bad_identifier_notes )
+        
+        # instance should be None
+        error_string = "Getting entity identifier for name: {} and source: {} and type: {}, and id_type: {}, and notes: {} should return None, not Entity_Identifier instance.".format( my_identifier_name, my_identifier_source, bad_identifier_type, my_identifier_id_type, bad_identifier_notes )
+        self.assertIsNone( result_identifier, msg = error_string )
+
+        #----------------------------------------------------------------------#        
+        # ! ----> ID name plus source plus type instance plus id_type plus notes plus uuid
+        bad_identifier_uuid = self.ENTITY_ID_UUID_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity identifier based on:" )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( my_identifier_id_type ) )
+            print( " - notes: {}".format( my_identifier_notes ) )
+            print( " - uuid: {}".format( bad_identifier_uuid ) )
+        #-- END DEBUG --#
+        
+        result_identifier = my_entity.get_identifier( my_identifier_name,
+                                                      id_source_IN = my_identifier_source,
+                                                      id_type_IN = my_identifier_type,
+                                                      id_id_type_IN = my_identifier_id_type,
+                                                      id_notes_IN = my_identifier_notes,
+                                                      id_uuid_IN = bad_identifier_uuid )
+        
+        # instance should be None
+        error_string = "Getting entity identifier for name: {} and source: {} and and type: {}, and id_type: {}, and notes: {}, and UUID: {} should return None, not Entity_Identifier instance.".format( my_identifier_name, my_identifier_source, my_identifier_type, my_identifier_id_type, my_identifier_notes, bad_identifier_uuid )
         self.assertIsNone( result_identifier, msg = error_string )
 
     #-- END test method test_get_identifier --#
