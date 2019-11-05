@@ -249,6 +249,45 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
     #-- END method get_entity() --#
 
 
+    def has_entity( self, *args, **kwargs ):
+        
+        '''
+        Calls load_entity(), with do_create_if_none_IN set to False.  Returns
+            True if Entity returned by load_entity(), False if None returned.
+        Preconditions: None
+        Postconditions: None
+        
+        Returns True if Entity returned by load_entity(), False if None found.
+        '''
+        
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        me = "has_entity"
+        entity_instance = None
+
+        # call load_entity()
+        entity_instance = self.load_entity( do_create_if_none_IN = False )
+        
+        # got an entity?
+        if ( entity_instance is None ):
+        
+            # no.  Return False.
+            value_OUT = False
+            
+        else:
+        
+            # no None.  Check type to make sure it is an Entity?
+            value_OUT = True
+            
+        #-- END check to see if instance returned from load_entity() --#
+                
+        return value_OUT
+
+    #-- END method has_entity() --#
+
+
     def load_entity( self, do_create_if_none_IN = True, *args, **kwargs ):
         
         '''
