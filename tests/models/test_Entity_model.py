@@ -1,9 +1,14 @@
 """
-This file contains tests of the context_text Person model (and by extension
-   Abstract_Person).
+This file contains tests of the context Entity model.
 
 Functions tested:
-- Person.look_up_person_from_name()
+- add_entity_type()
+- get_entity_for_identifier()
+- get_entity_trait()
+- get_identifier()
+- set_entity_trait()
+- set_identifier()
+
 """
 
 # import six
