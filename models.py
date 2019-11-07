@@ -1624,11 +1624,101 @@ class Entity( Abstract_Trait_Container ):
 
 
     @classmethod
+    def lookup_entities( cls,
+                         entity_type_IN = None,
+                         entity_type_slug_IN = None,
+                         id_uuid_IN = None,
+                         id_name_IN = None,
+                         id_source_IN = None,
+                         id_id_type_IN = None,
+                         id_entity_id_type_IN = None ):
+                                       
+        # return reference
+        qs_OUT = None
+        
+        # declare variables
+        me = "Entity.lookup_entities"
+        debug_flag = cls.DEBUG
+        debug_message = None
+        entity_id_qs = None
+        entity_id_count = None
+        entity_id_instance = None
+        entity_instance = None
+        entity_id = None
+        entity_id_set = None
+        entity_id_set_count = None
+        entity_qs = None
+        
+        if ( debug_flag == True ):
+            debug_message = "Inputs: entity_type_IN: {}; entity_type_slug_IN: {}, id uuid: {}; id name: {}; id source: {}; id type: {}; Entity_Identifier_Type.".format( entity_type_IN, entity_type_slug_IN, id_uuid_IN, id_name_IN, id_source_IN, id_id_type_IN, id_entity_id_type_IN )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#            
+        
+        # start with Entity_Identifier filtering.
+        entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = id_uuid_IN,
+                                                             id_name_IN = id_name_IN,
+                                                             id_source_IN = id_source_IN,
+                                                             id_id_type_IN = id_id_type_IN,
+                                                             id_entity_id_type_IN = id_entity_id_type_IN )
+        
+        # How many identifiers match?
+        entity_id_count = entity_id_qs.count()
+        
+        # make a set of Entity IDs.
+        entity_id_set = set()
+        for entity_id_instance in entity_id_qs:
+        
+            # get entity and its ID
+            entity_instance = entity_id_instance.entity
+            entity_id = entity_instance.id
+            
+            # if not already in set, add it.
+            if ( entity_id not in entity_id_set ):
+            
+                # add it.
+                entity_id_set.add( entity_id )
+                
+            #-- END check to see if ID in set. --#
+            
+        #-- END loop over identifiers --#
+        
+        # filter entities to only these IDs.
+        entity_qs = Entity.objects.all()
+        entity_qs = entity_qs.filter( id__in = entity_id_set )
+        
+        # ! TODO: entity type and entity type slug
+        
+        #----------------------------------------------------------------------#
+        # ! ----> entity type instance
+        if ( entity_type_IN is not None ):
+        
+            # we have a type instance
+            entity_qs = entity_qs.filter( my_entity_types = entity_type_IN )
+            
+        #-- END check to see if Entity_Type instance passed in. --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> entity type slug
+        if ( entity_type_slug_IN is not None ):
+        
+            # we have a type instance
+            entity_qs = entity_qs.filter( my_entity_types__slug = entity_type_slug_IN )
+            
+        #-- END check to see if Entity_Type slug passed in. --#        
+                
+        qs_OUT = entity_qs
+        return qs_OUT
+        
+    #-- END class method lookup_entity() --#
+
+
+    @classmethod
     def get_entity_for_identifier( cls,
-                                   uuid_IN,
+                                   id_uuid_IN,
                                    id_name_IN = None,
                                    id_source_IN = None,
-                                   id_type_IN = None ):
+                                   id_id_type_IN = None,
+                                   id_entity_id_type_IN = None ):
                                        
         # return reference
         entity_OUT = None
@@ -1646,57 +1736,17 @@ class Entity( Abstract_Trait_Container ):
         entity_id_set_count = None
         
         if ( debug_flag == True ):
-            debug_message = "Inputs: uuid: {}; name: {}; source: {}; type: {}.".format( uuid_IN, id_name_IN, id_source_IN, id_type_IN )
+            debug_message = "Inputs: uuid: {}; name: {}; source: {}; id_type: {}; Entity_Identifier_Type: {}.".format( id_uuid_IN, id_name_IN, id_source_IN, id_id_type_IN, id_entity_id_type_IN )
             output_debug( debug_message, me )
         #-- END DEBUG --#            
         
-        # start with uuid
-        entity_id_qs = Entity_Identifier.objects.filter( uuid = uuid_IN )
-        
-        if ( debug_flag == True ):
-            debug_message = "after UUID filter (uuid_IN = {}), result count: {}".format( uuid_IN, entity_id_qs.count() )
-            output_debug( debug_message, me )
-        #-- END DEBUG --#
-        
-        # got a name?
-        if ( id_name_IN is not None ):
-        
-            # also filter on name
-            entity_id_qs = entity_id_qs.filter( name = id_name_IN )
-            
-        #-- END check to see if name --#
-        
-        if ( debug_flag == True ):
-            debug_message = "after name filter (id_name_IN = {}), result count: {}".format( id_name_IN, entity_id_qs.count() )
-            output_debug( debug_message, me )
-        #-- END DEBUG --#
-        
-        # got a type?
-        if ( id_type_IN is not None ):
-        
-            # also filter on type
-            entity_id_qs = entity_id_qs.filter( entity_identifier_type = id_type_IN )
-            
-        #-- END check to see if type --#
-        
-        if ( debug_flag == True ):
-            debug_message = "after type filter (id_type_IN = {}), result count: {}".format( id_type_IN, entity_id_qs.count() )
-            output_debug( debug_message, me )
-        #-- END DEBUG --#
-        
-        # got a source?
-        if ( id_source_IN is not None ):
-        
-            # also filter on source
-            entity_id_qs = entity_id_qs.filter( source = id_source_IN )
-            
-        #-- END check to see if source --#
-        
-        if ( debug_flag == True ):
-            debug_message = "after source filter (id_source_IN = {}), result count: {}".format( id_source_IN, entity_id_qs.count() )
-            output_debug( debug_message, me )
-        #-- END DEBUG --#
-        
+        # first, filter identifiers
+        entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = id_uuid_IN,
+                                                             id_name_IN = id_name_IN,
+                                                             id_source_IN = id_source_IN,
+                                                             id_id_type_IN = id_id_type_IN,
+                                                             id_entity_id_type_IN = id_entity_id_type_IN )
+
         # How many identifiers match?
         entity_id_count = entity_id_qs.count()
         
@@ -1983,7 +2033,7 @@ class Entity( Abstract_Trait_Container ):
         entity_id_instance = None
         
         if ( debug_flag == True ):
-            debug_message = "Inputs: uuid: {}; name: {}; source: {}; type: {}.".format( uuid_IN, id_name_IN, id_source_IN, id_type_IN )
+            debug_message = "Inputs: uuid: {}; name: {}; source: {}; type: {}.".format( id_uuid_IN, id_name_IN, id_source_IN, id_type_IN )
             output_debug( debug_message, me )
         #-- END DEBUG --#            
         
@@ -2040,10 +2090,10 @@ class Entity( Abstract_Trait_Container ):
             # also filter on source
             entity_id_qs = entity_id_qs.filter( uuid = id_uuid_IN )
             
-        #-- END check to see if source --#
+        #-- END check to see if UUID --#
         
         if ( debug_flag == True ):
-            debug_message = "after source filter (id_source_IN = {}), result count: {}".format( id_source_IN, entity_id_qs.count() )
+            debug_message = "after UUID filter (id_uuid_IN = {}), result count: {}".format( id_uuid_IN, entity_id_qs.count() )
             output_debug( debug_message, me )
         #-- END DEBUG --#
         
@@ -2053,10 +2103,10 @@ class Entity( Abstract_Trait_Container ):
             # also filter on source
             entity_id_qs = entity_id_qs.filter( notes = id_notes_IN )
             
-        #-- END check to see if source --#
+        #-- END check to see if notes --#
         
         if ( debug_flag == True ):
-            debug_message = "after source filter (id_source_IN = {}), result count: {}".format( id_source_IN, entity_id_qs.count() )
+            debug_message = "after notes filter (id_notes_IN = {}), result count: {}".format( id_notes_IN, entity_id_qs.count() )
             output_debug( debug_message, me )
         #-- END DEBUG --#
         
@@ -2076,7 +2126,7 @@ class Entity( Abstract_Trait_Container ):
         
             # Multiple matches.
             if ( debug_flag == True ):
-                debug_message = "Entity identifier count = {} for name: {}; source: {}; type: {}.".format( entity_id_count, id_name_IN, id_source_IN, id_type_IN )
+                debug_message = "Entity identifier count = {} for name: {}; source: {}; id_type: {}; entity ID type: {}; UUID: {}.".format( entity_id_count, id_name_IN, id_source_IN, id_id_type_IN, id_type_IN, id_uuid_IN )
                 output_debug( debug_message, me )
             #-- END DEBUG --#
             
@@ -2086,7 +2136,7 @@ class Entity( Abstract_Trait_Container ):
         
             # no matches.
             if ( debug_flag == True ):
-                debug_message = "No matches for name: {}; source: {}; type: {}.".format( id_name_IN, id_source_IN, id_type_IN )
+                debug_message = "No matches for name: {}; source: {}; id_type: {}; entity ID type: {}; UUID: {}.".format( id_name_IN, id_source_IN, id_id_type_IN, id_type_IN, id_uuid_IN )
                 output_debug( debug_message, me )
             #-- END DEBUG --#
             
@@ -2096,7 +2146,7 @@ class Entity( Abstract_Trait_Container ):
         
             # ERROR - not 0 or 1 or > 1.
             if ( debug_flag == True ):
-                debug_message = "Inconceivable! - Entity identifier count = {} for name: {}; source: {}; type: {}.".format( entity_id_count, id_name_IN, id_source_IN, id_type_IN )
+                debug_message = "Inconceivable! - Entity identifier count = {} for name: {}; source: {}; id_type: {}; entity ID type: {}; UUID: {}.".format( entity_id_count, id_name_IN, id_source_IN, id_id_type_IN, id_type_IN, id_uuid_IN )
                 output_debug( debug_message, me )
             #-- END DEBUG --#
 
@@ -2467,6 +2517,148 @@ class Entity_Identifier_Type( Abstract_Identifier_Type ):
 # Entity_Identifier model
 @python_2_unicode_compatible
 class Entity_Identifier( Abstract_UUID ):
+
+    #----------------------------------------------------------------------
+    # ! ----> class methods
+    #----------------------------------------------------------------------
+
+    @classmethod
+    def filter_identifiers( cls,
+                            id_uuid_IN = None,
+                            id_name_IN = None,
+                            id_source_IN = None,
+                            id_id_type_IN = None,
+                            id_entity_id_type_IN = None,
+                            id_notes_IN = None,
+                            qs_IN = None ):
+                                       
+        # return reference
+        qs_OUT = None
+        
+        # declare variables
+        me = "Entity_Identifier.filter_identifiers"
+        debug_flag = cls.DEBUG
+        debug_message = None
+        entity_id_qs = None
+        entity_id_count = None
+        entity_id_instance = None
+        entity_instance = None
+        entity_id = None
+        entity_id_set = None
+        entity_id_set_count = None
+        
+        if ( debug_flag == True ):
+            debug_message = "Inputs: uuid: {}; name: {}; source: {}; id_type: {}; entity ID type: {}.".format( id_uuid_IN, id_name_IN, id_source_IN, id_id_type_IN, id_entity_id_type_IN )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # figure out starting QuerySet
+        if ( qs_IN is not None ):
+        
+            # QuerySet passed in.  Use it.
+            entity_id_qs = qs_IN
+            
+        else:
+        
+            # no QuerySet passed in, use Entity_Identifier.objects.all()
+            entity_id_qs = Entity_Identifier.objects.all()
+            
+        #-- END init QuerySet --#
+        
+        # got a UUID?
+        if ( id_uuid_IN is not None ):
+        
+            # start with uuid
+            entity_id_qs = entity_id_qs.filter( uuid = id_uuid_IN )
+            
+        #-- END check to see if UUID passed in. --#
+            
+        if ( debug_flag == True ):
+            debug_message = "after UUID filter (uuid_IN = {}), result count: {}".format( id_uuid_IN, entity_id_qs.count() )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # got a name?
+        if ( id_name_IN is not None ):
+        
+            # also filter on name
+            entity_id_qs = entity_id_qs.filter( name = id_name_IN )
+            
+        #-- END check to see if name --#
+        
+        if ( debug_flag == True ):
+            debug_message = "after name filter (id_name_IN = {}), result count: {}".format( id_name_IN, entity_id_qs.count() )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # got a basic type?
+        if ( id_id_type_IN is not None ):
+        
+            # also filter on type
+            entity_id_qs = entity_id_qs.filter( id_type = id_id_type_IN )
+            
+        #-- END check to see if type --#
+        
+        if ( debug_flag == True ):
+            debug_message = "after basic string id_type filter (id_id_type_IN = {}), result count: {}".format( id_id_type_IN, entity_id_qs.count() )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # got an Entity_Identifier_Type to match?
+        if ( id_entity_id_type_IN is not None ):
+        
+            # also filter on type
+            entity_id_qs = entity_id_qs.filter( entity_identifier_type = id_entity_id_type_IN )
+            
+        #-- END check to see if type --#
+        
+        if ( debug_flag == True ):
+            debug_message = "after Entity_Identifier_Type filter (id_type_IN = {}), result count: {}".format( id_type_IN, entity_id_qs.count() )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # got a source?
+        if ( id_source_IN is not None ):
+        
+            # also filter on source
+            entity_id_qs = entity_id_qs.filter( source = id_source_IN )
+            
+        #-- END check to see if source --#
+        
+        if ( debug_flag == True ):
+            debug_message = "after source filter (id_source_IN = {}), result count: {}".format( id_source_IN, entity_id_qs.count() )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # got notes?
+        if ( id_notes_IN is not None ):
+        
+            # also filter on source
+            entity_id_qs = entity_id_qs.filter( notes = id_notes_IN )
+            
+        #-- END check to see if source --#
+        
+        if ( debug_flag == True ):
+            debug_message = "after notes filter (id_notes_IN = {}), result count: {}".format( id_notes_IN, entity_id_qs.count() )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # How many identifiers match?
+        entity_id_count = entity_id_qs.count()
+        
+        # Multiple matches.
+        if ( debug_flag == True ):
+            debug_message = "Entity identifier count = {} for uuid: {}; name: {}; source: {}; id_type: {}; Entity_Identifier_Type: {}; notes: {}.".format( entity_id_count, uuid_IN, id_name_IN, id_source_IN, id_id_type_IN, id_entity_id_type_IN, id_notes_IN )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#
+        
+        # return the result
+        qs_OUT = entity_id_qs
+        
+        return qs_OUT
+        
+    #-- END class method filter_identifiers() --#
+
 
     #----------------------------------------------------------------------
     # ! ----> model fields and meta
@@ -3281,10 +3473,11 @@ class Entity_Type( Abstract_Type ):
     #----------------------------------------------------------------------
 
 
+    #slug = models.SlugField( unique = True )
     #name = models.CharField( max_length = 255, blank = True, null = True )
     #related_model = models.CharField( max_length = 255, blank = True, null = True )
+    #description = models.TextField( blank = True )
     parent_type = models.ForeignKey( "Entity_Type", on_delete = models.SET_NULL, blank = True, null = True )
-
 
 
     #---------------------------------------------------------------------------
