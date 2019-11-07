@@ -1631,7 +1631,8 @@ class Entity( Abstract_Trait_Container ):
                          id_name_IN = None,
                          id_source_IN = None,
                          id_id_type_IN = None,
-                         id_entity_id_type_IN = None ):
+                         id_entity_id_type_IN = None,
+                         id_notes_IN = None ):
                                        
         # return reference
         qs_OUT = None
@@ -1659,7 +1660,8 @@ class Entity( Abstract_Trait_Container ):
                                                              id_name_IN = id_name_IN,
                                                              id_source_IN = id_source_IN,
                                                              id_id_type_IN = id_id_type_IN,
-                                                             id_entity_id_type_IN = id_entity_id_type_IN )
+                                                             id_entity_id_type_IN = id_entity_id_type_IN,
+                                                             id_notes_IN = id_notes_IN )
         
         # How many identifiers match?
         entity_id_count = entity_id_qs.count()
@@ -1718,7 +1720,8 @@ class Entity( Abstract_Trait_Container ):
                                    id_name_IN = None,
                                    id_source_IN = None,
                                    id_id_type_IN = None,
-                                   id_entity_id_type_IN = None ):
+                                   id_entity_id_type_IN = None,
+                                   id_notes_IN = None ):
                                        
         # return reference
         entity_OUT = None
@@ -1745,7 +1748,8 @@ class Entity( Abstract_Trait_Container ):
                                                              id_name_IN = id_name_IN,
                                                              id_source_IN = id_source_IN,
                                                              id_id_type_IN = id_id_type_IN,
-                                                             id_entity_id_type_IN = id_entity_id_type_IN )
+                                                             id_entity_id_type_IN = id_entity_id_type_IN,
+                                                             id_notes_IN = id_notes_IN )
 
         # How many identifiers match?
         entity_id_count = entity_id_qs.count()
@@ -1880,7 +1884,7 @@ class Entity( Abstract_Trait_Container ):
     #----------------------------------------------------------------------
 
     
-    def add_entity_type( self, type_slug_IN ):
+    def add_entity_type( self, type_slug_IN = None, type_IN = None ):
 
         '''
         Accepts entity type slug.  Looks up type for that entity, adds it to
@@ -1897,11 +1901,24 @@ class Entity( Abstract_Trait_Container ):
         # declare variables
         me = "add_entity_type"
         
-        # make sure we have a type slug
+        # make sure we have a type slug...
         if ( ( type_slug_IN is not None ) and ( type_slug_IN != "" ) ):
         
             # look up type using slug
             type_OUT = Entity_Type.objects.get( slug = type_slug_IN )
+            
+        #-- END check to see if slug passed in. --#
+        
+        # ...or a type.
+        if ( type_IN is not None ):
+        
+            # look up type using slug
+            type_OUT = type_IN
+                    
+        #-- END check to see if slug passed in. --#
+        
+        # got a type?
+        if ( type_OUT is not None ):
 
             # add to entity instance - won't create duplicate if already there.
             self.my_entity_types.add( type_OUT )
@@ -1909,7 +1926,7 @@ class Entity( Abstract_Trait_Container ):
         else:
         
             # error
-            print( "ERROR - no slug passed in, can't process." )
+            print( "ERROR - no type ( type_slug_IN: {}; type_IN: {} ), can't process.".format( type_slug_IN, type_IN ) )
             type_OUT = None
 
         #-- END check to see if slug passed in --#

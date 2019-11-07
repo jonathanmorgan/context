@@ -21,6 +21,7 @@ import django.test
 from context.models import Entity
 from context.models import Entity_Identifier
 from context.models import Entity_Identifier_Type
+from context.models import Entity_Type
 from context.tests.test_helper import TestHelper
 
 
@@ -137,6 +138,8 @@ class EntityModelTest( django.test.TestCase ):
         entity_instance = None
         type_slug_1 = None
         type_slug_2 = None
+        type_1 = None
+        type_2 = None
         type_qs = None
         type_count = None
         should_be = None
@@ -146,9 +149,9 @@ class EntityModelTest( django.test.TestCase ):
         # create test entity
         entity_instance = TestHelper.create_test_entity()
         
-        # add a type to an entity.
+        # add a type to an entity using slug.
         type_slug_1 = self.ENTITY_TYPE_SLUG_ARTICLE
-        entity_instance.add_entity_type( type_slug_1 )
+        type_1 = entity_instance.add_entity_type( type_slug_1 )
         
         # make sure it is present in the entity's type set.
         type_qs = entity_instance.my_entity_types.filter( slug = type_slug_1 )
@@ -159,7 +162,43 @@ class EntityModelTest( django.test.TestCase ):
         
         # add a second.
         type_slug_2 = self.ENTITY_TYPE_SLUG_NEWSPAPER
-        entity_instance.add_entity_type( type_slug_2 )
+        type_2 = entity_instance.add_entity_type( type_slug_2 )
+        
+        # make sure it is present in the entity's type set.
+        type_qs = entity_instance.my_entity_types.filter( slug = type_slug_2 )
+        type_count = type_qs.count()
+        should_be = 1
+        error_string = "type 2: {} --> count {} should = {}".format( type_slug_2, type_count, should_be )
+        self.assertEqual( type_count, should_be, msg = error_string )
+        
+        # make sure the first one is stil there.
+        type_qs = entity_instance.my_entity_types.filter( slug = type_slug_1 )
+        type_count = type_qs.count()
+        should_be = 1
+        error_string = "type 1: {} --> count {} should = {}".format( type_slug_1, type_count, should_be )
+        self.assertEqual( type_count, should_be, msg = error_string )
+
+        # ! ==> add using Entity_Type instances
+
+        # create test entity
+        entity_instance = TestHelper.create_test_entity()
+        
+        # add a type to an entity.
+        type_slug_1 = self.ENTITY_TYPE_SLUG_ARTICLE
+        type_1 = Entity_Type.objects.get( slug = type_slug_1 )
+        entity_instance.add_entity_type( type_IN = type_1 )
+        
+        # make sure it is present in the entity's type set.
+        type_qs = entity_instance.my_entity_types.filter( slug = type_slug_1 )
+        type_count = type_qs.count()
+        should_be = 1
+        error_string = "type 1: {} --> count {} should = {}".format( type_slug_1, type_count, should_be )
+        self.assertEqual( type_count, should_be, msg = error_string )
+        
+        # add a second.
+        type_slug_2 = self.ENTITY_TYPE_SLUG_NEWSPAPER
+        type_2 = Entity_Type.objects.get( slug = type_slug_2 )
+        entity_instance.add_entity_type( type_IN = type_2 )
         
         # make sure it is present in the entity's type set.
         type_qs = entity_instance.my_entity_types.filter( slug = type_slug_2 )
@@ -196,17 +235,24 @@ class EntityModelTest( django.test.TestCase ):
         my_entity = None
         my_entity_id = None
         my_entity_identifier = None
-        my_identifier_type = None
-        my_identifier_source = None
         result_entity = None
         result_entity_id = None
-        bad_identifier_type = None
+        
+        # declare variables - identifier details
+        my_identifier_uuid = None
+        my_identifier_name = None
+        my_identifier_type = None
+        my_identifier_source = None
+        my_identifier_id_type = None
+        my_identifier_notes = None
         
         # declare variables - test values
+        bad_identifier_type = None
         test_id_uuid = None
         test_id_name = None
         test_id_source = None
         test_id_type = None
+        test_id_id_type = None
         
         # debug
         debug_flag = self.DEBUG
@@ -227,6 +273,8 @@ class EntityModelTest( django.test.TestCase ):
         my_identifier_uuid = my_entity_identifier.uuid
         my_identifier_name = my_entity_identifier.name
         my_identifier_source = my_entity_identifier.source
+        my_identifier_id_type = my_entity_identifier.id_type
+        my_identifier_notes = my_entity_identifier.notes
         
         print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
         print( "my_entity_identifier: {}".format( my_entity_identifier ) )
@@ -262,10 +310,11 @@ class EntityModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         #======================================================================#
-        # ! try to get entity - good matches
+        # ! ==> try to get entity - good matches
         #======================================================================#
         
-        # ==> Just UUID
+        #----------------------------------------------------------------------#        
+        # ! ----> Just UUID
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -284,7 +333,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "Returned Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
-        # ==> UUID + ID name
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -305,7 +355,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
-        # ==> UUID + ID name + source
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name + source
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -328,7 +379,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
-        # ==> UUID + ID name + source + type instance
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name + source + type instance
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -353,11 +405,70 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name + source + type instance + id_type
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - UUID: {}".format( my_identifier_uuid ) )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( my_identifier_id_type ) )
+        #-- END DEBUG --#
+        
+        result_entity = Entity.get_entity_for_identifier( my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = my_identifier_type,
+                                                          id_id_type_IN = my_identifier_id_type )        
+
+        # instance should not be None
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {} and id_type {}; should return Entity instance, not None.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_type, my_identifier_id_type )
+        self.assertIsNotNone( result_entity, msg = error_string )
+
+        # entity ID should match my_entity_id.
+        result_entity_id = result_entity.id
+        should_be = my_entity_id
+        error_string = "Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
+        self.assertEqual( result_entity_id, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name + source + type instance + id_type + notes
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - UUID: {}".format( my_identifier_uuid ) )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( my_identifier_id_type ) )
+            print( " - notes: {}".format( my_identifier_notes ) )
+        #-- END DEBUG --#
+        
+        result_entity = Entity.get_entity_for_identifier( my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = my_identifier_type,
+                                                          id_id_type_IN = my_identifier_id_type,
+                                                          id_notes_IN = my_identifier_notes )
+
+        # instance should not be None
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {} and id_type {} and notes: {}; should return Entity instance, not None.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_type, my_identifier_id_type, my_identifier_notes )
+        self.assertIsNotNone( result_entity, msg = error_string )
+
+        # entity ID should match my_entity_id.
+        result_entity_id = result_entity.id
+        should_be = my_entity_id
+        error_string = "Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
+        self.assertEqual( result_entity_id, should_be, msg = error_string )
+        
         #======================================================================#
-        # ! try to get entity - bad matches
+        # ! ==> try to get entity - bad matches
         #======================================================================#
         
-        # ==> Just UUID
+        #----------------------------------------------------------------------#        
+        # ! ----> Just UUID
         test_id_uuid = self.ENTITY_ID_UUID_NO_MATCH
 
         if ( debug_flag == True ):
@@ -371,7 +482,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "Getting entity for uuid: {}, should return None, not Entity instance.".format( test_id_uuid )
         self.assertIsNone( result_entity, msg = error_string )
         
-        # ==> UUID + ID name
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name
         test_id_name = self.ENTITY_ID_NAME_NO_MATCH
 
         if ( debug_flag == True ):
@@ -387,7 +499,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "Getting entity for uuid: {} and name: {}, should return None, not Entity instance.".format( my_identifier_uuid, test_id_name )
         self.assertIsNone( result_entity, msg = error_string )
         
-        # ==> UUID + ID name + source
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name + source
         test_id_source = self.ENTITY_ID_SOURCE_NO_MATCH
 
         if ( debug_flag == True ):
@@ -405,7 +518,8 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "Getting entity for uuid: {} and name: {} and source: {}, should return None, not Entity instance.".format( my_identifier_uuid, my_identifier_name, test_id_source )
         self.assertIsNone( result_entity, msg = error_string )
 
-        # ==> UUID + ID name + source + type instance
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name + source + type instance
         bad_identifier_type = Entity_Identifier_Type.get_type_for_name( self.TYPE_NAME_ARTICLE_NEWSBANK_ID )
 
         if ( debug_flag == True ):
@@ -422,7 +536,54 @@ class EntityModelTest( django.test.TestCase ):
                                                           id_entity_id_type_IN = bad_identifier_type )
         
         # instance should be None
-        error_string = "Getting entity for uuid: {} and name: {} and source: {} and id type: {}, should return None, not Entity instance.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, bad_identifier_type )
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and id type: {}; should return None, not Entity instance.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, bad_identifier_type )
+        self.assertIsNone( result_entity, msg = error_string )
+
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name + source + type instance + id_type
+        test_id_id_type = self.ENTITY_ID_ID_TYPE_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - UUID: {}".format( my_identifier_uuid ) )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( test_id_id_type ) )
+        #-- END DEBUG --#
+        
+        result_entity = Entity.get_entity_for_identifier( my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = my_identifier_type,
+                                                          id_id_type_IN = test_id_id_type )        
+        
+        # instance should be None
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and id type: {} and id_type: {}; should return None, not Entity instance.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_type, test_id_id_type )
+        self.assertIsNone( result_entity, msg = error_string )
+
+        #----------------------------------------------------------------------#        
+        # ! ----> UUID + ID name + source + type instance + id_type + notes
+        test_id_notes = self.ENTITY_ID_NOTES_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - UUID: {}".format( my_identifier_uuid ) )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - type: {}".format( my_identifier_type ) )
+            print( " - id_type: {}".format( my_identifier_id_type ) )
+            print( " - notes: {}".format( test_id_notes ) )
+        #-- END DEBUG --#
+        
+        result_entity = Entity.get_entity_for_identifier( my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = my_identifier_type,
+                                                          id_id_type_IN = my_identifier_id_type,
+                                                          id_notes_IN = test_id_notes )
+        # instance should be None
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and id type: {} and id_type: {} and notes: {}; should return None, not Entity instance.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_type, my_identifier_id_type, test_id_notes )
         self.assertIsNone( result_entity, msg = error_string )
 
     #-- END test method test_get_entity_for_identifier --#
@@ -992,6 +1153,490 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_identifier, msg = error_string )
 
     #-- END test method test_get_identifier --#
+        
+    
+    def test_lookup_entities( self ):
+        
+        '''
+        Test using the default test entity and entity identifier.  Identifier
+            has the following values:
+            - # Test Entity_Identifier default information
+            - TEST_ENTITY_IDENTIFIER_NAME = "calliope_type"
+            - TEST_ENTITY_IDENTIFIER_UUID = "123456"
+            - TEST_ENTITY_IDENTIFIER_ID_TYPE = "made-up"
+            - TEST_ENTITY_IDENTIFIER_SOURCE = "my_brain"
+            - TEST_ENTITY_IDENTIFIER_NOTE = "default initialization notes"
+        '''
+        
+        # declare variables
+        me = "test_filter_identifiers"
+        my_entity = None
+        result_qs = None
+        result_count = None
+        result_entity = None
+        result_entity_id = None
+        bad_identifier_type = None
+        
+        # declare variables - Entity info.
+        my_entity_id = None
+        my_entity_identifier = None
+        my_entity_name = None
+        my_entity_type_slug = None
+        my_entity_type = None
+        my_entity_type_qs = None
+
+        # declare variables - Entity_Identifier info.
+        my_identifier_id = None
+        my_identifier_name = None
+        my_identifier_uuid = None
+        my_identifier_id_type = None
+        my_identifier_source = None
+        my_identifier_entity_id_type = None
+        my_identifier_notes = None        
+        
+        # declare variables - test values
+        test_entity_type_slug = None
+        test_entity_type = None
+        test_identifier_type_name = None
+        test_id_uuid = None
+        test_id_name = None
+        test_id_source = None
+        test_id_entity_id_type = None
+        test_id_id_type = None
+        test_id_notes = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        eiqs = None
+        
+        # init
+        test_entity_type_slug = self.ENTITY_TYPE_SLUG_PERSON
+        test_identifier_type_name = self.TYPE_NAME_PERSON_SOURCENET_ID
+                
+        # create test entity, with test identifier.
+        my_entity = TestHelper.create_test_entity()
+        my_entity_type_slug = test_entity_type_slug
+        my_entity_type = my_entity.add_entity_type( my_entity_type_slug )
+        my_entity_id = my_entity.id
+        
+        # create identifier
+        my_entity_identifier = TestHelper.create_test_entity_identifier( my_entity )
+        
+        # set type and update identifier from it (must then save())
+        my_identifier_type = my_entity_identifier.set_identifier_type_from_name( test_identifier_type_name, do_use_to_update_fields_IN = True )
+        my_entity_identifier.save()
+
+        # identifier details
+        my_identifier_id = my_entity_identifier.id
+        my_identifier_uuid = my_entity_identifier.uuid
+        my_identifier_name = my_entity_identifier.name
+        my_identifier_source = my_entity_identifier.source
+        my_identifier_id_type = my_entity_identifier.id_type
+        my_identifier_entity_id_type = my_entity_identifier.entity_identifier_type
+        my_identifier_notes = my_entity_identifier.notes
+        
+        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( "my_entity_identifier: {}".format( my_entity_identifier ) )
+
+
+        #======================================================================#
+        # ! ==> filter different ways.
+        #======================================================================#
+        
+        
+        #----------------------------------------------------------------------#
+        # ! ----> Just Entity Type Slug
+
+        if ( debug_flag == True ):
+            print( "\n--------> Filter Entities based on:" )
+            print( " - entity type slug: {}".format( my_entity_type_slug ) )
+        #-- END DEBUG --#
+        
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( entity_type_slug_IN = my_entity_type_slug )
+        result_count = result_qs.count()
+        
+        # count should be 1.
+        should_be = 1
+        error_string = "Getting entity for type slug: {}, should return {}, instead returned {}.".format( my_entity_type_slug, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+        
+
+        #----------------------------------------------------------------------#
+        # ! ----> Just Entity Type
+
+        if ( debug_flag == True ):
+            print( "\n--------> Filter Entities based on:" )
+            print( " - entity type: {}".format( my_entity_type ) )
+        #-- END DEBUG --#
+        
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( entity_type_IN = my_entity_type )
+        result_count = result_qs.count()
+        
+        # count should be 1.
+        should_be = 1
+        error_string = "Getting entity for type: {}; should return {}, instead returned {}.".format( my_entity_type, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+        
+        
+        #----------------------------------------------------------------------#
+        # ! ----> Entity Type Slug + Entity Type
+
+        if ( debug_flag == True ):
+            print( "\n--------> Filter Entities based on:" )
+            print( " - entity type slug: {}".format( my_entity_type_slug ) )
+            print( " - entity type: {}".format( my_entity_type ) )
+        #-- END DEBUG --#
+        
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( entity_type_IN = my_entity_type,
+                                            entity_type_slug_IN = my_entity_type_slug )
+        result_count = result_qs.count()
+        
+        # count should be 1.
+        should_be = 1
+        error_string = "Getting entity for type: {}, type slug: {}; should return {}, instead returned {}.".format( my_entity_type, my_entity_type_slug, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+                
+        
+        #----------------------------------------------------------------------#
+        # ! ----> Entity Type Slug + Entity Type + UUID
+
+        if ( debug_flag == True ):
+            print( "\n--------> Filter Entities based on:" )
+            print( " - entity type slug: {}".format( my_entity_type_slug ) )
+            print( " - entity type: {}".format( my_entity_type ) )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+        #-- END DEBUG --#
+
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( entity_type_IN = my_entity_type,
+                                            entity_type_slug_IN = my_entity_type_slug,
+                                            id_uuid_IN = my_identifier_uuid )
+        result_count = result_qs.count()
+        result_entity = result_qs.get()
+        
+        # instance should not be None
+        error_string = "Getting entity for type: {}, type slug: {}, uuid: {}; should return Entity instance, not None.".format( my_entity_type, my_entity_type_slug, my_identifier_uuid )
+        self.assertIsNotNone( result_entity, msg = error_string )
+
+        # entity ID should match my_entity_id.
+        result_entity_id = result_entity.id
+        should_be = my_entity_id
+        error_string = "Returned Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
+        self.assertEqual( result_entity_id, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> Entity Type Slug + Entity Type + UUID + ID name
+
+        if ( debug_flag == True ):
+            print( "\n--------> Filter Entities based on:" )
+            print( " - entity type slug: {}".format( my_entity_type_slug ) )
+            print( " - entity type: {}".format( my_entity_type ) )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+            print( " - id name: {}".format( my_identifier_name ) )
+        #-- END DEBUG --#
+
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( entity_type_IN = my_entity_type,
+                                            entity_type_slug_IN = my_entity_type_slug,
+                                            id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = my_identifier_name )
+        result_count = result_qs.count()
+        result_entity = result_qs.get()
+        
+        # instance should not be None
+        error_string = "Getting entity for type: {}, type slug: {}, uuid: {}, id name: {}; should return Entity instance, not None.".format( my_entity_type, my_entity_type_slug, my_identifier_uuid, my_identifier_name )
+        self.assertIsNotNone( result_entity, msg = error_string )
+
+        # entity ID should match my_entity_id.
+        result_entity_id = result_entity.id
+        should_be = my_entity_id
+        error_string = "Returned Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
+        self.assertEqual( result_entity_id, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> Entity Type Slug + Entity Type + UUID + ID name + source
+
+        if ( debug_flag == True ):
+            print( "\n--------> Filter Entities based on:" )
+            print( " - entity type slug: {}".format( my_entity_type_slug ) )
+            print( " - entity type: {}".format( my_entity_type ) )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+            print( " - id name: {}".format( my_identifier_name ) )
+            print( " - id source: {}".format( my_identifier_source ) )
+        #-- END DEBUG --#
+
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( entity_type_IN = my_entity_type,
+                                            entity_type_slug_IN = my_entity_type_slug,
+                                            id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = my_identifier_name,
+                                            id_source_IN = my_identifier_source )
+        result_count = result_qs.count()
+        result_entity = result_qs.get()
+        
+        # instance should not be None
+        error_string = "Getting entity for type: {}, type slug: {}, uuid: {}, id name: {}, id source: {}; should return Entity instance, not None.".format( my_entity_type, my_entity_type_slug, my_identifier_uuid, my_identifier_name, my_identifier_source )
+        self.assertIsNotNone( result_entity, msg = error_string )
+
+        # entity ID should match my_entity_id.
+        result_entity_id = result_entity.id
+        should_be = my_entity_id
+        error_string = "Returned Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
+        self.assertEqual( result_entity_id, should_be, msg = error_string )
+                
+        #----------------------------------------------------------------------#
+        # ! ----> Entity Type Slug + Entity Type + UUID + ID name + source + type instance
+
+        if ( debug_flag == True ):
+            print( "\n--------> Filter Entities based on:" )
+            print( " - entity type slug: {}".format( my_entity_type_slug ) )
+            print( " - entity type: {}".format( my_entity_type ) )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+            print( " - id name: {}".format( my_identifier_name ) )
+            print( " - id source: {}".format( my_identifier_source ) )
+            print( " - id Entity_Identifier_Type: {}".format( my_identifier_entity_id_type ) )
+        #-- END DEBUG --#
+
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( entity_type_IN = my_entity_type,
+                                            entity_type_slug_IN = my_entity_type_slug,
+                                            id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = my_identifier_name,
+                                            id_source_IN = my_identifier_source,
+                                            id_entity_id_type_IN = my_identifier_entity_id_type )
+        result_count = result_qs.count()
+        result_entity = result_qs.get()
+        
+        # instance should not be None
+        error_string = "Getting entity for type: {}, type slug: {}, uuid: {}, id name: {}, id source: {}, Entity_Identifier_Type: {}; should return Entity instance, not None.".format( my_entity_type, my_entity_type_slug, my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_entity_id_type )
+        self.assertIsNotNone( result_entity, msg = error_string )
+
+        # entity ID should match my_entity_id.
+        result_entity_id = result_entity.id
+        should_be = my_entity_id
+        error_string = "Returned Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
+        self.assertEqual( result_entity_id, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> Entity Type Slug + Entity Type + UUID + ID name + source + type instance + id_type
+
+        if ( debug_flag == True ):
+            print( "\n--------> Filter Entities based on:" )
+            print( " - entity type slug: {}".format( my_entity_type_slug ) )
+            print( " - entity type: {}".format( my_entity_type ) )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+            print( " - id name: {}".format( my_identifier_name ) )
+            print( " - id source: {}".format( my_identifier_source ) )
+            print( " - id Entity_Identifier_Type: {}".format( my_identifier_entity_id_type ) )
+            print( " - id id_type: {}".format( my_identifier_id_type ) )
+        #-- END DEBUG --#
+
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( entity_type_IN = my_entity_type,
+                                            entity_type_slug_IN = my_entity_type_slug,
+                                            id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = my_identifier_name,
+                                            id_source_IN = my_identifier_source,
+                                            id_entity_id_type_IN = my_identifier_entity_id_type,
+                                            id_id_type_IN = my_identifier_id_type )
+        result_count = result_qs.count()
+        result_entity = result_qs.get()
+        
+        # instance should not be None
+        error_string = "Getting entity for type: {}, type slug: {}, uuid: {}, id name: {}, id source: {}, Entity_Identifier_Type: {}, id_type: {}; should return Entity instance, not None.".format( my_entity_type, my_entity_type_slug, my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_entity_id_type, my_identifier_id_type )
+        self.assertIsNotNone( result_entity, msg = error_string )
+
+        # entity ID should match my_entity_id.
+        result_entity_id = result_entity.id
+        should_be = my_entity_id
+        error_string = "Returned Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
+        self.assertEqual( result_entity_id, should_be, msg = error_string )
+
+        
+        #----------------------------------------------------------------------#
+        # ! ----> Entity Type Slug + Entity Type + UUID + ID name + source + type instance + id_type + notes
+
+        if ( debug_flag == True ):
+            print( "\n--------> Filter Entities based on:" )
+            print( " - entity type slug: {}".format( my_entity_type_slug ) )
+            print( " - entity type: {}".format( my_entity_type ) )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+            print( " - id name: {}".format( my_identifier_name ) )
+            print( " - id source: {}".format( my_identifier_source ) )
+            print( " - id Entity_Identifier_Type: {}".format( my_identifier_entity_id_type ) )
+            print( " - id id_type: {}".format( my_identifier_id_type ) )
+            print( " - id notes: {}".format( my_identifier_notes ) )
+        #-- END DEBUG --#
+
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( entity_type_IN = my_entity_type,
+                                            entity_type_slug_IN = my_entity_type_slug,
+                                            id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = my_identifier_name,
+                                            id_source_IN = my_identifier_source,
+                                            id_entity_id_type_IN = my_identifier_entity_id_type,
+                                            id_id_type_IN = my_identifier_id_type,
+                                            id_notes_IN = my_identifier_notes )
+        result_count = result_qs.count()
+        result_entity = result_qs.get()
+        
+        # instance should not be None
+        error_string = "Getting entity for type: {}, type slug: {}, uuid: {}, id name: {}, id source: {}, Entity_Identifier_Type: {}, id_type: {}, id notes: {}; should return Entity instance, not None.".format( my_entity_type, my_entity_type_slug, my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_entity_id_type, my_identifier_id_type, my_identifier_notes )
+        self.assertIsNotNone( result_entity, msg = error_string )
+
+        # entity ID should match my_entity_id.
+        result_entity_id = result_entity.id
+        should_be = my_entity_id
+        error_string = "Returned Entity has ID {}, should have ID {}".format( result_entity_id, should_be )
+        self.assertEqual( result_entity_id, should_be, msg = error_string )
+
+                
+        #======================================================================#
+        # ! ==> try to get entity - bad matches
+        #======================================================================#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> Just UUID
+        test_id_uuid = self.ENTITY_ID_UUID_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - id UUID: {}".format( test_id_uuid ) )
+        #-- END DEBUG --#
+
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( id_uuid_IN = test_id_uuid )
+        result_count = result_qs.count()
+        
+        # count should be 0.
+        should_be = 0
+        error_string = "Getting entity for uuid: {}, should return {}, instead returned {}.".format( my_identifier_uuid, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> UUID + ID name
+        test_id_name = self.ENTITY_ID_NAME_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+            print( " - id name: {}".format( test_id_name ) )
+        #-- END DEBUG --#
+
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = test_id_name )
+        result_count = result_qs.count()
+        
+        # count should be 0.
+        should_be = 0
+        error_string = "Getting entity for uuid: {} and name: {}; should return {}, instead returned {}.".format( my_identifier_uuid, test_id_name, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> UUID + ID name + source
+        test_id_source = self.ENTITY_ID_SOURCE_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+            print( " - id name: {}".format( my_identifier_name ) )
+            print( " - id source: {}".format( test_id_source ) )
+        #-- END DEBUG --#
+        
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = my_identifier_name,
+                                            id_source_IN = test_id_source )
+        result_count = result_qs.count()
+        
+        # count should be 0.
+        should_be = 0
+        error_string = "Getting entity for uuid: {} and name: {} and source: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, test_id_source, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> UUID + ID name + source + Entity_Identifier_Type
+        bad_identifier_type = Entity_Identifier_Type.get_type_for_name( self.TYPE_NAME_ARTICLE_NEWSBANK_ID )
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+            print( " - id name: {}".format( my_identifier_name ) )
+            print( " - id source: {}".format( my_identifier_source ) )
+            print( " - id Entity_Identifier_Type: {}".format( bad_identifier_type ) )
+        #-- END DEBUG --#
+        
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = my_identifier_name,
+                                            id_source_IN = my_identifier_source,
+                                            id_entity_id_type_IN = bad_identifier_type )
+        result_count = result_qs.count()
+        
+        # count should be 0.
+        should_be = 0
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_entity_id_type, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type
+        test_id_id_type = self.ENTITY_ID_ID_TYPE_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - id UUID: {}".format( my_identifier_uuid ) )
+            print( " - id name: {}".format( my_identifier_name ) )
+            print( " - id source: {}".format( my_identifier_source ) )
+            print( " - id Entity_Identifier_Type: {}".format( my_identifier_entity_id_type ) )
+            print( " - id id_type: {}".format( test_id_id_type ) )
+        #-- END DEBUG --#
+        
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = my_identifier_name,
+                                            id_source_IN = my_identifier_source,
+                                            id_entity_id_type_IN = my_identifier_entity_id_type,
+                                            id_id_type_IN = test_id_id_type )
+        result_count = result_qs.count()
+        
+        # count should be 0.
+        should_be = 0
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {} and id_type: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_id_type, test_id_id_type, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes
+        test_id_notes = self.ENTITY_ID_NOTES_NO_MATCH
+
+        if ( debug_flag == True ):
+            print( "\n--------> Retrieve entity based on:" )
+            print( " - UUID: {}".format( my_identifier_uuid ) )
+            print( " - ID name: {}".format( my_identifier_name ) )
+            print( " - source: {}".format( my_identifier_source ) )
+            print( " - Entity_Identifier_Type: {}".format( my_identifier_entity_id_type ) )
+            print( " - id_type: {}".format( test_id_id_type ) )
+            print( " - notes: {}".format( test_id_notes ) )
+        #-- END DEBUG --#
+        
+        # get Entity QuerySet.
+        result_qs = Entity.lookup_entities( id_uuid_IN = my_identifier_uuid,
+                                            id_name_IN = my_identifier_name,
+                                            id_source_IN = my_identifier_source,
+                                            id_entity_id_type_IN = my_identifier_entity_id_type,
+                                            id_id_type_IN = my_identifier_id_type,
+                                            id_notes_IN = test_id_notes )
+        result_count = result_qs.count()
+        
+        # count should be 0.
+        should_be = 0
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {} and id_type: {} and notes: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_entity_id_type, my_identifier_id_type, test_id_notes, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+
+    #-- END test method test_lookup_entities --#
         
     
     def test_set_entity_trait( self ):

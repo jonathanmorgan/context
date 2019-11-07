@@ -97,7 +97,7 @@ class TestHelper( object ):
 
 
     @classmethod
-    def create_test_entity( cls ):
+    def create_test_entity( cls, entity_type_slug_IN = None ):
         
         # return reference
         instance_OUT = None
@@ -111,6 +111,13 @@ class TestHelper( object ):
         # set some values
         entity_instance.name = cls.TEST_ENTITY_NAME
         entity_instance.save()
+        
+        if ( ( entity_type_slug_IN is not None ) and ( entity_type_slug_IN != "" ) ):
+        
+            # we do.  Add entity type.
+            entity_instance.add_entity_type( entity_type_slug_IN )
+        
+        #-- END check to see if we assign an entity type --#
         
         # return it
         instance_OUT = entity_instance

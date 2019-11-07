@@ -121,8 +121,8 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         result_qs = None
         result_entity = None
         result_entity_id = None
-        result_entity_id_qs = None
-        result_entity_id_count = None
+        result_qs = None
+        result_count = None
         bad_identifier_type = None
         
         # declare variables - Entity_Identifier info.
@@ -213,8 +213,8 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
 
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid )
-        result_entity_id = result_entity_id_qs.get()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid )
+        result_entity_id = result_qs.get()
         result_entity = result_entity_id.entity
         
         # instance should not be None
@@ -239,9 +239,9 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         result_entity = Entity.get_entity_for_identifier( my_identifier_uuid,
                                                           id_name_IN = my_identifier_name )
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = my_identifier_name )
-        result_entity_id = result_entity_id_qs.get()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name )
+        result_entity_id = result_qs.get()
         result_entity = result_entity_id.entity
                 
         # instance should not be None
@@ -265,10 +265,10 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = my_identifier_name,
-                                                                    id_source_IN = my_identifier_source )
-        result_entity_id = result_entity_id_qs.get()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source )
+        result_entity_id = result_qs.get()
         result_entity = result_entity_id.entity                
         
         # instance should not be None
@@ -293,11 +293,11 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = my_identifier_name,
-                                                                    id_source_IN = my_identifier_source,
-                                                                    id_entity_id_type_IN = my_identifier_entity_id_type )
-        result_entity_id = result_entity_id_qs.get()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = my_identifier_entity_id_type )
+        result_entity_id = result_qs.get()
         result_entity = result_entity_id.entity                
         
         # instance should not be None
@@ -323,12 +323,12 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = my_identifier_name,
-                                                                    id_source_IN = my_identifier_source,
-                                                                    id_entity_id_type_IN = my_identifier_entity_id_type,
-                                                                    id_id_type_IN = my_identifier_id_type )
-        result_entity_id = result_entity_id_qs.get()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = my_identifier_entity_id_type,
+                                                          id_id_type_IN = my_identifier_id_type )
+        result_entity_id = result_qs.get()
         result_entity = result_entity_id.entity                
         
         # instance should not be None
@@ -355,13 +355,13 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = my_identifier_name,
-                                                                    id_source_IN = my_identifier_source,
-                                                                    id_entity_id_type_IN = my_identifier_entity_id_type,
-                                                                    id_id_type_IN = my_identifier_id_type,
-                                                                    id_notes_IN = my_identifier_notes )
-        result_entity_id = result_entity_id_qs.get()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = my_identifier_entity_id_type,
+                                                          id_id_type_IN = my_identifier_id_type,
+                                                          id_notes_IN = my_identifier_notes )
+        result_entity_id = result_qs.get()
         result_entity = result_entity_id.entity                
         
         # instance should not be None
@@ -388,13 +388,13 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
 
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = test_id_uuid )
-        result_entity_id_count = result_entity_id_qs.count()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = test_id_uuid )
+        result_count = result_qs.count()
         
         # count should be 0.
         should_be = 0
-        error_string = "Getting entity for uuid: {}, should return {}, instead returned {}.".format( my_identifier_uuid, should_be, result_entity_id_count )
-        self.assertEqual( result_entity_id_count, should_be, msg = error_string )
+        error_string = "Getting entity for uuid: {}, should return {}, instead returned {}.".format( my_identifier_uuid, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name
@@ -407,14 +407,14 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
 
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = test_id_name )
-        result_entity_id_count = result_entity_id_qs.count()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = test_id_name )
+        result_count = result_qs.count()
         
         # count should be 0.
         should_be = 0
-        error_string = "Getting entity for uuid: {} and name: {}; should return {}, instead returned {}.".format( my_identifier_uuid, test_id_name, should_be, result_entity_id_count )
-        self.assertEqual( result_entity_id_count, should_be, msg = error_string )
+        error_string = "Getting entity for uuid: {} and name: {}; should return {}, instead returned {}.".format( my_identifier_uuid, test_id_name, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source
@@ -428,15 +428,15 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = my_identifier_name,
-                                                                    id_source_IN = test_id_source )
-        result_entity_id_count = result_entity_id_qs.count()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = test_id_source )
+        result_count = result_qs.count()
         
         # count should be 0.
         should_be = 0
-        error_string = "Getting entity for uuid: {} and name: {} and source: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, test_id_source, should_be, result_entity_id_count )
-        self.assertEqual( result_entity_id_count, should_be, msg = error_string )
+        error_string = "Getting entity for uuid: {} and name: {} and source: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, test_id_source, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source + Entity_Identifier_Type
@@ -451,16 +451,16 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = my_identifier_name,
-                                                                    id_source_IN = my_identifier_source,
-                                                                    id_entity_id_type_IN = bad_identifier_type )
-        result_entity_id_count = result_entity_id_qs.count()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = bad_identifier_type )
+        result_count = result_qs.count()
         
         # count should be 0.
         should_be = 0
-        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_entity_id_type, should_be, result_entity_id_count )
-        self.assertEqual( result_entity_id_count, should_be, msg = error_string )
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_entity_id_type, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type
@@ -476,17 +476,17 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = my_identifier_name,
-                                                                    id_source_IN = my_identifier_source,
-                                                                    id_entity_id_type_IN = my_identifier_entity_id_type,
-                                                                    id_id_type_IN = test_id_id_type )
-        result_entity_id_count = result_entity_id_qs.count()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = my_identifier_entity_id_type,
+                                                          id_id_type_IN = test_id_id_type )
+        result_count = result_qs.count()
         
         # count should be 0.
         should_be = 0
-        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {} and id_type: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_id_type, test_id_id_type, should_be, result_entity_id_count )
-        self.assertEqual( result_entity_id_count, should_be, msg = error_string )
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {} and id_type: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_id_type, test_id_id_type, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes
@@ -503,18 +503,18 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         # get Entity_Identifier and related Entity.
-        result_entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
-                                                                    id_name_IN = my_identifier_name,
-                                                                    id_source_IN = my_identifier_source,
-                                                                    id_entity_id_type_IN = my_identifier_entity_id_type,
-                                                                    id_id_type_IN = my_identifier_id_type,
-                                                                    id_notes_IN = test_id_notes )
-        result_entity_id_count = result_entity_id_qs.count()
+        result_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = my_identifier_uuid,
+                                                          id_name_IN = my_identifier_name,
+                                                          id_source_IN = my_identifier_source,
+                                                          id_entity_id_type_IN = my_identifier_entity_id_type,
+                                                          id_id_type_IN = my_identifier_id_type,
+                                                          id_notes_IN = test_id_notes )
+        result_count = result_qs.count()
         
         # count should be 0.
         should_be = 0
-        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {} and id_type: {} and notes: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_entity_id_type, my_identifier_id_type, test_id_notes, should_be, result_entity_id_count )
-        self.assertEqual( result_entity_id_count, should_be, msg = error_string )
+        error_string = "Getting entity for uuid: {} and name: {} and source: {} and Entity_Identifier_Type: {} and id_type: {} and notes: {}; should return {}, instead returned {}.".format( my_identifier_uuid, my_identifier_name, my_identifier_source, my_identifier_entity_id_type, my_identifier_id_type, test_id_notes, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
 
     #-- END test method test_filter_identifiers --#
         
