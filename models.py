@@ -1624,6 +1624,63 @@ class Entity( Abstract_Trait_Container ):
 
 
     @classmethod
+    def filter_entities( cls,
+                         entity_type_IN = None,
+                         entity_type_slug_IN = None,
+                         qs_IN = None ):
+                                       
+        # return reference
+        qs_OUT = None
+        
+        # declare variables
+        me = "Entity.filter_entities"
+        debug_flag = cls.DEBUG
+        debug_message = None
+        entity_qs = None
+        
+        if ( debug_flag == True ):
+            debug_message = "Inputs: entity_type_IN: {}; entity_type_slug_IN: {}".format( entity_type_IN, entity_type_slug_IN )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#            
+        
+        # figure out starting QuerySet
+        if ( qs_IN is not None ):
+        
+            # QuerySet passed in.  Use it.
+            entity_qs = qs_IN
+            
+        else:
+        
+            # no QuerySet passed in, use Entity_Identifier.objects.all()
+            entity_qs = Entity.objects.all()
+            
+        #-- END init QuerySet --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> entity type instance
+        if ( entity_type_IN is not None ):
+        
+            # we have a type instance
+            entity_qs = entity_qs.filter( my_entity_types = entity_type_IN )
+            
+        #-- END check to see if Entity_Type instance passed in. --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> entity type slug
+        if ( entity_type_slug_IN is not None ):
+        
+            # we have a type instance
+            entity_qs = entity_qs.filter( my_entity_types__slug = entity_type_slug_IN )
+            
+        #-- END check to see if Entity_Type slug passed in. --#        
+                
+        qs_OUT = entity_qs
+        return qs_OUT
+        
+    #-- END class method filter_entities() --#
+
+
+    @classmethod
     def lookup_entities( cls,
                          entity_type_IN = None,
                          entity_type_slug_IN = None,
@@ -1632,7 +1689,8 @@ class Entity( Abstract_Trait_Container ):
                          id_source_IN = None,
                          id_id_type_IN = None,
                          id_entity_id_type_IN = None,
-                         id_notes_IN = None ):
+                         id_notes_IN = None,
+                         qs_IN = None ):
                                        
         # return reference
         qs_OUT = None
@@ -1655,6 +1713,19 @@ class Entity( Abstract_Trait_Container ):
             output_debug( debug_message, me )
         #-- END DEBUG --#            
         
+        # figure out starting QuerySet
+        if ( qs_IN is not None ):
+        
+            # QuerySet passed in.  Use it.
+            entity_qs = qs_IN
+            
+        else:
+        
+            # no QuerySet passed in, use Entity_Identifier.objects.all()
+            entity_qs = Entity.objects.all()
+            
+        #-- END init QuerySet --#
+
         # start with Entity_Identifier filtering.
         entity_id_qs = Entity_Identifier.filter_identifiers( id_uuid_IN = id_uuid_IN,
                                                              id_name_IN = id_name_IN,
@@ -1685,33 +1756,17 @@ class Entity( Abstract_Trait_Container ):
         #-- END loop over identifiers --#
         
         # filter entities to only these IDs.
-        entity_qs = Entity.objects.all()
         entity_qs = entity_qs.filter( id__in = entity_id_set )
         
-        # ! TODO: entity type and entity type slug
+        # do standard Entity-specific filtering
+        entity_qs = cls.filter_entities( entity_type_IN, entity_type_slug_IN, entity_qs )
         
-        #----------------------------------------------------------------------#
-        # ! ----> entity type instance
-        if ( entity_type_IN is not None ):
-        
-            # we have a type instance
-            entity_qs = entity_qs.filter( my_entity_types = entity_type_IN )
-            
-        #-- END check to see if Entity_Type instance passed in. --#
-        
-        #----------------------------------------------------------------------#
-        # ! ----> entity type slug
-        if ( entity_type_slug_IN is not None ):
-        
-            # we have a type instance
-            entity_qs = entity_qs.filter( my_entity_types__slug = entity_type_slug_IN )
-            
-        #-- END check to see if Entity_Type slug passed in. --#        
-                
+        # return QuerySet.                
         qs_OUT = entity_qs
+
         return qs_OUT
         
-    #-- END class method lookup_entity() --#
+    #-- END class method lookup_entities() --#
 
 
     @classmethod
