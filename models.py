@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 import datetime
 import json
 import logging
+import six
 
 # Django imports
 from django.contrib.auth.models import User
@@ -1343,7 +1344,7 @@ class Abstract_Relation( Abstract_Trait_Container ):
 class Abstract_Type( Abstract_Context_Parent ):
 
     #----------------------------------------------------------------------
-    # model fields and meta
+    # ! ----> model fields and meta
     #----------------------------------------------------------------------
 
 
@@ -1369,8 +1370,64 @@ class Abstract_Type( Abstract_Context_Parent ):
 
 
     #----------------------------------------------------------------------
-    # instance methods
+    # ! ----> class methods
     #----------------------------------------------------------------------
+
+
+    @classmethod
+    def get_type_for_slug( cls, type_slug_IN ):
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me = "get_type_for_slug"
+        type_qs = None
+        type_count = None
+        debug_message = None
+        
+        # try to retrieve based on slug
+        type_qs = cls.objects.filter( slug = type_slug_IN )
+        
+        # got anything?
+        type_count = type_qs.count()
+        if ( type_count == 1 ):
+        
+            # yes.  Return it.
+            instance_OUT = type_qs.get()
+            
+        elif ( type_count > 1 ):
+        
+            # more than one match. Impossible.
+            debug_message = "In {}: more than one match for slug {} ( {} )".format( me, type_slug_IN, type_count )
+            output_debug( debug_message, me )
+            instance_OUT = None
+
+        elif ( type_count == 0 ):
+        
+            # no match.
+            debug_message = "In {}: no match for slug {}".format( me, type_slug_IN )
+            output_debug( debug_message, me )
+            instance_OUT = None
+        
+        else:
+        
+            # what?
+            debug_message = "In {}: match count {} is neither 1, > 1, or 0 for slug {}?!?".format( me, type_count, type_slug_IN )
+            output_debug( debug_message, me )
+            instance_OUT = None
+        
+        #-- END check of result count --#
+        
+        return instance_OUT
+        
+    #-- END class method get_type_for_slug --#
+    
+
+
+    #---------------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #---------------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
@@ -1415,6 +1472,37 @@ class Abstract_Type( Abstract_Context_Parent ):
         return string_OUT
 
     #-- END method __str__() --#
+
+
+    #----------------------------------------------------------------------
+    # ! ----> instance methods
+    #----------------------------------------------------------------------
+
+
+    def get_trait_spec( self, slug_IN ):
+        
+        '''
+        For Types that can have associated trait specifications (instances of
+            descendants of Abstract_Related_Type_Trait, where you specify a set
+            of traits that a type knows about and that are associated with the
+            type), this method should be overridden to correctly look for and
+            retrieve the Abstract_Related_Type_Trait child instance (I call it
+            a "trait spec" since I think the name is confusing) for the slug
+            passed in.
+        postconditions: by default, just return None every time.
+        '''
+    
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me = "get_trait_spec"
+        trait_spec = None
+                
+        return instance_OUT
+
+    #-- END method get_trait_spec() --#
+
 
 #-- END model Abstract_Type --#
 
@@ -2985,6 +3073,291 @@ class Entity_Relation( Abstract_Relation ):
     
 
     #----------------------------------------------------------------------
+    # ! ----> class methods
+    #----------------------------------------------------------------------
+    
+    
+    @classmethod
+    def create_entity_relation( cls,
+                                from_IN,
+                                to_IN,
+                                through_IN = None,
+                                type_IN = None,
+                                type_slug_IN = None,
+                                trait_name_to_value_map_IN = None ):
+                                
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        relation_type = None
+        relation_qs = None
+        relation_count = None
+        relation = None
+        trait_dict = None
+        trait_count = None
+        trait_name = None
+        trait_value = None
+        trait_spec = None
+        
+        # first, see if from entity passed in.
+        if ( from_IN is not None ):
+        
+            # got to entity?
+            if ( to_IN is not None ):
+            
+                # pull in type
+                if ( type_IN is not None ):
+                
+                    # if type, use it.
+                    relation_type = type_IN
+                    
+                elif ( ( type_slug_IN is not None ) and ( type_slug_IN != "" ) ):
+                
+                    # if type slug, try to look up that type.
+                    relation_type = Entity_Relation_Type.objects.get( slug = type_slug_IN )
+                    
+                #-- END check to see if we have a type. --#
+                
+                # ! ----> look for existing relation...
+                relation_qs = cls.filter_relations( from_IN = from_IN,
+                                                    to_IN = to_IN,
+                                                    through_IN = through_IN,
+                                                    type_IN = relation_type )
+                
+                # what have we got?
+                relation_count = relation_qs.count()
+                if ( relation_count == 0 ):
+                
+                    # ! ----> Not present.  Create it.
+                    relation = Entity_Relation()
+                    relation.relation_from = from_IN
+                    relation.relation_to = to_IN
+                    
+                    # got THROUGH?
+                    if ( through_IN is not None ):
+                    
+                        # store it
+                        relation.relation_through = through_IN
+                        
+                    #-- END check for THROUGH --#
+                    
+                    # got type?
+                    if ( relation_type is not None ):
+                
+                        # filter on type.
+                        relation.relation_type = relation_type
+                        
+                    #-- END check to see if type. --#
+                    
+                    # save, so we can add related records.
+                    relation.save()
+                    
+                    # ! ----> set traits
+                    
+                    # use trait dictionary to initialize traits
+                    relation.set_basic_traits_from_dict( trait_name_to_value_map_IN )
+                    
+                    # return the new instance
+                    instance_OUT = relation
+                                        
+                elif ( relation_count == 1 ):
+                
+                    # get relation
+                    relation = relation_qs.get()
+                    
+                    # return the instance
+                    instance_OUT = relation
+                                        
+                    # relation already present.
+                    status_message = "relation of type {} FROM {} TO {} THROUGH {} already exists ( {} ).".format( relation_type, from_IN, to_IN, through_IN, relation )
+                    self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.DEBUG )
+
+                elif ( relation_count > 1 ):
+                
+                    # ERROR - multiple matching relations found.
+                    status_message = "ERROR - more then 1 relation of type {} FROM {} TO {} THROUGH {} already exists ( {} ).".format( relation_type, from_IN, to_IN, through_IN, relation_count )
+                    self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+
+                else:
+                
+                    # ERROR - relation count is not 0, 1, or > 1...?
+                    status_message = "UNEXPECTED ERROR - count of relations is {}, not 0, 1, or > 1, for relation of type {} FROM {} TO {} THROUGH {}.".format( relation_type, from_IN, to_IN, through_IN )
+                    self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+
+                #-- END check of count of results --#
+                
+            else:
+            
+                # ERROR - no TO entity passed in.
+                status_message = "ERROR - no TO entity passed in, so no relations to create."
+                self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if TO entity. --#
+        
+        else:
+        
+            # ERROR - no FROM entity passed in.
+            status_message = "ERROR - no FROM entity passed in, so no relations to create."
+            self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if FROM entity passed in. --#
+                
+        return instance_OUT
+                                
+    #-- END class method create_entity_relation() --#
+    
+
+    @classmethod
+    def filter_relations( cls,
+                          from_IN = None,
+                          to_IN = None,
+                          through_IN = None,
+                          type_IN = None,
+                          type_slug_IN = None,
+                          qs_IN = None ):
+                             
+        '''
+        Accepts parameters, filters a QuerySet of Entity_Relations, returns the
+            resulting QuerySet.  Does not look into related models.
+        '''
+                                       
+        # return reference
+        qs_OUT = None
+        
+        # declare variables
+        me = "Entity_Relation.filter_relations"
+        debug_flag = cls.DEBUG
+        debug_message = None
+        relation_qs = None
+        
+        if ( debug_flag == True ):
+            debug_message = "Inputs: FROM: {}; TO: {}; THROUGH: {}; Entity_Relation_Type: {}; type slug: {}".format( from_IN, to_IN, through_IN, type_IN, type_slug_IN )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#            
+        
+        # figure out starting QuerySet
+        if ( qs_IN is not None ):
+        
+            # QuerySet passed in.  Use it.
+            relation_qs = qs_IN
+            
+        else:
+        
+            # no QuerySet passed in, use Entity_Relation.objects.all()
+            relation_qs = cls.objects.all()
+            
+        #-- END init QuerySet --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> FROM entity instance
+        if ( from_IN is not None ):
+        
+            # we have a FROM entity instance
+            relation_qs = relation_qs.filter( relation_from = from_IN )
+            
+        #-- END check to see if FROM entity instance passed in. --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> TO entity instance
+        if ( to_IN is not None ):
+        
+            # we have a TO entity instance
+            relation_qs = relation_qs.filter( relation_to = to_IN )
+            
+        #-- END check to see if TO entity instance passed in. --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> THROUGH entity instance
+        if ( through_IN is not None ):
+        
+            # we have a THROUGH entity instance
+            relation_qs = relation_qs.filter( relation_through = through_IN )
+            
+        #-- END check to see if THROUGH entity instance passed in. --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> type instance
+        if ( type_IN is not None ):
+        
+            # we have a type instance
+            relation_qs = relation_qs.filter( relation_type = type_IN )
+            
+        #-- END check to see if Entity_Relation_Type instance passed in. --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> type slug
+        if ( type_slug_IN is not None ):
+        
+            # we have a type instance
+            relation_qs = relation_qs.filter( relation_type__slug = type_slug_IN )
+            
+        #-- END check to see if Entity_Relation_Type slug passed in. --#        
+                
+        qs_OUT = relation_qs
+        return qs_OUT
+        
+    #-- END class method filter_relations() --#
+
+
+    @classmethod
+    def lookup_relations( cls,
+                          from_IN = None,
+                          to_IN = None,
+                          through_IN = None,
+                          type_IN = None,
+                          type_slug_IN = None,
+                          qs_IN = None ):
+                                       
+        '''
+        Accepts parameters, filters a QuerySet of Entity_Relations, returns the
+            resulting QuerySet. Looks into related models as well as this model.
+        '''
+
+        # return reference
+        qs_OUT = None
+        
+        # declare variables
+        me = "Entity_Relation.lookup_relations"
+        debug_flag = cls.DEBUG
+        debug_message = None
+        relation_qs = None
+        
+        if ( debug_flag == True ):
+            debug_message = "Inputs: FROM: {}; TO: {}; THROUGH: {}; Entity_Relation_Type: {}; type slug: {}".format( from_IN, to_IN, through_IN, type_IN, type_slug_IN )
+            output_debug( debug_message, me )
+        #-- END DEBUG --#            
+        
+        # figure out starting QuerySet
+        if ( qs_IN is not None ):
+        
+            # QuerySet passed in.  Use it.
+            relation_qs = qs_IN
+            
+        else:
+        
+            # no QuerySet passed in, use Entity_Relation.objects.all()
+            relation_qs = Entity_Relation.objects.all()
+            
+        #-- END init QuerySet --#
+
+        # do standard Entity_Relation-specific filtering
+        relation_qs = cls.filter_relations( from_IN = from_IN,
+                                            to_IN = to_IN,
+                                            through_IN = through_IN,
+                                            type_IN = type_IN,
+                                            type_slug_IN = type_slug_IN,
+                                            qs_IN = relation_qs )
+        
+        # return QuerySet.                
+        qs_OUT = relation_qs
+
+        return qs_OUT
+        
+    #-- END class method lookup_relations() --#
+
+
+    #----------------------------------------------------------------------
     # ! ----> overridden built-in methods
     #----------------------------------------------------------------------
 
@@ -3189,6 +3562,58 @@ class Entity_Relation( Abstract_Relation ):
     #-- END method set_entity_relation_trait() --#
 
 
+    def set_basic_traits_from_dict( self, trait_name_to_value_map_IN = None ):
+        
+        # return reference
+        counter_OUT = None
+        
+        # declare variables
+        my_type = None
+        trait_dict = None
+        trait_count = None
+        trait_counter = None
+        trait_name = None
+        trait_value = None
+        trait_spect = None
+
+        # initialize
+        my_type = self.relation_type
+
+        # got a trait dictionary?
+        trait_dict = trait_name_to_value_map_IN
+        trait_counter = 0
+        if ( trait_dict is not None ):
+        
+            # get count    
+            trait_count = len( trait_dict )
+
+            # yes.  Loop over traits.
+            for trait_name, trait_value in six.iteritems( trait_dict ):
+            
+                # increment counter
+                trait_counter += 1
+
+                # see if trait spec for type.
+                trait_spec = None
+                if ( my_type is not None ):
+                
+                    trait_spec = my_type.get_trait_spec( trait_name )
+                    
+                #-- END check to see if relation_type --#
+                
+                # set trait.
+                self.set_trait( trait_name, trait_value, child_type_trait_IN = trait_spec )           
+            
+            #-- END loop over traits --#
+        
+        #-- END check for a trait dict. --#
+        
+        counter_OUT = trait_counter
+
+        return counter_OUT
+        
+    #-- END method set_basic_traits_from_dict() --#
+
 #-- END model Entity_Relation --#
 
 
@@ -3327,7 +3752,7 @@ class Entity_Relation_Trait( Abstract_Trait ):
 class Entity_Relation_Type( Abstract_Type ):
 
     #----------------------------------------------------------------------
-    # model fields and meta
+    # ! ----> model fields and meta
     #----------------------------------------------------------------------
 
 
@@ -3347,9 +3772,9 @@ class Entity_Relation_Type( Abstract_Type ):
     #-- END class Meta --#
 
 
-    #----------------------------------------------------------------------
-    # instance methods
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------------
+    # ! ----> overridden built-in methods
+    #---------------------------------------------------------------------------
 
 
     def __init__( self, *args, **kwargs ):
@@ -3361,10 +3786,65 @@ class Entity_Relation_Type( Abstract_Type ):
 
     # just use the stuff in the parent class.
     
+
+    #----------------------------------------------------------------------
+    # ! ----> instance methods
+    #----------------------------------------------------------------------
+
+
+    def get_trait_spec( self, slug_IN ):
+        
+        '''
+        Retrieve trait specification associated with this type for the slug
+            passed in.  If no match, output message and return None.
+        '''
+    
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me = "get_trait_spec"
+        trait_spec = None
+        
+        # make sure we have a slug
+        if ( ( slug_IN is not None ) and ( slug_IN != "" ) ):
+        
+            try:
+            
+                # look up type using slug
+                trait_spec = self.entity_relation_type_trait_set.get( slug = slug_IN )
+
+            except Entity_Relation_Type_Trait.MultipleObjectsReturned as mor:
+            
+                print( "In {}: Multiple instances returned for slug {}.  Impossible!".format( me, slug_IN ) )
+                trait_spec = None
+            
+            except Entity_Relation_Type_Trait.DoesNotExist as dne:
+            
+                print( "In {}: No instance found for slug {}.".format( me, slug_IN ) )
+                trait_spec = None
+                
+            #-- END try-except --#
+
+        else:
+        
+            # error
+            print( "In {}: ERROR - no slug passed in, can't process.".format( me ) )
+            trait_spec = None
+
+        #-- END check to see if slug passed in --#     
+        
+        instance_OUT = trait_spec   
+        
+        return instance_OUT
+
+    #-- END method get_trait_spec() --#
+
+
 #-- END model Entity_Relation_Type --#
 
 
-# Entity_Type_Trait model
+# Entity_Relation_Type_Trait model
 @python_2_unicode_compatible
 class Entity_Relation_Type_Trait( Abstract_Related_Type_Trait ):
 

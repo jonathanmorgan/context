@@ -419,4 +419,4 @@ class Entity_TraitModelTest( django.test.TestCase ):
     #-- END test method test_get_value_json() --#
 
 
-#-- END test class Entity_Identifier_TypeModelTest --#
+#-- END test class Entity_TraitModelTest --#

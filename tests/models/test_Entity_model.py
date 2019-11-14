@@ -2188,4 +2188,4 @@ class EntityModelTest( django.test.TestCase ):
     #-- END test method test_set_identifier() --#
 
 
-#-- END test class Entity_Identifier_TypeModelTest --#
+#-- END test class EntityModelTest --#
