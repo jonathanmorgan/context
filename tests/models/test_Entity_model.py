@@ -39,52 +39,9 @@ class EntityModelTest( django.test.TestCase ):
     # CLASS NAME
     CLASS_NAME = "EntityModelTest"
 
-    # identifier type names
-    TYPE_NAME_ARTICLE_NEWSBANK_ID = "article_newsbank_id"
-    TYPE_NAME_ARTICLE_SOURCENET_ID = "article_sourcenet_id"
-    TYPE_NAME_PERSON_OPEN_CALAIS_UUID = "person_open_calais_uuid"    
-    TYPE_NAME_PERSON_SOURCENET_ID = "person_sourcenet_id"
-    TYPE_NAME_DOES_NOT_EXIST = "calliope_tree_frog"
-    
-    # map of identifier type names to test IDs
-    TYPE_NAME_TO_ID_MAP = {}
-    TYPE_NAME_TO_ID_MAP[ TYPE_NAME_PERSON_SOURCENET_ID ] = 1
-    TYPE_NAME_TO_ID_MAP[ TYPE_NAME_PERSON_OPEN_CALAIS_UUID ] = 2
-    TYPE_NAME_TO_ID_MAP[ TYPE_NAME_ARTICLE_SOURCENET_ID ] = 3
-    TYPE_NAME_TO_ID_MAP[ TYPE_NAME_ARTICLE_NEWSBANK_ID ] = 4
-    
-    # Entity Type slugs
-    ENTITY_TYPE_SLUG_PERSON = "person"
-    ENTITY_TYPE_SLUG_ARTICLE = "article"
-    ENTITY_TYPE_SLUG_NEWSPAPER = "newspaper"
-    
-    # Entity Trait names
-    TEST_ENTITY_TRAIT_NAME = "flibble_glibble_pants"
-    ENTITY_TRAIT_NAME_FIRST_NAME = "first_name"
-    ENTITY_TRAIT_NAME_MIDDLE_NAME = "middle_name"
-    ENTITY_TRAIT_NAME_LAST_NAME = "last_name"
-    
     # Identifier names
     TEST_IDENTIFIER_NAME = "nickname"
     
-    # identifier type names
-    ID_TYPE_NAME_SOURCENET = "person_sourcenet_id"
-    ID_TYPE_NAME_OPENCALAIS = "person_open_calais_uuid"
-    
-    # test data
-    
-    # Entity_Identifier
-    ENTITY_ID_UUID_NO_MATCH = "calliope_1234567890"
-    ENTITY_ID_NAME_NO_MATCH = "hunterlane"
-    ENTITY_ID_SOURCE_NO_MATCH = "chiquita_brain_fuel"
-    ENTITY_ID_ID_TYPE_NO_MATCH = "shady_salads"
-    ENTITY_ID_NOTES_NO_MATCH = "these notes should not match."
-    
-    # Entity_Trait
-    ENTITY_TRAIT_NAME_NO_MATCH = "garbleflarbleflub"
-    ENTITY_TRAIT_SLUG_NO_MATCH = "garbleflarbleflubstub"
-    ENTITY_TRAIT_LABEL_NO_MATCH = "garbleflarbleflubstubstomp"
-
 
     #----------------------------------------------------------------------
     # ! ----> class methods
@@ -150,7 +107,7 @@ class EntityModelTest( django.test.TestCase ):
         entity_instance = TestHelper.create_test_entity()
         
         # add a type to an entity using slug.
-        type_slug_1 = self.ENTITY_TYPE_SLUG_ARTICLE
+        type_slug_1 = TestHelper.ENTITY_TYPE_SLUG_ARTICLE
         type_1 = entity_instance.add_entity_type( type_slug_1 )
         
         # make sure it is present in the entity's type set.
@@ -161,7 +118,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( type_count, should_be, msg = error_string )
         
         # add a second.
-        type_slug_2 = self.ENTITY_TYPE_SLUG_NEWSPAPER
+        type_slug_2 = TestHelper.ENTITY_TYPE_SLUG_NEWSPAPER
         type_2 = entity_instance.add_entity_type( type_slug_2 )
         
         # make sure it is present in the entity's type set.
@@ -184,7 +141,7 @@ class EntityModelTest( django.test.TestCase ):
         entity_instance = TestHelper.create_test_entity()
         
         # add a type to an entity.
-        type_slug_1 = self.ENTITY_TYPE_SLUG_ARTICLE
+        type_slug_1 = TestHelper.ENTITY_TYPE_SLUG_ARTICLE
         type_1 = Entity_Type.objects.get( slug = type_slug_1 )
         entity_instance.add_entity_type( type_IN = type_1 )
         
@@ -196,7 +153,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( type_count, should_be, msg = error_string )
         
         # add a second.
-        type_slug_2 = self.ENTITY_TYPE_SLUG_NEWSPAPER
+        type_slug_2 = TestHelper.ENTITY_TYPE_SLUG_NEWSPAPER
         type_2 = Entity_Type.objects.get( slug = type_slug_2 )
         entity_instance.add_entity_type( type_IN = type_2 )
         
@@ -265,8 +222,8 @@ class EntityModelTest( django.test.TestCase ):
         eiqs = None
         
         # init
-        test_entity_type_slug = self.ENTITY_TYPE_SLUG_PERSON
-        test_identifier_type_name = self.TYPE_NAME_PERSON_SOURCENET_ID
+        test_entity_type_slug = TestHelper.ENTITY_TYPE_SLUG_PERSON
+        test_identifier_type_name = TestHelper.ID_TYPE_NAME_PERSON_SOURCENET_ID
                 
         # create test entity, with test identifier.
         my_entity = TestHelper.create_test_entity()
@@ -407,7 +364,7 @@ class EntityModelTest( django.test.TestCase ):
         my_entity_identifier = TestHelper.create_test_entity_identifier( my_entity )
         
         # set type and update identifier from it (must then save())
-        my_identifier_type = my_entity_identifier.set_identifier_type_from_name( self.TYPE_NAME_PERSON_SOURCENET_ID, do_use_to_update_fields_IN = True )
+        my_identifier_type = my_entity_identifier.set_identifier_type_from_name( TestHelper.ID_TYPE_NAME_PERSON_SOURCENET_ID, do_use_to_update_fields_IN = True )
         my_entity_identifier.save()
 
         # identifier details
@@ -610,7 +567,7 @@ class EntityModelTest( django.test.TestCase ):
         
         #----------------------------------------------------------------------#        
         # ! ----> Just UUID
-        test_id_uuid = self.ENTITY_ID_UUID_NO_MATCH
+        test_id_uuid = TestHelper.ENTITY_ID_UUID_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -625,7 +582,7 @@ class EntityModelTest( django.test.TestCase ):
         
         #----------------------------------------------------------------------#        
         # ! ----> UUID + ID name
-        test_id_name = self.ENTITY_ID_NAME_NO_MATCH
+        test_id_name = TestHelper.ENTITY_ID_NAME_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -642,7 +599,7 @@ class EntityModelTest( django.test.TestCase ):
         
         #----------------------------------------------------------------------#        
         # ! ----> UUID + ID name + source
-        test_id_source = self.ENTITY_ID_SOURCE_NO_MATCH
+        test_id_source = TestHelper.ENTITY_ID_SOURCE_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -661,7 +618,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#        
         # ! ----> UUID + ID name + source + type instance
-        bad_identifier_type = Entity_Identifier_Type.get_type_for_name( self.TYPE_NAME_ARTICLE_NEWSBANK_ID )
+        bad_identifier_type = Entity_Identifier_Type.get_type_for_name( TestHelper.ID_TYPE_NAME_ARTICLE_NEWSBANK_ID )
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -682,7 +639,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#        
         # ! ----> UUID + ID name + source + type instance + id_type
-        test_id_id_type = self.ENTITY_ID_ID_TYPE_NO_MATCH
+        test_id_id_type = TestHelper.ENTITY_ID_ID_TYPE_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -705,7 +662,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#        
         # ! ----> UUID + ID name + source + type instance + id_type + notes
-        test_id_notes = self.ENTITY_ID_NOTES_NO_MATCH
+        test_id_notes = TestHelper.ENTITY_ID_NOTES_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -769,13 +726,13 @@ class EntityModelTest( django.test.TestCase ):
 
         # build a "person" entity.
         entity_instance = TestHelper.create_test_entity()
-        entity_type = entity_instance.add_entity_type( self.ENTITY_TYPE_SLUG_PERSON )
+        entity_type = entity_instance.add_entity_type( TestHelper.ENTITY_TYPE_SLUG_PERSON )
         
         # add a test trait
         trait_instance = TestHelper.create_test_entity_trait( entity_instance )
         
         # set a type on the trait.
-        entity_type_trait = entity_type.get_trait_spec( self.ENTITY_TRAIT_NAME_FIRST_NAME )
+        entity_type_trait = entity_type.get_trait_spec( TestHelper.ENTITY_TRAIT_NAME_FIRST_NAME )
         trait_instance.set_entity_type_trait( entity_type_trait )
         trait_instance.save()
         
@@ -885,7 +842,7 @@ class EntityModelTest( django.test.TestCase ):
         #======================================================================#
         
         # ==> Just name
-        test_trait_name = self.ENTITY_TRAIT_NAME_NO_MATCH
+        test_trait_name = TestHelper.ENTITY_TRAIT_NAME_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve trait based on:" )
@@ -899,7 +856,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_trait, msg = error_string )
 
         # ==> name + slug
-        test_trait_slug = self.ENTITY_TRAIT_SLUG_NO_MATCH
+        test_trait_slug = TestHelper.ENTITY_TRAIT_SLUG_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve trait based on:" )
@@ -915,7 +872,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_trait, msg = error_string )
 
         # ==> name + slug + label
-        test_trait_label = self.ENTITY_TRAIT_LABEL_NO_MATCH
+        test_trait_label = TestHelper.ENTITY_TRAIT_LABEL_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve trait based on:" )
@@ -933,7 +890,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_trait, msg = error_string )
 
         # ==> name + slug + label + Entity_Type_Trait instance
-        test_entity_type_trait = entity_type.get_trait_spec( self.ENTITY_TRAIT_NAME_LAST_NAME )
+        test_entity_type_trait = entity_type.get_trait_spec( TestHelper.ENTITY_TRAIT_NAME_LAST_NAME )
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve trait based on:" )
@@ -1001,7 +958,7 @@ class EntityModelTest( django.test.TestCase ):
         my_entity_identifier = TestHelper.create_test_entity_identifier( my_entity )
         
         # set type and update identifier from it (must then save())
-        my_identifier_type = my_entity_identifier.set_identifier_type_from_name( self.TYPE_NAME_PERSON_SOURCENET_ID, do_use_to_update_fields_IN = True )
+        my_identifier_type = my_entity_identifier.set_identifier_type_from_name( TestHelper.ID_TYPE_NAME_PERSON_SOURCENET_ID, do_use_to_update_fields_IN = True )
         my_entity_identifier.save()
 
         # identifier details
@@ -1175,7 +1132,7 @@ class EntityModelTest( django.test.TestCase ):
         
         #----------------------------------------------------------------------#        
         # ! ----> ID name
-        test_id_name = self.ENTITY_ID_NAME_NO_MATCH
+        test_id_name = TestHelper.ENTITY_ID_NAME_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1190,7 +1147,7 @@ class EntityModelTest( django.test.TestCase ):
         
         #----------------------------------------------------------------------#        
         # ! ----> ID name + source
-        test_id_source = self.ENTITY_ID_SOURCE_NO_MATCH
+        test_id_source = TestHelper.ENTITY_ID_SOURCE_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1207,7 +1164,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#        
         # ! ----> ID name + source + type instance
-        bad_identifier_type = Entity_Identifier_Type.get_type_for_name( self.TYPE_NAME_ARTICLE_NEWSBANK_ID )
+        bad_identifier_type = Entity_Identifier_Type.get_type_for_name( TestHelper.ID_TYPE_NAME_ARTICLE_NEWSBANK_ID )
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1226,7 +1183,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#        
         # ! ----> ID name + source + type instance + id_type
-        bad_identifier_id_type = self.ENTITY_ID_ID_TYPE_NO_MATCH
+        bad_identifier_id_type = TestHelper.ENTITY_ID_ID_TYPE_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1247,7 +1204,7 @@ class EntityModelTest( django.test.TestCase ):
         
         #----------------------------------------------------------------------#        
         # ! ----> ID name + source + type instance + id_type + notes
-        bad_identifier_notes = self.ENTITY_ID_NOTES_NO_MATCH
+        bad_identifier_notes = TestHelper.ENTITY_ID_NOTES_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1270,7 +1227,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#        
         # ! ----> ID name + source + type instance + id_type + notes + uuid
-        bad_identifier_uuid = self.ENTITY_ID_UUID_NO_MATCH
+        bad_identifier_uuid = TestHelper.ENTITY_ID_UUID_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1351,8 +1308,8 @@ class EntityModelTest( django.test.TestCase ):
         eiqs = None
         
         # init
-        test_entity_type_slug = self.ENTITY_TYPE_SLUG_PERSON
-        test_identifier_type_name = self.TYPE_NAME_PERSON_SOURCENET_ID
+        test_entity_type_slug = TestHelper.ENTITY_TYPE_SLUG_PERSON
+        test_identifier_type_name = TestHelper.ID_TYPE_NAME_PERSON_SOURCENET_ID
                 
         # create test entity, with test identifier.
         my_entity = TestHelper.create_test_entity()
@@ -1641,7 +1598,7 @@ class EntityModelTest( django.test.TestCase ):
         
         #----------------------------------------------------------------------#
         # ! ----> Just UUID
-        test_id_uuid = self.ENTITY_ID_UUID_NO_MATCH
+        test_id_uuid = TestHelper.ENTITY_ID_UUID_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -1659,7 +1616,7 @@ class EntityModelTest( django.test.TestCase ):
         
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name
-        test_id_name = self.ENTITY_ID_NAME_NO_MATCH
+        test_id_name = TestHelper.ENTITY_ID_NAME_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -1679,7 +1636,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source
-        test_id_source = self.ENTITY_ID_SOURCE_NO_MATCH
+        test_id_source = TestHelper.ENTITY_ID_SOURCE_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -1701,7 +1658,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source + Entity_Identifier_Type
-        bad_identifier_type = Entity_Identifier_Type.get_type_for_name( self.TYPE_NAME_ARTICLE_NEWSBANK_ID )
+        bad_identifier_type = Entity_Identifier_Type.get_type_for_name( TestHelper.ID_TYPE_NAME_ARTICLE_NEWSBANK_ID )
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -1725,7 +1682,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type
-        test_id_id_type = self.ENTITY_ID_ID_TYPE_NO_MATCH
+        test_id_id_type = TestHelper.ENTITY_ID_ID_TYPE_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -1751,7 +1708,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes
-        test_id_notes = self.ENTITY_ID_NOTES_NO_MATCH
+        test_id_notes = TestHelper.ENTITY_ID_NOTES_NO_MATCH
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -1780,7 +1737,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes + entity type slug
-        test_entity_type_slug = self.ENTITY_TYPE_SLUG_ARTICLE
+        test_entity_type_slug = TestHelper.ENTITY_TYPE_SLUG_ARTICLE
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -1811,7 +1768,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes + entity type
-        test_entity_type_slug = self.ENTITY_TYPE_SLUG_ARTICLE
+        test_entity_type_slug = TestHelper.ENTITY_TYPE_SLUG_ARTICLE
         test_entity_type = Entity_Type.objects.get( slug = test_entity_type_slug )
 
         if ( debug_flag == True ):
@@ -1843,7 +1800,7 @@ class EntityModelTest( django.test.TestCase ):
 
         #----------------------------------------------------------------------#
         # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes + entity type slug + entity type
-        test_entity_type_slug = self.ENTITY_TYPE_SLUG_ARTICLE
+        test_entity_type_slug = TestHelper.ENTITY_TYPE_SLUG_ARTICLE
         test_entity_type = Entity_Type.objects.get( slug = test_entity_type_slug )
 
         if ( debug_flag == True ):
@@ -1919,10 +1876,10 @@ class EntityModelTest( django.test.TestCase ):
 
         # build a "person" entity.
         entity_instance = TestHelper.create_test_entity()
-        entity_type = entity_instance.add_entity_type( self.ENTITY_TYPE_SLUG_PERSON )
+        entity_type = entity_instance.add_entity_type( TestHelper.ENTITY_TYPE_SLUG_PERSON )
         
         # add a new trait from scratch (flibble_glibble_pants).
-        trait_name = self.TEST_ENTITY_TRAIT_NAME
+        trait_name = TestHelper.ENTITY_TRAIT_NAME_GIBBERISH
         trait_instance = entity_instance.set_entity_trait( trait_name, value_IN = "Jonathan" )
         trait_stored_name = trait_instance.name
         
@@ -1941,7 +1898,7 @@ class EntityModelTest( django.test.TestCase ):
         trait_name = "first_name_string"
         trait_value = "Jonathan"
         original_trait_value = trait_value
-        entity_type_trait = entity_type.get_trait_spec( self.ENTITY_TRAIT_NAME_FIRST_NAME )
+        entity_type_trait = entity_type.get_trait_spec( TestHelper.ENTITY_TRAIT_NAME_FIRST_NAME )
         trait_instance = entity_instance.set_entity_trait( trait_name, value_IN = trait_value, entity_type_trait_IN = entity_type_trait )
         original_trait_id = trait_instance.id
         trait_stored_name = trait_instance.name
@@ -2051,7 +2008,7 @@ class EntityModelTest( django.test.TestCase ):
 
         # build a "person" entity.
         entity_instance = TestHelper.create_test_entity()
-        entity_type = entity_instance.add_entity_type( self.ENTITY_TYPE_SLUG_PERSON )
+        entity_type = entity_instance.add_entity_type( TestHelper.ENTITY_TYPE_SLUG_PERSON )
         
         # add a new identifier from scratch (nickname).
         id_name = self.TEST_IDENTIFIER_NAME
@@ -2076,7 +2033,7 @@ class EntityModelTest( django.test.TestCase ):
         id_name = "SSN"
         id_uuid = "123456789"
         original_id_uuid = id_uuid
-        entity_identifier_type = Entity_Identifier_Type.get_type_for_name( self.ID_TYPE_NAME_SOURCENET )
+        entity_identifier_type = Entity_Identifier_Type.get_type_for_name( TestHelper.ID_TYPE_NAME_SOURCENET )
         id_instance = entity_instance.set_identifier( id_uuid, name_IN = id_name, entity_identifier_type_IN = entity_identifier_type )
         original_id_id = id_instance.id
         id_stored_name = id_instance.name
@@ -2154,7 +2111,7 @@ class EntityModelTest( django.test.TestCase ):
         id_uuid = "1234567abcdefgjlmnqrswz"
         id_source = "all_trains"
         original_id_uuid = id_uuid
-        entity_identifier_type = Entity_Identifier_Type.get_type_for_name( self.ID_TYPE_NAME_OPENCALAIS )
+        entity_identifier_type = Entity_Identifier_Type.get_type_for_name( TestHelper.ID_TYPE_NAME_OPENCALAIS )
         id_instance = entity_instance.set_identifier( id_uuid, name_IN = id_name, source_IN = id_source, entity_identifier_type_IN = entity_identifier_type )
         original_id_id = id_instance.id
         id_stored_name = id_instance.name

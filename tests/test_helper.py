@@ -85,6 +85,20 @@ class TestHelper( object ):
     ID_TYPE_NAME_SOURCENET = "person_sourcenet_id"
     ID_TYPE_NAME_OPENCALAIS = "person_open_calais_uuid"
 
+    # identifier type names
+    ID_TYPE_NAME_ARTICLE_NEWSBANK_ID = "article_newsbank_id"
+    ID_TYPE_NAME_ARTICLE_SOURCENET_ID = "article_sourcenet_id"
+    ID_TYPE_NAME_PERSON_OPEN_CALAIS_UUID = ID_TYPE_NAME_OPENCALAIS    
+    ID_TYPE_NAME_PERSON_SOURCENET_ID = ID_TYPE_NAME_SOURCENET
+    ID_TYPE_NAME_DOES_NOT_EXIST = "calliope_tree_frog"
+    
+    # map of identifier type names to test IDs
+    ID_TYPE_NAME_TO_ID_MAP = {}
+    ID_TYPE_NAME_TO_ID_MAP[ ID_TYPE_NAME_PERSON_SOURCENET_ID ] = 1
+    ID_TYPE_NAME_TO_ID_MAP[ ID_TYPE_NAME_PERSON_OPEN_CALAIS_UUID ] = 2
+    ID_TYPE_NAME_TO_ID_MAP[ ID_TYPE_NAME_ARTICLE_SOURCENET_ID ] = 3
+    ID_TYPE_NAME_TO_ID_MAP[ ID_TYPE_NAME_ARTICLE_NEWSBANK_ID ] = 4
+
     # Entity_Identifier no-match values
     ENTITY_ID_UUID_NO_MATCH = "calliope_1234567890"
     ENTITY_ID_NAME_NO_MATCH = "hunterlane"
@@ -111,7 +125,7 @@ class TestHelper( object ):
     ENTITY_TYPE_SLUG_NEWSPAPER = "newspaper"
     
     # Trait names
-    TEST_ENTITY_TRAIT_NAME = "flibble_glibble_pants"
+    ENTITY_TRAIT_NAME_GIBBERISH = "flibble_glibble_pants"
     ENTITY_TRAIT_NAME_FIRST_NAME = "first_name"
     ENTITY_TRAIT_NAME_MIDDLE_NAME = "middle_name"
     ENTITY_TRAIT_NAME_LAST_NAME = "last_name"

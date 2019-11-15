@@ -34,25 +34,21 @@ class Entity_IdentifierModelTest( django.test.TestCase ):
     CLASS_NAME = "Entity_IdentifierModelTest"
 
     # identifier type names
-    TYPE_NAME_ARTICLE_NEWSBANK_ID = "article_newsbank_id"
-    TYPE_NAME_ARTICLE_SOURCENET_ID = "article_sourcenet_id"
-    TYPE_NAME_PERSON_OPEN_CALAIS_UUID = "person_open_calais_uuid"    
-    TYPE_NAME_PERSON_SOURCENET_ID = "person_sourcenet_id"
-    TYPE_NAME_DOES_NOT_EXIST = "calliope_tree_frog"
+    TYPE_NAME_ARTICLE_NEWSBANK_ID = TestHelper.ID_TYPE_NAME_ARTICLE_NEWSBANK_ID
+    TYPE_NAME_ARTICLE_SOURCENET_ID = TestHelper.ID_TYPE_NAME_ARTICLE_SOURCENET_ID
+    TYPE_NAME_PERSON_OPEN_CALAIS_UUID = TestHelper.ID_TYPE_NAME_PERSON_OPEN_CALAIS_UUID
+    TYPE_NAME_PERSON_SOURCENET_ID = TestHelper.ID_TYPE_NAME_PERSON_SOURCENET_ID
+    TYPE_NAME_DOES_NOT_EXIST = TestHelper.ID_TYPE_NAME_DOES_NOT_EXIST
     
     # map of identifier type names to test IDs
-    TYPE_NAME_TO_ID_MAP = {}
-    TYPE_NAME_TO_ID_MAP[ TYPE_NAME_PERSON_SOURCENET_ID ] = 1
-    TYPE_NAME_TO_ID_MAP[ TYPE_NAME_PERSON_OPEN_CALAIS_UUID ] = 2
-    TYPE_NAME_TO_ID_MAP[ TYPE_NAME_ARTICLE_SOURCENET_ID ] = 3
-    TYPE_NAME_TO_ID_MAP[ TYPE_NAME_ARTICLE_NEWSBANK_ID ] = 4
+    TYPE_NAME_TO_ID_MAP = TestHelper.ID_TYPE_NAME_TO_ID_MAP
     
     # Entity_Identifier
-    ENTITY_ID_UUID_NO_MATCH = "calliope_1234567890"
-    ENTITY_ID_NAME_NO_MATCH = "hunterlane"
-    ENTITY_ID_SOURCE_NO_MATCH = "chiquita_brain_fuel"
-    ENTITY_ID_ID_TYPE_NO_MATCH = "shady_salads"
-    ENTITY_ID_NOTES_NO_MATCH = "these notes should not match."
+    ENTITY_ID_UUID_NO_MATCH = TestHelper.ENTITY_ID_UUID_NO_MATCH
+    ENTITY_ID_NAME_NO_MATCH = TestHelper.ENTITY_ID_NAME_NO_MATCH
+    ENTITY_ID_SOURCE_NO_MATCH = TestHelper.ENTITY_ID_SOURCE_NO_MATCH
+    ENTITY_ID_ID_TYPE_NO_MATCH = TestHelper.ENTITY_ID_ID_TYPE_NO_MATCH
+    ENTITY_ID_NOTES_NO_MATCH = TestHelper.ENTITY_ID_NOTES_NO_MATCH
 
 
     #----------------------------------------------------------------------
