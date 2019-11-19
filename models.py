@@ -3085,6 +3085,13 @@ class Entity_Relation( Abstract_Relation ):
                                 type_IN = None,
                                 type_slug_IN = None,
                                 trait_name_to_value_map_IN = None ):
+                                    
+        '''
+        Create relation based on information passed in.  If relation matching
+            this information already exists, returns it, does not create new or
+            alter anything.  This includes not updating traits from the trait
+            dictionary passed in.
+        '''
                                 
         # return reference
         instance_OUT = None
@@ -3171,19 +3178,19 @@ class Entity_Relation( Abstract_Relation ):
                                         
                     # relation already present.
                     status_message = "relation of type {} FROM {} TO {} THROUGH {} already exists ( {} ).".format( relation_type, from_IN, to_IN, through_IN, relation )
-                    self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.DEBUG )
-
+                    output_log_message( status_message, do_print_IN = True, log_level_code_IN = logging.DEBUG )
+                    
                 elif ( relation_count > 1 ):
                 
                     # ERROR - multiple matching relations found.
                     status_message = "ERROR - more then 1 relation of type {} FROM {} TO {} THROUGH {} already exists ( {} ).".format( relation_type, from_IN, to_IN, through_IN, relation_count )
-                    self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+                    output_log_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
 
                 else:
                 
                     # ERROR - relation count is not 0, 1, or > 1...?
                     status_message = "UNEXPECTED ERROR - count of relations is {}, not 0, 1, or > 1, for relation of type {} FROM {} TO {} THROUGH {}.".format( relation_type, from_IN, to_IN, through_IN )
-                    self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+                    output_log_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
 
                 #-- END check of count of results --#
                 
@@ -3191,7 +3198,7 @@ class Entity_Relation( Abstract_Relation ):
             
                 # ERROR - no TO entity passed in.
                 status_message = "ERROR - no TO entity passed in, so no relations to create."
-                self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+                output_log_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
             
             #-- END check to see if TO entity. --#
         
@@ -3199,7 +3206,7 @@ class Entity_Relation( Abstract_Relation ):
         
             # ERROR - no FROM entity passed in.
             status_message = "ERROR - no FROM entity passed in, so no relations to create."
-            self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+            output_log_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
         
         #-- END check to see if FROM entity passed in. --#
                 
