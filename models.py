@@ -32,6 +32,9 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
+# Django query object for OR-ing selection criteria together.
+from django.db.models import Q
+
 # taggit tagging APIs
 from taggit.managers import TaggableManager
 
@@ -3084,7 +3087,8 @@ class Entity_Relation( Abstract_Relation ):
                                 through_IN = None,
                                 type_IN = None,
                                 type_slug_IN = None,
-                                trait_name_to_value_map_IN = None ):
+                                trait_name_to_value_map_IN = None,
+                                match_trait_dict_IN = None ):
                                     
         '''
         Create relation based on information passed in.  If relation matching
@@ -3127,10 +3131,11 @@ class Entity_Relation( Abstract_Relation ):
                 #-- END check to see if we have a type. --#
                 
                 # ! ----> look for existing relation...
-                relation_qs = cls.filter_relations( from_IN = from_IN,
+                relation_qs = cls.lookup_relations( from_IN = from_IN,
                                                     to_IN = to_IN,
                                                     through_IN = through_IN,
-                                                    type_IN = relation_type )
+                                                    type_IN = relation_type,
+                                                    match_trait_dict_IN = match_trait_dict_IN )
                 
                 # what have we got?
                 relation_count = relation_qs.count()
@@ -3314,6 +3319,7 @@ class Entity_Relation( Abstract_Relation ):
                           through_IN = None,
                           type_IN = None,
                           type_slug_IN = None,
+                          match_trait_dict_IN = None,
                           qs_IN = None ):
                                        
         '''
@@ -3329,6 +3335,10 @@ class Entity_Relation( Abstract_Relation ):
         debug_flag = cls.DEBUG
         debug_message = None
         relation_qs = None
+        relation_q = None
+        match_trait_count = None
+        trait_name = None
+        trait_value = None
         
         if ( debug_flag == True ):
             debug_message = "Inputs: FROM: {}; TO: {}; THROUGH: {}; Entity_Relation_Type: {}; type slug: {}".format( from_IN, to_IN, through_IN, type_IN, type_slug_IN )
@@ -3355,6 +3365,28 @@ class Entity_Relation( Abstract_Relation ):
                                             type_IN = type_IN,
                                             type_slug_IN = type_slug_IN,
                                             qs_IN = relation_qs )
+                                            
+        # do we need to also match trait values?
+        if ( match_trait_dict_IN is not None ):
+        
+            # anything in the dictionary?
+            match_trait_count = len( match_trait_dict_IN )
+            if ( match_trait_count > 0 ):
+            
+                # there is something there.  limit to those items that have
+                #     traits matching those passed in.
+                for trait_name, trait_value in six.iteritems( match_trait_dict_IN ):
+                
+                    # include relations with traits that have the name and
+                    #     value passed in.
+                    relation_qs = relation_qs.filter( entity_relation_trait__name = trait_name )
+                    relation_qs = relation_qs.filter( entity_relation_trait__value = trait_value )
+                
+                #-- END loop over trait values --#
+                
+            #-- END check to see if traits passed in. --#
+        
+        #-- END check to see if trait dictionary passed in. --#
         
         # return QuerySet.                
         qs_OUT = relation_qs

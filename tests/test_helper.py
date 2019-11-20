@@ -124,12 +124,24 @@ class TestHelper( object ):
     ENTITY_TYPE_SLUG_ARTICLE = "article"
     ENTITY_TYPE_SLUG_NEWSPAPER = "newspaper"
     
+    #---------------------------------------------------------------------------
+    # ! ----> Traits    
+    
     # Trait names
-    ENTITY_TRAIT_NAME_GIBBERISH = "flibble_glibble_pants"
+    TRAIT_NAME_GIBBERISH = "flibble_glibble_pants"
+    ENTITY_TRAIT_NAME_GIBBERISH = TRAIT_NAME_GIBBERISH
     ENTITY_TRAIT_NAME_FIRST_NAME = "first_name"
     ENTITY_TRAIT_NAME_MIDDLE_NAME = "middle_name"
     ENTITY_TRAIT_NAME_LAST_NAME = "last_name"
     ENTITY_RELATION_TRAIT_NAME_PUB_DATE = "pub_date"
+    ENTITY_RELATION_TRAIT_NAME_NEWSPAPER_ID = "sourcenet-Newspaper-ID"
+    
+    # Trait values
+    TRAIT_VALUE_GIBBERISH = "glarbleblarg"
+    TRAIT_VALUE_123456 = "123456"
+    TRAIT_VALUE_19230521 = "1923-05-21"
+    TRAIT_VALUE_19230522 = "1923-05-22"
+    TRAIT_VALUE_19230523 = "1923-05-23"
     
     #---------------------------------------------------------------------------
     # ! ----> Entity_Relation
@@ -376,6 +388,8 @@ class TestHelper( object ):
         relation_through = None
         relation_type_slug = None
         relation_traits = None
+        trait_name = None
+        trait_value = None
         relation_instance = None
         
         # first, see if we already have this data created.
@@ -409,6 +423,19 @@ class TestHelper( object ):
             relation_type_slug = cls.CONTEXT_RELATION_TYPE_SLUG_AUTHOR
             relation_traits = None
             
+            # add a couple of traits
+            relation_traits = {}
+            
+            # add a new trait from scratch (flibble_glibble_pants).
+            trait_name = cls.ENTITY_RELATION_TRAIT_NAME_NEWSPAPER_ID
+            trait_value = cls.TRAIT_VALUE_123456
+            relation_traits[ trait_name ] = trait_value
+        
+            # trait with a type specification.  Make sure the meta-information was updated.
+            trait_name = cls.ENTITY_RELATION_TRAIT_NAME_PUB_DATE
+            trait_value = cls.TRAIT_VALUE_19230521
+            relation_traits[ trait_name ] = trait_value
+            
             # pull in entities
             relation_from = cls.test_entity_number_to_instance_map.get( relation_from_number, None )
             relation_to = cls.test_entity_number_to_instance_map.get( relation_to_number, None )
@@ -432,6 +459,24 @@ class TestHelper( object ):
             relation_type_slug = cls.CONTEXT_RELATION_TYPE_SLUG_SUBJECT
             relation_traits = None
             
+            # add a couple of traits
+            relation_traits = {}
+            
+            # add a new trait from scratch (flibble_glibble_pants).
+            trait_name = cls.ENTITY_RELATION_TRAIT_NAME_NEWSPAPER_ID
+            trait_value = cls.TRAIT_VALUE_123456
+            relation_traits[ trait_name ] = trait_value
+        
+            # add a new trait from scratch (flibble_glibble_pants).
+            trait_name = cls.TRAIT_NAME_GIBBERISH
+            trait_value = cls.TRAIT_VALUE_GIBBERISH
+            relation_traits[ trait_name ] = trait_value
+
+            # trait with a type specification.  Make sure the meta-information was updated.
+            trait_name = cls.ENTITY_RELATION_TRAIT_NAME_PUB_DATE
+            trait_value = cls.TRAIT_VALUE_19230521
+            relation_traits[ trait_name ] = trait_value
+            
             # pull in entities
             relation_from = cls.test_entity_number_to_instance_map.get( relation_from_number, None )
             relation_to = cls.test_entity_number_to_instance_map.get( relation_to_number, None )
@@ -454,6 +499,19 @@ class TestHelper( object ):
             relation_through_number = None
             relation_type_slug = cls.CONTEXT_RELATION_TYPE_SLUG_SOURCE
             relation_traits = None
+            
+            # add a couple of traits
+            relation_traits = {}
+            
+            # add a new trait from scratch (flibble_glibble_pants).
+            trait_name = cls.ENTITY_RELATION_TRAIT_NAME_NEWSPAPER_ID
+            trait_value = cls.TRAIT_VALUE_123456
+            relation_traits[ trait_name ] = trait_value
+        
+            # trait with a type specification.  Make sure the meta-information was updated.
+            trait_name = cls.ENTITY_RELATION_TRAIT_NAME_PUB_DATE
+            trait_value = cls.TRAIT_VALUE_19230522
+            relation_traits[ trait_name ] = trait_value
             
             # pull in entities
             relation_from = cls.test_entity_number_to_instance_map.get( relation_from_number, None )

@@ -102,9 +102,11 @@ class Entity_RelationModelTest( django.test.TestCase ):
                            type_slug_IN = None,
                            trait_dict_IN = None,
                            id_should_be_IN = None,
+                           id_should_not_be_IN = None,
                            check_pub_date_IN = True,
                            pub_date_should_be_IN = None,
-                           pub_date_should_not_be_IN = None ):
+                           pub_date_should_not_be_IN = None,
+                           match_trait_dict_IN = None ):
 
         # declare variables
         error_string = None
@@ -136,7 +138,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
                                                       to_IN = to_IN,
                                                       through_IN = through_IN,
                                                       type_IN = type_IN,
-                                                      type_slug_IN = type_slug_IN )
+                                                      type_slug_IN = type_slug_IN,
+                                                      match_trait_dict_IN = match_trait_dict_IN )
         result_count = result_qs.count()
         
         # count should be 1.
@@ -162,13 +165,23 @@ class Entity_RelationModelTest( django.test.TestCase ):
         error_string = "lookup-ed relation ID = {} --> should match created ID {}".format( stored_relation_id, should_be )
         self.assertEqual( stored_relation_id, should_be, msg = error_string )
         
-        # additional ID check?
+        # additional ID check - ID should be X?
         if ( id_should_be_IN is not None ):
         
             # more ID
             should_be = id_should_be_IN
             error_string = "lookup-ed relation ID = {} --> should also match {}".format( stored_relation_id, should_be )
             self.assertEqual( stored_relation_id, should_be, msg = error_string )
+    
+        #-- END check for id_should_be_IN --#            
+        
+        # additional ID check - ID should NOT be X?
+        if ( id_should_not_be_IN is not None ):
+        
+            # more ID
+            should_not_be = id_should_not_be_IN
+            error_string = "lookup-ed relation ID = {} --> should NOT match {}".format( stored_relation_id, should_not_be )
+            self.assertNotEqual( stored_relation_id, should_not_be, msg = error_string )
     
         #-- END check for id_should_be_IN --#            
         
@@ -408,7 +421,7 @@ class Entity_RelationModelTest( django.test.TestCase ):
         '''
         
         # declare variables
-        me = "test_create_entity_relation_2"
+        me = "test_create_entity_relation_1"
         relation_instance = None
         entity_type = None
         trait_dict = None
@@ -750,6 +763,164 @@ class Entity_RelationModelTest( django.test.TestCase ):
                                 trait_dict_IN = trait_dict )
                         
     #-- END method test_create_entity_relation_3() --#
+        
+    
+    def test_create_entity_relation_filter_traits( self ):
+        
+        '''
+        Test method that accepts details of a relation, creates it.  This test
+            validates including trait values in check to see if a Relation
+            already exists - so not just looking for matching FROM, TO, THROUGH,
+            etc., but also looking for matching trait values.
+
+        Signature:
+
+        @classmethod
+        d e f create_entity_relation( cls,
+                                    from_IN,
+                                    to_IN,
+                                    through_IN = None,
+                                    type_IN = None,
+                                    type_slug_IN = None,
+                                    trait_name_to_value_map_IN = None,
+                                    match_trait_dict_IN = None ):
+
+        '''
+        
+        # declare variables
+        me = "test_create_entity_relation_filter_traits"
+        relation_instance = None
+        entity_type = None
+        trait_dict = None
+        trait_name_list = None
+        trait_name = None
+        trait_value = None
+
+        # declare variables - create relation
+        test_relation_qs = None
+        test_relation_count = None
+        test_relation = None
+        test_relation_id = None
+        relation_from = None
+        relation_to = None
+        relation_through = None
+        relation_type = None
+        relation_type_slug = None
+        result_qs = None
+        result_count = None
+        created_relation = None
+        created_relation_id = None
+        original_relation_id = None
+
+        # debug
+        debug_flag = self.DEBUG
+
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        
+        # create test relation data.
+        TestHelper.create_test_relations()
+        
+        # ! ----> create relation - FROM 3 TO 1 THROUGH 4, type "author", pub_date "1923-05-22"
+        
+        # init relation properties
+        relation_from = TestHelper.test_entity_number_to_instance_map[ 4 ]
+        relation_to = TestHelper.test_entity_number_to_instance_map[ 1 ]
+        relation_through = None
+        relation_type = Entity_Relation_Type.get_type_for_slug( TestHelper.CONTEXT_RELATION_TYPE_SLUG_AUTHOR )
+        relation_type_slug = relation_type.slug
+        relation_trait_filter_dict = {}
+        
+        # set up traits
+        trait_dict = {}
+        trait_name_list = []
+        
+        # add a new trait from scratch (flibble_glibble_pants).
+        trait_name = TestHelper.ENTITY_TRAIT_NAME_GIBBERISH
+        trait_value = "Jonathan"
+        trait_name_list.append( trait_name )
+        trait_dict[ trait_name ] = trait_value
+        
+        # trait with a type specification.  Make sure the meta-information was updated.
+        trait_name = TestHelper.ENTITY_RELATION_TRAIT_NAME_PUB_DATE
+        trait_value = "1923-05-22"
+        original_pub_date = trait_value
+        trait_name_list.append( trait_name )
+        trait_dict[ trait_name ] = trait_value
+        relation_trait_filter_dict[ trait_name ] = trait_value
+        
+        # ! ----> get count of FROM 3 TO 1 THROUGH 4, type "author", any pub_date
+        
+        # get match to everything but the trait value
+        test_relation_qs = Entity_Relation.lookup_relations( from_IN = relation_from,
+                                                             to_IN = relation_to,
+                                                             through_IN = relation_through,
+                                                             type_IN = relation_type,
+                                                             type_slug_IN = relation_type_slug )
+        test_relation_count = test_relation_qs.count()
+
+        # count should be 1.
+        should_be = 1
+        error_string = "Getting entity for FROM: {}, TO: {}, THROUGH:{}, Entity_Relation_Type: {}, type slug: {}; should_be {}, instead returned {}.".format( relation_from, relation_to, relation_through, relation_type, relation_type_slug, should_be, test_relation_count )
+        self.assertEqual( test_relation_count, should_be, msg = error_string )
+
+        # get instance and ID.        
+        test_relation = test_relation_qs.get()
+        test_relation_id = test_relation.id
+        
+        if ( debug_flag == True ):
+            print( "\n--------> Create Entity_Relation:" )
+            print( " - relation_from: {}".format( relation_from ) )
+            print( " - relation_to: {}".format( relation_to ) )
+            print( " - relation_through: {}".format( relation_through ) )
+            print( " - relation_type: {}".format( relation_type ) )
+            print( " - relation_type_slug: {}".format( relation_type_slug ) )
+            print( " - relation trait_dict: {}".format( trait_dict ) )
+            print( " - relation filter trait_dict: {}".format( relation_trait_filter_dict ) )
+        #-- END DEBUG --#
+        
+        # create relation using slug
+        created_relation = Entity_Relation.create_entity_relation( relation_from,
+                                                                   relation_to,
+                                                                   through_IN = relation_through,
+                                                                   type_slug_IN = relation_type_slug,
+                                                                   trait_name_to_value_map_IN = trait_dict,
+                                                                   match_trait_dict_IN = relation_trait_filter_dict )
+        
+        # instance should not be None
+        error_string = "None returned creating relation for FROM: {}, TO: {}, THROUGH:{}, Entity_Relation_Type: {}, type slug: {}, trait dict: {}".format( relation_from, relation_to, relation_through, relation_type, relation_type_slug, trait_dict )
+        self.assertIsNotNone( created_relation, msg = error_string )
+        
+        # store ID for testing.
+        created_relation_id = created_relation.id
+        original_relation_id = created_relation_id
+        
+        # ! ----> validate relation        
+        self.validate_relation( created_relation,
+                                relation_from,
+                                relation_to,
+                                through_IN = relation_through,
+                                type_IN = relation_type,
+                                type_slug_IN = relation_type_slug,
+                                trait_dict_IN = trait_dict,
+                                id_should_not_be_IN = test_relation_id,
+                                match_trait_dict_IN = relation_trait_filter_dict )
+                
+        # ! ----> get count of FROM 3 TO 1 THROUGH 4, type "author", any pub_date
+                
+        # get match to everything but the trait value
+        test_relation_qs = Entity_Relation.lookup_relations( from_IN = relation_from,
+                                                             to_IN = relation_to,
+                                                             through_IN = relation_through,
+                                                             type_IN = relation_type,
+                                                             type_slug_IN = relation_type_slug )
+        test_relation_count = test_relation_qs.count()
+
+        # count should be 2.
+        should_be = 2
+        error_string = "Getting entity for FROM: {}, TO: {}, THROUGH:{}, Entity_Relation_Type: {}, type slug: {}; should_be {}, instead returned {}.".format( relation_from, relation_to, relation_through, relation_type, relation_type_slug, should_be, test_relation_count )
+        self.assertEqual( test_relation_count, should_be, msg = error_string )
+
+    #-- END method test_create_entity_relation_filter_traits() --#
         
     
     def test_filter_relations( self ):
@@ -2129,6 +2300,267 @@ class Entity_RelationModelTest( django.test.TestCase ):
     #-- END test method test_lookup_relations --#
         
     
+    def test_lookup_relations_traits( self ):
+        
+        '''
+        Test using the test relation data created in
+            TestHelper.create_test_relations().
+        '''
+        
+        # declare variables
+        me = "test_lookup_relations_traits"
+        result_qs = None
+        result_count = None
+        
+        # declare variables - Lookup info
+        relation_from = None
+        relation_to = None
+        relation_through = None
+        relation_type = None
+        relation_type_slug = None
+        relation_traits = None
+        trait_name = None
+        trait_value = None
+        
+        # declare variables - test values
+        test_entity_type_slug = None
+        test_entity_type = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+
+        # init - test relation data
+        TestHelper.create_test_relations()
+        
+        #======================================================================#
+        # ! ----> MATCHES
+        #======================================================================#
+        
+        #----------------------------------------------------------------------#
+        # ! --------> pub_date = "1923-05-22" (1)
+        
+        # init filter parameters
+        relation_from = None
+        relation_to = None
+        relation_through = None
+        relation_type = None
+        relation_type_slug = None
+        relation_traits = {}
+        
+        # trait with a type specification.  Make sure the meta-information was updated.
+        trait_name = TestHelper.ENTITY_RELATION_TRAIT_NAME_PUB_DATE
+        trait_value = "1923-05-22"
+        relation_traits[ trait_name ] = trait_value
+
+        if ( debug_flag == True ):
+            print( "\n--------> Lookup Entity_Relation based on:" )
+            print( " - relation_from: {}".format( relation_from ) )
+            print( " - relation_to: {}".format( relation_to ) )
+            print( " - relation_through: {}".format( relation_through ) )
+            print( " - relation_type: {}".format( relation_type ) )
+            print( " - relation_type_slug: {}".format( relation_type_slug ) )
+            print( " - relation_traits: {}".format( relation_type_slug ) )            
+        #-- END DEBUG --#
+        
+        # get Entity_Relation QuerySet.
+        result_qs = Entity_Relation.lookup_relations( from_IN = relation_from,
+                                                      to_IN = relation_to,
+                                                      through_IN = relation_through,
+                                                      type_IN = relation_type,
+                                                      type_slug_IN = relation_type_slug,
+                                                      match_trait_dict_IN = relation_traits )
+        result_count = result_qs.count()
+        
+        # count should be 1.
+        should_be = 1
+        error_string = "Getting entity for FROM: {}, TO: {}, THROUGH:{}, Entity_Relation_Type: {}, type slug: {}; should_be {}, instead returned {}.".format( relation_from, relation_to, relation_through, relation_type, relation_type_slug, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+        
+
+        #----------------------------------------------------------------------#
+        # ! --------> pub_date = "1923-05-21" (2)
+        
+        # init filter parameters
+        relation_from = None
+        relation_to = None
+        relation_through = None
+        relation_type = None
+        relation_type_slug = None
+        relation_traits = {}
+        
+        # trait with a type specification.  Make sure the meta-information was updated.
+        trait_name = TestHelper.ENTITY_RELATION_TRAIT_NAME_PUB_DATE
+        trait_value = "1923-05-21"
+        relation_traits[ trait_name ] = trait_value
+
+        if ( debug_flag == True ):
+            print( "\n--------> Lookup Entity_Relation based on:" )
+            print( " - relation_from: {}".format( relation_from ) )
+            print( " - relation_to: {}".format( relation_to ) )
+            print( " - relation_through: {}".format( relation_through ) )
+            print( " - relation_type: {}".format( relation_type ) )
+            print( " - relation_type_slug: {}".format( relation_type_slug ) )
+            print( " - relation_traits: {}".format( relation_type_slug ) )            
+        #-- END DEBUG --#
+        
+        # get Entity_Relation QuerySet.
+        result_qs = Entity_Relation.lookup_relations( from_IN = relation_from,
+                                                      to_IN = relation_to,
+                                                      through_IN = relation_through,
+                                                      type_IN = relation_type,
+                                                      type_slug_IN = relation_type_slug,
+                                                      match_trait_dict_IN = relation_traits )
+        result_count = result_qs.count()
+        
+        # count should be 2.
+        should_be = 2
+        error_string = "Getting entity for FROM: {}, TO: {}, THROUGH:{}, Entity_Relation_Type: {}, type slug: {}; should_be {}, instead returned {}.".format( relation_from, relation_to, relation_through, relation_type, relation_type_slug, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+
+
+        #----------------------------------------------------------------------#
+        # ! --------> pub_date = "1923-05-21" and sourcenet-Newspaper-ID = 123456 (2)
+        
+        # init filter parameters
+        relation_from = None
+        relation_to = None
+        relation_through = None
+        relation_type = None
+        relation_type_slug = None
+        relation_traits = {}
+        
+        # trait with a type specification.  Make sure the meta-information was updated.
+        trait_name = TestHelper.ENTITY_RELATION_TRAIT_NAME_PUB_DATE
+        trait_value = TestHelper.TRAIT_VALUE_19230521
+        relation_traits[ trait_name ] = trait_value
+
+        # second trait, should not further limit.
+        trait_name = TestHelper.ENTITY_RELATION_TRAIT_NAME_NEWSPAPER_ID
+        trait_value = TestHelper.TRAIT_VALUE_123456
+        relation_traits[ trait_name ] = trait_value
+
+        if ( debug_flag == True ):
+            print( "\n--------> Lookup Entity_Relation based on:" )
+            print( " - relation_from: {}".format( relation_from ) )
+            print( " - relation_to: {}".format( relation_to ) )
+            print( " - relation_through: {}".format( relation_through ) )
+            print( " - relation_type: {}".format( relation_type ) )
+            print( " - relation_type_slug: {}".format( relation_type_slug ) )
+            print( " - relation_traits: {}".format( relation_type_slug ) )            
+        #-- END DEBUG --#
+        
+        # get Entity_Relation QuerySet.
+        result_qs = Entity_Relation.lookup_relations( from_IN = relation_from,
+                                                      to_IN = relation_to,
+                                                      through_IN = relation_through,
+                                                      type_IN = relation_type,
+                                                      type_slug_IN = relation_type_slug,
+                                                      match_trait_dict_IN = relation_traits )
+        result_count = result_qs.count()
+        
+        # count should be 2.
+        should_be = 2
+        error_string = "Getting entity for FROM: {}, TO: {}, THROUGH:{}, Entity_Relation_Type: {}, type slug: {}; should_be {}, instead returned {}.".format( relation_from, relation_to, relation_through, relation_type, relation_type_slug, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+
+
+        #----------------------------------------------------------------------#
+        # ! --------> pub_date = "1923-05-21" and sourcenet-Newspaper-ID = 123456 and flibble_glibble_pants = "glarbleblarg" (2)
+        
+        # init filter parameters
+        relation_from = None
+        relation_to = None
+        relation_through = None
+        relation_type = None
+        relation_type_slug = None
+        relation_traits = {}
+        
+        # trait with a type specification.  Make sure the meta-information was updated.
+        trait_name = TestHelper.ENTITY_RELATION_TRAIT_NAME_PUB_DATE
+        trait_value = TestHelper.TRAIT_VALUE_19230521
+        relation_traits[ trait_name ] = trait_value
+
+        # second trait, should not further limit.
+        trait_name = TestHelper.ENTITY_RELATION_TRAIT_NAME_NEWSPAPER_ID
+        trait_value = TestHelper.TRAIT_VALUE_123456
+        relation_traits[ trait_name ] = trait_value
+        
+        # third trait - should limit to 1
+        trait_name = TestHelper.TRAIT_NAME_GIBBERISH
+        trait_value = TestHelper.TRAIT_VALUE_GIBBERISH
+        relation_traits[ trait_name ] = trait_value
+
+        if ( debug_flag == True ):
+            print( "\n--------> Lookup Entity_Relation based on:" )
+            print( " - relation_from: {}".format( relation_from ) )
+            print( " - relation_to: {}".format( relation_to ) )
+            print( " - relation_through: {}".format( relation_through ) )
+            print( " - relation_type: {}".format( relation_type ) )
+            print( " - relation_type_slug: {}".format( relation_type_slug ) )
+            print( " - relation_traits: {}".format( relation_type_slug ) )            
+        #-- END DEBUG --#
+        
+        # get Entity_Relation QuerySet.
+        result_qs = Entity_Relation.lookup_relations( from_IN = relation_from,
+                                                      to_IN = relation_to,
+                                                      through_IN = relation_through,
+                                                      type_IN = relation_type,
+                                                      type_slug_IN = relation_type_slug,
+                                                      match_trait_dict_IN = relation_traits )
+        result_count = result_qs.count()
+        
+        # count should be 1.
+        should_be = 1
+        error_string = "Getting entity for FROM: {}, TO: {}, THROUGH:{}, Entity_Relation_Type: {}, type slug: {}; should_be {}, instead returned {}.".format( relation_from, relation_to, relation_through, relation_type, relation_type_slug, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+
+
+        #----------------------------------------------------------------------#
+        # ! --------> pub_date = "1923-05-23" (0)
+        
+        # init filter parameters
+        relation_from = None
+        relation_to = None
+        relation_through = None
+        relation_type = None
+        relation_type_slug = None
+        relation_traits = {}
+        
+        # trait with a type specification.  Make sure the meta-information was updated.
+        trait_name = TestHelper.ENTITY_RELATION_TRAIT_NAME_PUB_DATE
+        trait_value = "1923-05-23"
+        relation_traits[ trait_name ] = trait_value
+
+        if ( debug_flag == True ):
+            print( "\n--------> Lookup Entity_Relation based on:" )
+            print( " - relation_from: {}".format( relation_from ) )
+            print( " - relation_to: {}".format( relation_to ) )
+            print( " - relation_through: {}".format( relation_through ) )
+            print( " - relation_type: {}".format( relation_type ) )
+            print( " - relation_type_slug: {}".format( relation_type_slug ) )
+            print( " - relation_traits: {}".format( relation_type_slug ) )            
+        #-- END DEBUG --#
+        
+        # get Entity_Relation QuerySet.
+        result_qs = Entity_Relation.lookup_relations( from_IN = relation_from,
+                                                      to_IN = relation_to,
+                                                      through_IN = relation_through,
+                                                      type_IN = relation_type,
+                                                      type_slug_IN = relation_type_slug,
+                                                      match_trait_dict_IN = relation_traits )
+        result_count = result_qs.count()
+        
+        # count should be 0.
+        should_be = 0
+        error_string = "Getting entity for FROM: {}, TO: {}, THROUGH:{}, Entity_Relation_Type: {}, type slug: {}; should_be {}, instead returned {}.".format( relation_from, relation_to, relation_through, relation_type, relation_type_slug, should_be, result_count )
+        self.assertEqual( result_count, should_be, msg = error_string )
+
+
+    #-- END method test_lookup_relations_traits() --#
+    
+                
     def test_set_basic_traits_from_dict( self ):
         
         '''
