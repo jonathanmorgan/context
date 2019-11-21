@@ -170,6 +170,14 @@ class TestHelper( object ):
     ENTITY_NUMBER_TO_NAME_MAP[ 2 ] = "test_entity_2"
     ENTITY_NUMBER_TO_NAME_MAP[ 3 ] = "test_entity_3"
     ENTITY_NUMBER_TO_NAME_MAP[ 4 ] = "test_entity_4"
+    ENTITY_NUMBER_TO_NAME_MAP[ 5 ] = "test_entity_5"
+    ENTITY_NUMBER_TO_NAME_MAP[ 6 ] = "test_entity_6"
+    ENTITY_NUMBER_TO_NAME_MAP[ 7 ] = "test_entity_7"
+    ENTITY_NUMBER_TO_NAME_MAP[ 8 ] = "test_entity_8"
+    ENTITY_NUMBER_TO_NAME_MAP[ 9 ] = "test_entity_9"
+    ENTITY_NUMBER_TO_NAME_MAP[ 10 ] = "test_entity_10"
+    ENTITY_NUMBER_TO_NAME_MAP[ 11 ] = "test_entity_11"
+    ENTITY_NUMBER_TO_NAME_MAP[ 12 ] = "test_entity_12"
 
     # Entity Types
     ENTITY_NUMBER_TO_TYPE_MAP = {}
@@ -177,6 +185,14 @@ class TestHelper( object ):
     ENTITY_NUMBER_TO_TYPE_MAP[ 2 ] = ENTITY_TYPE_SLUG_PERSON
     ENTITY_NUMBER_TO_TYPE_MAP[ 3 ] = ENTITY_TYPE_SLUG_PERSON
     ENTITY_NUMBER_TO_TYPE_MAP[ 4 ] = ENTITY_TYPE_SLUG_ARTICLE
+    ENTITY_NUMBER_TO_TYPE_MAP[ 5 ] = ENTITY_TYPE_SLUG_PERSON
+    ENTITY_NUMBER_TO_TYPE_MAP[ 6 ] = ENTITY_TYPE_SLUG_PERSON
+    ENTITY_NUMBER_TO_TYPE_MAP[ 7 ] = ENTITY_TYPE_SLUG_PERSON
+    ENTITY_NUMBER_TO_TYPE_MAP[ 8 ] = ENTITY_TYPE_SLUG_PERSON
+    ENTITY_NUMBER_TO_TYPE_MAP[ 9 ] = ENTITY_TYPE_SLUG_PERSON
+    ENTITY_NUMBER_TO_TYPE_MAP[ 10 ] = ENTITY_TYPE_SLUG_PERSON
+    ENTITY_NUMBER_TO_TYPE_MAP[ 11 ] = ENTITY_TYPE_SLUG_NEWSPAPER
+    ENTITY_NUMBER_TO_TYPE_MAP[ 12 ] = ENTITY_TYPE_SLUG_ARTICLE
 
     #----------------------------------------------------------------------------
     # ! ==> Class variables
@@ -195,6 +211,50 @@ class TestHelper( object ):
     #-----------------------------------------------------------------------------
     # ! ==> class methods
     #-----------------------------------------------------------------------------
+
+
+    @classmethod
+    def create_test_entities( cls ):
+    
+        '''
+        Creates test entities based on associated ENTITY_NUMBER_TO_NAME_MAP and
+            ENTITY_NUMBER_TO_TYPE_MAP dictionaries which map numbers to names
+            and types.  Loops over the keys in one of the maps, making an entity
+            for each key.
+        '''
+
+        # declare variables
+        me = "create_test_data"
+        test_entity_count = None
+        entity_type_slug = None
+        entity_name = None
+        entity_number = None
+        entity_instance = None
+        
+        # first, see if we already have this data created.
+        test_entity_count = len( cls.test_entity_number_to_instance_map )
+        if ( test_entity_count == 0 ):
+        
+            # ! ----> create entities.
+            
+            # loop over the items in cls.ENTITY_NUMBER_TO_NAME_MAP
+            for entity_number, entity_name in six.iteritems( cls.ENTITY_NUMBER_TO_NAME_MAP ):
+            
+                # get type slug
+                entity_type_slug = cls.ENTITY_NUMBER_TO_TYPE_MAP[ entity_number ]
+                
+                # create entity
+                entity_instance = TestHelper.create_test_entity( entity_type_slug_IN = entity_type_slug,
+                                                                 entity_name_IN = entity_name )
+    
+                # store it.
+                cls.test_entity_number_to_instance_map[ entity_number ] = entity_instance
+                
+            #-- END loop over names and indexes of entities to create --#
+            
+        #-- END check to see if entities already created. --#
+
+    #-- END class method create_test_entities() --#
 
 
     @classmethod
@@ -392,11 +452,12 @@ class TestHelper( object ):
         trait_value = None
         relation_instance = None
         
-        # first, see if we already have this data created.
+        # check to see if 
         test_entity_count = len( cls.test_entity_number_to_instance_map )
         if ( test_entity_count == 0 ):
         
             # ! ----> create entities.
+            cls.create_test_entities()
             
             # loop over the items in cls.ENTITY_NUMBER_TO_NAME_MAP
             for entity_number, entity_name in six.iteritems( cls.ENTITY_NUMBER_TO_NAME_MAP ):
