@@ -818,7 +818,7 @@ class TestHelper( object ):
         current_fixture = ""
         exception_message = None
         
-        print( "\nIn context.TestHelper." + me + "(): starting standardSetUp." )
+        print( "\n\nIn context.TestHelper." + me + "(): starting standardSetUp.\n" )
         
         # clear out maps and lists for created data
         cls.test_entity_number_to_instance_map = {}
