@@ -29,7 +29,7 @@ class EntityModelTest( django.test.TestCase ):
     
 
     #----------------------------------------------------------------------------
-    # ! ----> Constants-ish
+    # ! ==> Constants-ish
     #----------------------------------------------------------------------------
 
 
@@ -44,12 +44,12 @@ class EntityModelTest( django.test.TestCase ):
     
 
     #----------------------------------------------------------------------
-    # ! ----> class methods
+    # ! ==> class methods
     #----------------------------------------------------------------------
 
 
     #----------------------------------------------------------------------------
-    # ! ----> instance methods
+    # ! ==> instance methods
     #----------------------------------------------------------------------------
 
 
@@ -76,8 +76,8 @@ class EntityModelTest( django.test.TestCase ):
         error_count = -1
         error_message = ""
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
-        
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+
         # get setup error count
         setup_error_count = self.setup_error_count
         
@@ -101,7 +101,7 @@ class EntityModelTest( django.test.TestCase ):
         type_count = None
         should_be = None
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
 
         # create test entity
         entity_instance = TestHelper.create_test_entity()
@@ -135,7 +135,7 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "type 1: {} --> count {} should = {}".format( type_slug_1, type_count, should_be )
         self.assertEqual( type_count, should_be, msg = error_string )
 
-        # ! ==> add using Entity_Type instances
+        # ! ----> add using Entity_Type instances
 
         # create test entity
         entity_instance = TestHelper.create_test_entity()
@@ -247,17 +247,17 @@ class EntityModelTest( django.test.TestCase ):
         my_identifier_entity_id_type = my_entity_identifier.entity_identifier_type
         my_identifier_notes = my_entity_identifier.notes
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
         print( "my_entity_identifier: {}".format( my_entity_identifier ) )
 
 
         #======================================================================#
-        # ! ==> filter different ways.
+        # ! ----> filter different ways.
         #======================================================================#
         
         
         #----------------------------------------------------------------------#
-        # ! ----> Just Entity Type Slug
+        # ! --------> Just Entity Type Slug
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -275,7 +275,7 @@ class EntityModelTest( django.test.TestCase ):
         
 
         #----------------------------------------------------------------------#
-        # ! ----> Just Entity Type
+        # ! --------> Just Entity Type
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -293,7 +293,7 @@ class EntityModelTest( django.test.TestCase ):
         
         
         #----------------------------------------------------------------------#
-        # ! ----> Entity Type Slug + Entity Type
+        # ! --------> Entity Type Slug + Entity Type
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -312,7 +312,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_count, should_be, msg = error_string )
                 
 
-    #-- END test method test_filter_entities --#
+    #-- END test method test_add_entity_type() --#
         
     
     def test_get_entity_for_identifier( self ):
@@ -374,7 +374,7 @@ class EntityModelTest( django.test.TestCase ):
         my_identifier_id_type = my_entity_identifier.id_type
         my_identifier_notes = my_entity_identifier.notes
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
         print( "my_entity_identifier: {}".format( my_entity_identifier ) )
 
         #======================================================================#
@@ -408,11 +408,11 @@ class EntityModelTest( django.test.TestCase ):
         #-- END DEBUG --#
         
         #======================================================================#
-        # ! ==> try to get entity - good matches
+        # ! ----> try to get entity - good matches
         #======================================================================#
         
         #----------------------------------------------------------------------#        
-        # ! ----> Just UUID
+        # ! --------> Just UUID
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -432,7 +432,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name
+        # ! --------> UUID + ID name
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -454,7 +454,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name + source
+        # ! --------> UUID + ID name + source
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -478,7 +478,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name + source + type instance
+        # ! --------> UUID + ID name + source + type instance
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -504,7 +504,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name + source + type instance + id_type
+        # ! --------> UUID + ID name + source + type instance + id_type
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -532,7 +532,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name + source + type instance + id_type + notes
+        # ! --------> UUID + ID name + source + type instance + id_type + notes
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity based on:" )
@@ -562,11 +562,11 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
         #======================================================================#
-        # ! ==> try to get entity - bad matches
+        # ! ----> try to get entity - bad matches
         #======================================================================#
         
         #----------------------------------------------------------------------#        
-        # ! ----> Just UUID
+        # ! --------> Just UUID
         test_id_uuid = TestHelper.ENTITY_ID_UUID_NO_MATCH
 
         if ( debug_flag == True ):
@@ -581,7 +581,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_entity, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name
+        # ! --------> UUID + ID name
         test_id_name = TestHelper.ENTITY_ID_NAME_NO_MATCH
 
         if ( debug_flag == True ):
@@ -598,7 +598,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_entity, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name + source
+        # ! --------> UUID + ID name + source
         test_id_source = TestHelper.ENTITY_ID_SOURCE_NO_MATCH
 
         if ( debug_flag == True ):
@@ -617,7 +617,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_entity, msg = error_string )
 
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name + source + type instance
+        # ! --------> UUID + ID name + source + type instance
         bad_identifier_type = Entity_Identifier_Type.get_type_for_name( TestHelper.ID_TYPE_NAME_ARTICLE_NEWSBANK_ID )
 
         if ( debug_flag == True ):
@@ -638,7 +638,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_entity, msg = error_string )
 
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name + source + type instance + id_type
+        # ! --------> UUID + ID name + source + type instance + id_type
         test_id_id_type = TestHelper.ENTITY_ID_ID_TYPE_NO_MATCH
 
         if ( debug_flag == True ):
@@ -661,7 +661,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_entity, msg = error_string )
 
         #----------------------------------------------------------------------#        
-        # ! ----> UUID + ID name + source + type instance + id_type + notes
+        # ! --------> UUID + ID name + source + type instance + id_type + notes
         test_id_notes = TestHelper.ENTITY_ID_NOTES_NO_MATCH
 
         if ( debug_flag == True ):
@@ -722,7 +722,7 @@ class EntityModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
 
         # build a "person" entity.
         entity_instance = TestHelper.create_test_entity()
@@ -742,7 +742,6 @@ class EntityModelTest( django.test.TestCase ):
         my_trait_slug = trait_instance.slug
         my_trait_label = trait_instance.label
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
         print( "trait_instance: {}".format( trait_instance ) )
 
         #======================================================================#
@@ -969,15 +968,15 @@ class EntityModelTest( django.test.TestCase ):
         my_identifier_id_type = my_entity_identifier.id_type
         my_identifier_notes = my_entity_identifier.notes
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
         print( "my_entity_identifier: {}".format( my_entity_identifier ) )
 
         #======================================================================#
-        # ! ==> try to get identifier - good matches
+        # ! ----> try to get identifier - good matches
         #======================================================================#
         
         #----------------------------------------------------------------------#        
-        # ! ----> ID name
+        # ! --------> ID name
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -997,7 +996,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( found, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source
+        # ! --------> ID name + source
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1019,7 +1018,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( found, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source + type instance
+        # ! --------> ID name + source + type instance
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1043,7 +1042,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( found, should_be, msg = error_string )
 
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source + type instance + id_type
+        # ! --------> ID name + source + type instance + id_type
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1069,7 +1068,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( found, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source + type instance + id_type + notes
+        # ! --------> ID name + source + type instance + id_type + notes
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1097,7 +1096,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( found, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source + type instance + id_type + notes + uuid
+        # ! --------> ID name + source + type instance + id_type + notes + uuid
 
         if ( debug_flag == True ):
             print( "\n--------> Retrieve entity identifier based on:" )
@@ -1127,11 +1126,11 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( found, should_be, msg = error_string )
         
         #======================================================================#
-        # ! ==> try to get identifier - bad matches
+        # ! ----> try to get identifier - bad matches
         #======================================================================#
         
         #----------------------------------------------------------------------#        
-        # ! ----> ID name
+        # ! --------> ID name
         test_id_name = TestHelper.ENTITY_ID_NAME_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1146,7 +1145,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_identifier, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source
+        # ! --------> ID name + source
         test_id_source = TestHelper.ENTITY_ID_SOURCE_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1163,7 +1162,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_identifier, msg = error_string )
 
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source + type instance
+        # ! --------> ID name + source + type instance
         bad_identifier_type = Entity_Identifier_Type.get_type_for_name( TestHelper.ID_TYPE_NAME_ARTICLE_NEWSBANK_ID )
 
         if ( debug_flag == True ):
@@ -1182,7 +1181,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_identifier, msg = error_string )
 
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source + type instance + id_type
+        # ! --------> ID name + source + type instance + id_type
         bad_identifier_id_type = TestHelper.ENTITY_ID_ID_TYPE_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1203,7 +1202,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_identifier, msg = error_string )
         
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source + type instance + id_type + notes
+        # ! --------> ID name + source + type instance + id_type + notes
         bad_identifier_notes = TestHelper.ENTITY_ID_NOTES_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1226,7 +1225,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertIsNone( result_identifier, msg = error_string )
 
         #----------------------------------------------------------------------#        
-        # ! ----> ID name + source + type instance + id_type + notes + uuid
+        # ! --------> ID name + source + type instance + id_type + notes + uuid
         bad_identifier_uuid = TestHelper.ENTITY_ID_UUID_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1253,6 +1252,131 @@ class EntityModelTest( django.test.TestCase ):
     #-- END test method test_get_identifier --#
         
     
+    def test_get_my_entity_type( self ):
+        
+        # declare variables
+        me = "test_get_my_entity_type"
+        entity_instance = None
+        type_slug_1 = None
+        type_slug_2 = None
+        type_1 = None
+        type_1_id = None
+        type_2 = None
+        type_2_id = None
+        type_qs = None
+        type_count = None
+        should_be = None
+        test_type = None
+        test_type_id = None
+
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+
+        # create test entity
+        entity_instance = TestHelper.create_test_entity()
+        
+        #----------------------------------------------------------------------#
+        # ! ----> add a type to an entity using slug.
+        #----------------------------------------------------------------------#
+
+        type_slug_1 = TestHelper.ENTITY_TYPE_SLUG_ARTICLE
+        type_1 = entity_instance.add_entity_type( type_slug_1 )
+        type_1_id = type_1.id
+        
+        # make sure it is present in the entity's type set.
+        type_qs = entity_instance.my_entity_types.filter( slug = type_slug_1 )
+        type_count = type_qs.count()
+        should_be = 1
+        error_string = "type 1: {} --> count {} should = {}".format( type_slug_1, type_count, should_be )
+        self.assertEqual( type_count, should_be, msg = error_string )
+        
+        # --------> use get_my_entity_type() with no argument to retrieve it.
+        test_type = entity_instance.get_my_entity_type()
+        
+        # Should not be None
+        error_string = "None returned from no-argument call to get_my_entity_type(), should have returned something."
+        self.assertIsNotNone( test_type, msg = error_string )
+        
+        # type ID should equal the ID of type_1.
+        test_type_id = test_type.id
+        test_value = test_type_id
+        should_be = type_1_id
+        error_string = "no-argument call to get_my_entity_type() returned type with ID: {}, should be {}".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # --------> use get_my_entity_type() with slug to retrieve it.
+        test_type = entity_instance.get_my_entity_type( slug_IN = type_slug_1 )
+        
+        # Should not be None
+        error_string = "None returned from call to get_my_entity_type(), slug_IN = {}, should have returned something.".format( type_slug_1 )
+        self.assertIsNotNone( test_type, msg = error_string )
+        
+        # type ID should equal the ID of type_1.
+        test_type_id = test_type.id
+        test_value = test_type_id
+        should_be = type_1_id
+        error_string = "call to get_my_entity_type(), slug_IN = {}, returned type with ID: {}, should be {}".format( type_slug_1, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> add a second.
+        #----------------------------------------------------------------------#
+
+        type_slug_2 = TestHelper.ENTITY_TYPE_SLUG_NEWSPAPER
+        type_2 = entity_instance.add_entity_type( type_slug_2 )
+        type_2_id = type_2.id
+        
+        # make sure it is present in the entity's type set.
+        type_qs = entity_instance.my_entity_types.filter( slug = type_slug_2 )
+        type_count = type_qs.count()
+        should_be = 1
+        error_string = "type 2: {} --> count {} should = {}".format( type_slug_2, type_count, should_be )
+        self.assertEqual( type_count, should_be, msg = error_string )
+        
+        # make sure the first one is stil there.
+        type_qs = entity_instance.my_entity_types.filter( slug = type_slug_1 )
+        type_count = type_qs.count()
+        should_be = 1
+        error_string = "type 1: {} --> count {} should = {}".format( type_slug_1, type_count, should_be )
+        self.assertEqual( type_count, should_be, msg = error_string )
+
+        # --------> try get_my_entity_type() with no argument.
+        test_type = entity_instance.get_my_entity_type()
+        
+        # Should be None
+        error_string = "Something returned from no-argument call to get_my_entity_type() when multiple types, should be None."
+        self.assertIsNone( test_type, msg = error_string )
+        
+        # --------> use get_my_entity_type() with type_slug_1 to retrieve it.
+        test_type = entity_instance.get_my_entity_type( slug_IN = type_slug_1 )
+        
+        # Should not be None
+        error_string = "None returned from call to get_my_entity_type(), slug_IN = {}, should have returned something.".format( type_slug_1 )
+        self.assertIsNotNone( test_type, msg = error_string )
+        
+        # type ID should equal the ID of type_1.
+        test_type_id = test_type.id
+        test_value = test_type_id
+        should_be = type_1_id
+        error_string = "call to get_my_entity_type(), slug_IN = {}, returned type with ID: {}, should be {}".format( type_slug_1, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # --------> use get_my_entity_type() with type_slug_2 to retrieve it.
+        test_type = entity_instance.get_my_entity_type( slug_IN = type_slug_2 )
+        
+        # Should not be None
+        error_string = "None returned from call to get_my_entity_type(), slug_IN = {}, should have returned something.".format( type_slug_1 )
+        self.assertIsNotNone( test_type, msg = error_string )
+        
+        # type ID should equal the ID of type_1.
+        test_type_id = test_type.id
+        test_value = test_type_id
+        should_be = type_2_id
+        error_string = "call to get_my_entity_type(), slug_IN = {}, returned type with ID: {}, should be {}".format( type_slug_1, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+    #-- END test method test_set_entity_identifier_type() --#
+
+
     def test_lookup_entities( self ):
         
         '''
@@ -1333,17 +1457,17 @@ class EntityModelTest( django.test.TestCase ):
         my_identifier_entity_id_type = my_entity_identifier.entity_identifier_type
         my_identifier_notes = my_entity_identifier.notes
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
         print( "my_entity_identifier: {}".format( my_entity_identifier ) )
 
 
         #======================================================================#
-        # ! ==> filter different ways.
+        # ! ----> filter different ways.
         #======================================================================#
         
         
         #----------------------------------------------------------------------#
-        # ! ----> Just Entity Type Slug
+        # ! --------> Just Entity Type Slug
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -1361,7 +1485,7 @@ class EntityModelTest( django.test.TestCase ):
         
 
         #----------------------------------------------------------------------#
-        # ! ----> Just Entity Type
+        # ! --------> Just Entity Type
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -1379,7 +1503,7 @@ class EntityModelTest( django.test.TestCase ):
         
         
         #----------------------------------------------------------------------#
-        # ! ----> Entity Type Slug + Entity Type
+        # ! --------> Entity Type Slug + Entity Type
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -1399,7 +1523,7 @@ class EntityModelTest( django.test.TestCase ):
                 
         
         #----------------------------------------------------------------------#
-        # ! ----> Entity Type Slug + Entity Type + UUID
+        # ! --------> Entity Type Slug + Entity Type + UUID
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -1426,7 +1550,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#
-        # ! ----> Entity Type Slug + Entity Type + UUID + ID name
+        # ! --------> Entity Type Slug + Entity Type + UUID + ID name
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -1455,7 +1579,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#
-        # ! ----> Entity Type Slug + Entity Type + UUID + ID name + source
+        # ! --------> Entity Type Slug + Entity Type + UUID + ID name + source
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -1486,7 +1610,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
                 
         #----------------------------------------------------------------------#
-        # ! ----> Entity Type Slug + Entity Type + UUID + ID name + source + type instance
+        # ! --------> Entity Type Slug + Entity Type + UUID + ID name + source + type instance
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -1519,7 +1643,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_entity_id, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#
-        # ! ----> Entity Type Slug + Entity Type + UUID + ID name + source + type instance + id_type
+        # ! --------> Entity Type Slug + Entity Type + UUID + ID name + source + type instance + id_type
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -1555,7 +1679,7 @@ class EntityModelTest( django.test.TestCase ):
 
         
         #----------------------------------------------------------------------#
-        # ! ----> Entity Type Slug + Entity Type + UUID + ID name + source + type instance + id_type + notes
+        # ! --------> Entity Type Slug + Entity Type + UUID + ID name + source + type instance + id_type + notes
 
         if ( debug_flag == True ):
             print( "\n--------> Filter Entities based on:" )
@@ -1593,11 +1717,11 @@ class EntityModelTest( django.test.TestCase ):
 
                 
         #======================================================================#
-        # ! ==> try to get entity - bad matches
+        # ! ----> try to get entity - bad matches
         #======================================================================#
         
         #----------------------------------------------------------------------#
-        # ! ----> Just UUID
+        # ! --------> Just UUID
         test_id_uuid = TestHelper.ENTITY_ID_UUID_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1615,7 +1739,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_count, should_be, msg = error_string )
         
         #----------------------------------------------------------------------#
-        # ! ----> UUID + ID name
+        # ! --------> UUID + ID name
         test_id_name = TestHelper.ENTITY_ID_NAME_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1635,7 +1759,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_count, should_be, msg = error_string )
 
         #----------------------------------------------------------------------#
-        # ! ----> UUID + ID name + source
+        # ! --------> UUID + ID name + source
         test_id_source = TestHelper.ENTITY_ID_SOURCE_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1657,7 +1781,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_count, should_be, msg = error_string )
 
         #----------------------------------------------------------------------#
-        # ! ----> UUID + ID name + source + Entity_Identifier_Type
+        # ! --------> UUID + ID name + source + Entity_Identifier_Type
         bad_identifier_type = Entity_Identifier_Type.get_type_for_name( TestHelper.ID_TYPE_NAME_ARTICLE_NEWSBANK_ID )
 
         if ( debug_flag == True ):
@@ -1681,7 +1805,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_count, should_be, msg = error_string )
 
         #----------------------------------------------------------------------#
-        # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type
+        # ! --------> UUID + ID name + source + Entity_Identifier_Type + id_type
         test_id_id_type = TestHelper.ENTITY_ID_ID_TYPE_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1707,7 +1831,7 @@ class EntityModelTest( django.test.TestCase ):
         self.assertEqual( result_count, should_be, msg = error_string )
 
         #----------------------------------------------------------------------#
-        # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes
+        # ! --------> UUID + ID name + source + Entity_Identifier_Type + id_type + notes
         test_id_notes = TestHelper.ENTITY_ID_NOTES_NO_MATCH
 
         if ( debug_flag == True ):
@@ -1736,7 +1860,7 @@ class EntityModelTest( django.test.TestCase ):
 
 
         #----------------------------------------------------------------------#
-        # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes + entity type slug
+        # ! --------> UUID + ID name + source + Entity_Identifier_Type + id_type + notes + entity type slug
         test_entity_type_slug = TestHelper.ENTITY_TYPE_SLUG_ARTICLE
 
         if ( debug_flag == True ):
@@ -1767,7 +1891,7 @@ class EntityModelTest( django.test.TestCase ):
 
 
         #----------------------------------------------------------------------#
-        # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes + entity type
+        # ! --------> UUID + ID name + source + Entity_Identifier_Type + id_type + notes + entity type
         test_entity_type_slug = TestHelper.ENTITY_TYPE_SLUG_ARTICLE
         test_entity_type = Entity_Type.objects.get( slug = test_entity_type_slug )
 
@@ -1799,7 +1923,7 @@ class EntityModelTest( django.test.TestCase ):
 
 
         #----------------------------------------------------------------------#
-        # ! ----> UUID + ID name + source + Entity_Identifier_Type + id_type + notes + entity type slug + entity type
+        # ! --------> UUID + ID name + source + Entity_Identifier_Type + id_type + notes + entity type slug + entity type
         test_entity_type_slug = TestHelper.ENTITY_TYPE_SLUG_ARTICLE
         test_entity_type = Entity_Type.objects.get( slug = test_entity_type_slug )
 
@@ -1872,7 +1996,7 @@ class EntityModelTest( django.test.TestCase ):
 
         # declare variables - trait properties
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
 
         # build a "person" entity.
         entity_instance = TestHelper.create_test_entity()
@@ -2004,7 +2128,7 @@ class EntityModelTest( django.test.TestCase ):
         original_id_id = None
         original_id_uuid = None
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
 
         # build a "person" entity.
         entity_instance = TestHelper.create_test_entity()
@@ -2027,7 +2151,7 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "identifier with name {} --> count {} should = {}".format( id_name, id_count, should_be )
         self.assertEqual( id_count, should_be, msg = error_string )
 
-        # ! ==> create an identifier with a type.
+        # ! ----> create an identifier with a type.
         
         # create an identifier with a type.  Make sure the meta-information was updated.
         id_name = "SSN"
@@ -2062,7 +2186,7 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "identifier UUID {} --> should be {}".format( id_stored_uuid, should_be )
         self.assertEqual( id_stored_uuid, should_be, msg = error_string )
         
-        # ! ==> update the identifier's UUID.  Make sure the value changes.
+        # ! ----> update the identifier's UUID.  Make sure the value changes.
         id_name = entity_identifier_type.name
         id_uuid = "6"
         id_instance = entity_instance.set_identifier( id_uuid, name_IN = id_name, entity_identifier_type_IN = entity_identifier_type )
@@ -2104,7 +2228,7 @@ class EntityModelTest( django.test.TestCase ):
         error_string = "trait value {} --> should NOT be {}".format( id_stored_uuid, should_not_be )
         self.assertNotEqual( id_stored_uuid, should_not_be, msg = error_string )
 
-        # ! ==> create an identifier with a type, override source.
+        # ! ----> create an identifier with a type, override source.
         
         # create an identifier with a type.  Make sure the meta-information was updated.
         id_name = "opencalais_ID"

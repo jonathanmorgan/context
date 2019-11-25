@@ -1315,21 +1315,21 @@ class Abstract_Relation( Abstract_Trait_Container ):
         # got a relation_from?
         if ( self.relation_from is not None ):
         
-            string_list.append( str( self.relation_from ) )
+            string_list.append( "FROM: {}".format( self.relation_from ) )
             
         #-- END check for relation_from. --#
 
         # got a to_term?
         if ( self.relation_to is not None ):
         
-            string_list.append( str( self.relation_to ) )
+            string_list.append( "TO: {}".format( self.relation_to ) )
             
         #-- END check to see if relation_to. --#
         
         # directed?
         if ( self.directed is not None ):
         
-            string_list.append( "( {} )".format( self.directed ) )
+            string_list.append( "( DIRECTED?: {} )".format( self.directed ) )
             
         #-- END check to see if directed. --#
  
@@ -2174,6 +2174,63 @@ class Entity( Abstract_Trait_Container ):
         return instance_OUT
 
     #-- END method get_entity_trait() --#
+
+
+    def get_my_entity_type( self, slug_IN = None ):
+
+        '''
+        Retrieves Entity_Type(s) for the current instance.  If no slug passed
+            in, tries to retrieve a single entity type.  If multiple found,
+            returns None.  If slug passed in, tries to retrieve the a type
+            instance matching that slug that is associated with this instance.
+            If none found, returns None.
+        '''
+        
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me = "get_my_entity_type"
+        debug_flag = self.DEBUG
+        debug_message = None
+        type_qs = None
+        type_count = None
+        
+        if ( debug_flag == True ):
+            debug_message = "Inputs: name: {}; slug: {}; label: {}; entity_type_trait: {}.".format( name_IN, slug_IN, label_IN, entity_type_trait_IN )
+            output_debug(  debug_message, me )
+        #-- END DEBUG --#            
+
+        # got a slug?
+        if ( ( slug_IN is not None ) and ( slug_IN != "" ) ):
+        
+            # we have a slug.
+            type_qs = self.my_entity_types.filter( slug = slug_IN )
+                        
+        else:
+        
+            # no slug.  Just get all.
+            type_qs = self.my_entity_types.all()
+            
+        #-- END make type QuerySet --#
+        
+        # got a single match?
+        type_count = type_qs.count()
+        if ( type_count == 1 ):
+            
+            # yes, we have a single match.  Return it.
+            instance_OUT = type_qs.get()
+            
+        else:
+        
+            # not a single match.  Return None.
+            instance_OUT = None
+            
+        #-- END check to see if match --#
+
+        return instance_OUT
+
+    #-- END method get_my_entity_type() --#
 
 
     def get_identifier( self,
@@ -3409,7 +3466,62 @@ class Entity_Relation( Abstract_Relation ):
     #-- END method __init__() --#
 
     
-    # use parent def __str__( self ):
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got a relation_from?
+        if ( self.relation_from is not None ):
+        
+            string_list.append( "FROM: {}".format( self.relation_from ) )
+            
+        #-- END check for relation_from. --#
+
+        # got a to_term?
+        if ( self.relation_to is not None ):
+        
+            string_list.append( "TO: {}".format( self.relation_to ) )
+            
+        #-- END check to see if relation_to. --#
+        
+        # THROUGH?
+        if ( self.relation_through is not None ):
+        
+            string_list.append( "THROUGH: {}".format( self.relation_through ) )
+            
+        #-- END check to see if relation_to. --#
+        
+        # directed?
+        if ( self.directed is not None ):
+        
+            string_list.append( "DIRECTED?: {}".format( self.directed ) )
+            
+        #-- END check to see if directed. --#
+ 
+        # type?
+        if ( self.relation_type is not None ):
+        
+            string_list.append( "( type: {} - {} )".format( self.relation_type.id, self.relation_type.slug ) )
+            
+        #-- END check for relation_type. --#
+
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+
 
     #----------------------------------------------------------------------
     # ! ----> instance methods
@@ -3794,9 +3906,12 @@ class Entity_Relation_Type( Abstract_Type ):
     # ! ----> model fields and meta
     #----------------------------------------------------------------------
 
-
+    # from parent:
+    #slug = models.SlugField( unique = True )
     #name = models.CharField( max_length = 255, blank = True, null = True )
     #related_model = models.CharField( max_length = 255, blank = True, null = True )
+    #description = models.TextField( blank = True )
+
     parent_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.SET_NULL, blank = True, null = True )
     relation_from_entity_type = models.ForeignKey( "Entity_Type", on_delete = models.SET_NULL, blank = True, null = True, related_name = "relation_from_entity_type_set" )
     relation_to_entity_type = models.ForeignKey( "Entity_Type", on_delete = models.SET_NULL, blank = True, null = True, related_name = "relation_to_entity_type_set" )
