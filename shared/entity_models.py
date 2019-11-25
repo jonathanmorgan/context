@@ -362,14 +362,14 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
             
                 # no match.
                 log_message = "No entities with identifier of type {}, uuid = {}".format( identifier_type_name, my_instance_id )
-                output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = True )
+                output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = DEBUG )
                 
                 # create?
                 if ( do_create_if_none_IN == True ):
                 
                     # no match.
                     log_message = "Creating entity with identifier of type {}, uuid = {}".format( identifier_type_name, my_instance_id )
-                    output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = True )
+                    output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = DEBUG )
                     
                     # got an instance.  Create entity instance.  Init:
                     entity_name_prefix = self.my_entity_name_prefix
@@ -400,7 +400,7 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
                 
                     # no match.
                     log_message = "No entities with identifier of type {}, uuid = {}".format( identifier_type_name, my_instance_id )
-                    output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = True )
+                    output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = DEBUG )
                     
                     # do not create.
                     value_OUT = None

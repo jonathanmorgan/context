@@ -3860,7 +3860,9 @@ class Entity_Relation_Type( Abstract_Type ):
             
             except Entity_Relation_Type_Trait.DoesNotExist as dne:
             
-                print( "In {}: No instance found for slug {}.".format( me, slug_IN ) )
+                if ( DEBUG == True ):
+                    print( "In {}: No instance found for slug {}.".format( me, slug_IN ) )
+                #-- END DEBUG --#
                 trait_spec = None
                 
             #-- END try-except --#
@@ -4120,7 +4122,9 @@ class Entity_Type( Abstract_Type ):
             
             except Entity_Type_Trait.DoesNotExist as dne:
             
-                print( "In {}: No instance found for slug {}.".format( me, slug_IN ) )
+                if ( DEBUG == True ):
+                    print( "In {}: No instance found for slug {}.".format( me, slug_IN ) )
+                #-- END DEBUG --#
                 trait_spec = None
                 
             #-- END try-except --#
