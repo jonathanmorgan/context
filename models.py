@@ -3240,7 +3240,7 @@ class Entity_Relation( Abstract_Relation ):
                                         
                     # relation already present.
                     status_message = "relation of type {} FROM {} TO {} THROUGH {} already exists ( {} ).".format( relation_type, from_IN, to_IN, through_IN, relation )
-                    output_log_message( status_message, do_print_IN = True, log_level_code_IN = logging.DEBUG )
+                    output_log_message( status_message, do_print_IN = DEBUG, log_level_code_IN = logging.DEBUG )
                     
                 elif ( relation_count > 1 ):
                 
