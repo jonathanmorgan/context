@@ -31,7 +31,7 @@ from context.models import Work_Log
 
 # Register your models here.
 #admin.site.register( Entity )
-admin.site.register( Entity_Identifier )
+#admin.site.register( Entity_Identifier )
 #admin.site.register( Entity_Identifier_Type )
 #admin.site.register( Entity_Relation )
 admin.site.register( Entity_Relation_Identifier )
@@ -176,6 +176,42 @@ class EntityAdmin( admin.ModelAdmin ):
 #-- END EntityAdmin admin model --#
 
 admin.site.register( Entity, EntityAdmin )
+
+
+#-------------------------------------------------------------------------------
+# ! --> Entity_Identifier admin definition
+#-------------------------------------------------------------------------------
+
+class Entity_IdentifierAdmin( admin.ModelAdmin ):
+
+    autocomplete_fields = [ 'entity', 'entity_identifier_type' ]
+
+    fieldsets = [
+        (
+            None,
+            { 
+                'fields' : [ 'name', 'entity_identifier_type', 'entity', 'uuid', 'source', 'id_type' ]
+            },
+        ),
+        (
+            "More details (Optional)",
+            {
+                "fields" : [ 'notes', 'tags' ],
+                "classes" : ( "collapse", )
+            }
+        ),
+    ]
+
+    list_display = ( 'id', 'name', 'entity_identifier_type', 'entity', 'uuid', 'source', 'last_modified' )
+    list_display_links = ( 'id', 'name', 'entity_identifier_type' )
+    list_filter = [ 'entity_identifier_type', 'source' ]
+    search_fields = [ 'name', 'uuid', 'source', 'id_type', 'notes', 'id' ]
+    #date_hierarchy = 'pub_date'
+    ordering = [ '-last_modified' ]
+
+#-- END Entity_IdentifierAdmin admin model --#
+
+admin.site.register( Entity_Identifier, Entity_IdentifierAdmin )
 
 
 #-------------------------------------------------------------------------------

@@ -1512,7 +1512,7 @@ class Abstract_Type( Abstract_Context_Parent ):
 
 # Abstract_UUID model
 @python_2_unicode_compatible
-class Abstract_UUID( models.Model ):
+class Abstract_UUID( Abstract_Context_Parent ):
 
     #---------------------------------------------------------------------------
     # ! ----> model fields and meta
