@@ -946,7 +946,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method set_output_specification() --#
 
 
-    def set_output_spec_value( self, name_IN, value_IN ):
+    def set_output_spec_property( self, name_IN, value_IN ):
         
         # return reference
         value_OUT = None
