@@ -7,8 +7,13 @@
         "output_include_column_headers": true
     },
     "relation_selection": {
-        "relation_type_slugs_include": [ "mentioned", "qouted", "shared_byline" ],
-        "relation_type_slugs_exclude": [],
+        "relation_type_slug_filter_combine_type": "AND",
+        "relation_type_slug_filters": [
+            {
+                "comparison_type": "includes",
+                "value_list": [ "mentioned", "qouted", "shared_byline" ]
+            }
+        ],
         "relation_trait_filter_combine_type": "AND",
         "relation_trait_filters": [
             {
@@ -31,24 +36,32 @@
                 "value_list": [ "OpenCalais_REST_API_v2" ]
             }
         ],
-        "entity_type_slugs_include": [],
-        "entity_type_slugs_exclude": [],
-        "entity_type_slugs_from_include": [ "person" ],
-        "entity_type_slugs_from_exclude": [],
-        "entity_type_slugs_to_include": [ "person" ],
-        "entity_type_slugs_to_exclude": [],
-        "entity_type_slugs_through_include": [ "article" ],
-        "entity_type_slugs_through_exclude": [],
+        "entity_type_slug_filter_combine_type": "AND",
+        "entity_type_slug_filters": [
+            {
+                "comparison_type": "includes",
+                "value_list": [ "person" ],
+                "relation_roles_list": [ "FROM" ]
+            },
+            {
+                "comparison_type": "includes",
+                "value_list": [ "person" ],
+                "relation_roles_list": [ "TO" ]
+            },
+            {
+                "comparison_type": "includes",
+                "value_list": [ "article" ],
+                "relation_roles_list": [ "THROUGH" ]
+            }            
+        ],
         "entity_trait_filter_combine_type": "AND",
-        "entity_trait_filters": [],
-        "entity_trait_filters_from": [],
-        "entity_trait_filters_to": [],
-        "entity_trait_filters_through": [
+        "entity_trait_filters": [
             {
                 "name": "sourcenet-Newspaper-ID",
                 "data_type": "int",
                 "comparison_type": "includes",
-                "value_list": [ 1 ]
+                "value_list": [ 1 ],
+                "relation_roles_list": [ "THROUGH" ]
             }
         ],
         "entity_id_filter_combine_type": "AND",
@@ -59,9 +72,6 @@
                 "comparison_type": "includes",
                 "value_list": [ 1, 2, 3 ]
             }
-        ],
-        "entity_id_filters_from": [],
-        "entity_id_filters_to": [],
-        "entity_id_filters_through": []
+        ]
     }
 }

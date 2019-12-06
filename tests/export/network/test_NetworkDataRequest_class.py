@@ -40,7 +40,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
 
 
     # DEBUG
-    DEBUG = True
+    DEBUG = False
 
     # CLASS NAME
     CLASS_NAME = "NetworkDataRequestTest"
@@ -63,6 +63,17 @@ class NetworkDataRequestTest( django.test.TestCase ):
     TEST_OUTPUT_STRUCTURE = "both_trait_columns"
     TEST_OUTPUT_INCLUDE_COLUMN_HEADERS = True
     
+    # basic
+    TEST_BASIC_RELATION_SELECTION_ITEM_COUNT = 8
+    TEST_BASIC_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_BASIC_RELATION_TYPE_SLUG_FILTERS_COUNT = 1
+    TEST_BASIC_RELATION_TRAIT_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_BASIC_RELATION_TRAIT_FILTERS_COUNT = 3
+    TEST_BASIC_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_BASIC_ENTITY_TYPE_SLUG_FILTERS_COUNT = 3
+    TEST_BASIC_ENTITY_TRAIT_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_BASIC_ENTITY_TRAIT_FILTERS_COUNT = 1
+    
     # map of JSON file paths to associated validate functions
     JSON_FILE_TO_VALIDATE_FUNCTION_MAP = {}
     JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_BASIC ] = "validate_basic_instance"
@@ -73,6 +84,57 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------
     # ! ==> class methods
     #----------------------------------------------------------------------
+
+
+    @classmethod
+    def load_basic( cls ):
+        
+        # return reference
+        instance_OUT = None
+        
+        # create instance
+        instance_OUT = NetworkDataRequest()
+        
+        # load basic.
+        instance_OUT.load_network_data_request_json_file( cls.FILE_PATH_NETWORK_DATA_REQUEST_BASIC )
+        
+        return instance_OUT
+        
+    #-- END class method load_basic() --#
+
+
+    @classmethod
+    def load_with_entity_id_filter( cls ):
+        
+        # return reference
+        instance_OUT = None
+        
+        # create instance
+        instance_OUT = NetworkDataRequest()
+        
+        # load basic.
+        instance_OUT.load_network_data_request_json_file( cls.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER )
+        
+        return instance_OUT
+        
+    #-- END class method load_with_entity_id_filter() --#
+
+
+    @classmethod
+    def load_with_entity_select( cls ):
+        
+        # return reference
+        instance_OUT = None
+        
+        # create instance
+        instance_OUT = NetworkDataRequest()
+        
+        # load basic.
+        instance_OUT.load_network_data_request_json_file( cls.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT )
+        
+        return instance_OUT
+        
+    #-- END class method load_with_entity_select() --#
 
 
     #---------------------------------------------------------------------------
@@ -125,19 +187,96 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------------
 
 
-    def validate_basic_instance( self, test_instance_IN ):
+    def validate_basic_instance( self,
+                                 test_instance_IN,
+                                 relation_selection_properties_count_IN = TEST_BASIC_RELATION_SELECTION_ITEM_COUNT ):
         
         # declare variables
         me = "validate_basic_instance"
+        test_temp = None
         test_value = None
         should_be = None
         error_message = None
+        relation_selection_dict = None
+        relation_selection_count = None
 
         # got test instance?
         if ( test_instance_IN is not None ):
         
-            # validate output_specification
+            # ! ----> validate output_specification
             self.validate_output_spec( test_instance_IN )
+            
+            # ! ----> validate relation_selection
+            relation_selection_dict = test_instance_IN.get_relation_select()
+            
+            # count the items
+            relation_selection_count = len( relation_selection_dict )
+            test_value = relation_selection_count
+            should_be = relation_selection_properties_count_IN
+            error_string = "relation_selection has {} items, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! ----> try retrieving relation_selection properties
+            
+            # ! --------> relation_type_slug_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
+            should_be = self.TEST_BASIC_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
+            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> relation_type_slug_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTERS
+            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_BASIC_RELATION_TYPE_SLUG_FILTERS_COUNT
+            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> relation_trait_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
+            should_be = self.TEST_BASIC_RELATION_TRAIT_FILTER_COMBINE_TYPE
+            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> relation_trait_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTERS
+            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_BASIC_RELATION_TRAIT_FILTERS_COUNT
+            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+                        
+            # ! --------> entity_type_slug_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
+            should_be = self.TEST_BASIC_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
+            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # ! --------> entity_type_slug_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTERS
+            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_BASIC_ENTITY_TYPE_SLUG_FILTERS_COUNT
+            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> entity_trait_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
+            should_be = self.TEST_BASIC_ENTITY_TRAIT_FILTER_COMBINE_TYPE
+            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )            
+            
+            # ! --------> entity_trait_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTERS
+            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_BASIC_ENTITY_TRAIT_FILTERS_COUNT
+            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
 
         else:
         
@@ -172,6 +311,9 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
             # validate output_specification
             self.validate_output_spec( test_instance_IN )
+            
+            # validate same as basic
+            self.validate_basic_instance( test_instance_IN )
 
         else:
         
@@ -198,6 +340,10 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
             # validate output_specification
             self.validate_output_spec( test_instance_IN )
+
+            # validate same as basic
+            self.validate_basic_instance( test_instance_IN,
+                                          relation_selection_properties_count_IN = 10 )
 
         else:
         
@@ -363,15 +509,17 @@ class NetworkDataRequestTest( django.test.TestCase ):
                 # get, log, and return exception
                 e = sys.exc_info()[0]
                 
-                # log the exception
-                status_message = "In {}(): ERROR - exception caught while processing JSON file {}, JSON = {}.".format( me, json_file_path, parsed_json )
-                ExceptionHelper.log_exception( e, message_IN = status_message, print_details_IN = debug_flag )
+                # if debug, log the exception details
+                if ( debug_flag == True ):
+
+                    # log the exception
+                    status_message = "In {}(): ERROR - exception caught while processing JSON file {}, JSON = {}.".format( me, json_file_path, parsed_json )
+                    ExceptionHelper.log_exception( e, message_IN = status_message, print_details_IN = debug_flag )
+                    
+                #-- END DEBUG --#
                 
-                # assert that e is None, so we fail the test.
-                test_value = e
-                should_be = None
-                error_string = "Processing JSON {}, got exception {}, should be {}.".format( parsed_json, test_value, should_be )
-                self.assertEqual( test_value, should_be, msg = error_string )                
+                # throw the exception on
+                raise
                 
             #-- try...except. --#
 
@@ -505,15 +653,16 @@ class NetworkDataRequestTest( django.test.TestCase ):
                 # get, log, and return exception
                 e = sys.exc_info()[0]
                 
-                # log the exception
-                status_message = "In {}(): ERROR - exception caught while processing JSON file {}, JSON = {}.".format( me, json_file_path, json_string )
-                ExceptionHelper.log_exception( e, message_IN = status_message, print_details_IN = debug_flag )
-                
-                # assert that e is None, so we fail the test.
-                test_value = e
-                should_be = None
-                error_string = "Processing JSON {}, got exception {}, should be {}.".format( parsed_json, test_value, should_be )
-                self.assertEqual( test_value, should_be, msg = error_string )                
+                # if debug, log the exception details
+                if ( debug_flag == True ):
+
+                    status_message = "In {}(): ERROR - exception caught while processing JSON file {}, JSON = {}.".format( me, json_file_path, json_string )
+                    ExceptionHelper.log_exception( e, message_IN = status_message, print_details_IN = debug_flag )
+                    
+                #-- END DEBUG --#
+
+                # throw the exception again.                
+                raise
                 
             #-- try...except. --#
 

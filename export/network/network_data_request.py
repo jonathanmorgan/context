@@ -125,31 +125,19 @@ class NetworkDataRequest( ContextBase ):
     
     #--------------------------------------------------------------------------#
     # ! ----> filter criteria - relations
-    PROP_NAME_RELATION_TYPE_SLUGS_INCLUDE = "relation_type_slugs_include"
-    PROP_NAME_RELATION_TYPE_SLUGS_EXCLUDE = "relation_type_slugs_exclude"
+    PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE = "relation_type_slug_filter_combine_type"
+    PROP_NAME_RELATION_TYPE_SLUG_FILTERS = "relation_type_slug_filters"
     PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE = "relation_trait_filter_combine_type"
     PROP_NAME_RELATION_TRAIT_FILTERS = "relation_trait_filters"
     
     #--------------------------------------------------------------------------#
     # ! ----> filter criteria - entities
-    PROP_NAME_ENTITY_TYPE_SLUGS_INCLUDE = "entity_type_slugs_include"
-    PROP_NAME_ENTITY_TYPE_SLUGS_EXCLUDE = "entity_type_slugs_exclude"
-    PROP_NAME_ENTITY_TYPE_SLUGS_FROM_INCLUDE = "entity_type_slugs_from_include"
-    PROP_NAME_ENTITY_TYPE_SLUGS_FROM_EXCLUDE = "entity_type_slugs_from_exclude"
-    PROP_NAME_ENTITY_TYPE_SLUGS_TO_INCLUDE = "entity_type_slugs_to_include"
-    PROP_NAME_ENTITY_TYPE_SLUGS_TO_EXCLUDE = "entity_type_slugs_to_exclude"
-    PROP_NAME_ENTITY_TYPE_SLUGS_THROUGH_INCLUDE = "entity_type_slugs_through_include"
-    PROP_NAME_ENTITY_TYPE_SLUGS_THROUGH_EXCLUDE = "entity_type_slugs_through_exclude"
+    PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE = "entity_type_slug_filter_combine_type"
+    PROP_NAME_ENTITY_TYPE_SLUG_FILTERS = "entity_type_slug_filters"
     PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE = "entity_trait_filter_combine_type"
     PROP_NAME_ENTITY_TRAIT_FILTERS = "entity_trait_filters"
-    PROP_NAME_ENTITY_TRAIT_FILTERS_FROM = "entity_trait_filters_from"
-    PROP_NAME_ENTITY_TRAIT_FILTERS_TO = "entity_trait_filters_to"
-    PROP_NAME_ENTITY_TRAIT_FILTERS_THROUGH = "entity_trait_filters_through"
     PROP_NAME_ENTITY_ID_FILTER_COMBINE_TYPE = "entity_id_filter_combine_type"
     PROP_NAME_ENTITY_ID_FILTERS = "entity_id_filters"
-    PROP_NAME_ENTITY_ID_FILTERS_FROM = "entity_id_filters_from"
-    PROP_NAME_ENTITY_ID_FILTERS_TO = "entity_id_filters_to"
-    PROP_NAME_ENTITY_ID_FILTERS_THROUGH = "entity_id_filters_through"
     
     #--------------------------------------------------------------------------#
     # !----> filter criteria - shared
@@ -164,6 +152,7 @@ class NetworkDataRequest( ContextBase ):
     PROP_NAME_VALUE_LIST = "value_list"
     PROP_NAME_VALUE_FROM = "value_from"
     PROP_NAME_VALUE_TO = "value_to"
+    PROP_NAME_RELATION_ROLES_LIST = "relation_roles_list"
 
     # filter_combine_type values
     PROP_VALUE_FILTER_COMBINE_TYPE_AND = "AND"
@@ -206,6 +195,21 @@ class NetworkDataRequest( ContextBase ):
     COMPARISON_TYPE_VALUES.append( PROP_VALUE_COMPARISON_TYPE_AND )
     COMPARISON_TYPE_VALUES.append( PROP_VALUE_COMPARISON_TYPE_OR )
     
+    # relation_roles_list values
+    PROP_VALUE_RELATION_ROLES_LIST_FROM = "FROM"
+    PROP_VALUE_RELATION_ROLES_LIST_TO = "TO"
+    PROP_VALUE_RELATION_ROLES_LIST_THROUGH = "THROUGH"
+    PROP_VALUE_RELATION_ROLES_LIST_ALL = "ALL"
+    PROP_VALUE_RELATION_ROLES_LIST_EMPTY = ""
+    PROP_VALUE_RELATION_ROLES_LIST_NONE = None
+    PROP_VALUE_RELATION_ROLES_LIST_DEFAULT = PROP_VALUE_RELATION_ROLES_LIST_ALL
+    RELATION_ROLES_LIST_VALUES = []
+    RELATION_ROLES_LIST_VALUES.append( PROP_VALUE_RELATION_ROLES_LIST_FROM )
+    RELATION_ROLES_LIST_VALUES.append( PROP_VALUE_RELATION_ROLES_LIST_TO )
+    RELATION_ROLES_LIST_VALUES.append( PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+    RELATION_ROLES_LIST_VALUES.append( PROP_VALUE_RELATION_ROLES_LIST_ALL )
+    RELATION_ROLES_LIST_VALUES.append( PROP_VALUE_RELATION_ROLES_LIST_EMPTY )    
+    RELATION_ROLES_LIST_VALUES.append( PROP_VALUE_RELATION_ROLES_LIST_NONE )
 
     #--------------------------------------------------------------------------#
     # ! ----> filter criteria - traits
@@ -387,7 +391,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method get_entity_select() --#
 
 
-    def get_entity_select_property( self, name_IN, default_IN = None ):
+    def get_entity_selection_property( self, name_IN, default_IN = None ):
         
         # return reference
         value_OUT = None
@@ -403,7 +407,7 @@ class NetworkDataRequest( ContextBase ):
         
         return value_OUT
     
-    #-- END method get_entity_select_property() --#
+    #-- END method get_entity_selection_property() --#
 
 
     def get_output_file_path( self ):
@@ -560,7 +564,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method get_relation_select() --#
 
 
-    def get_relation_select_property( self, name_IN, default_IN = None ):
+    def get_relation_selection_property( self, name_IN, default_IN = None ):
         
         # return reference
         value_OUT = None
@@ -576,7 +580,7 @@ class NetworkDataRequest( ContextBase ):
         
         return value_OUT
     
-    #-- END method get_relation_select_property() --#
+    #-- END method get_relation_selection_property() --#
 
 
     def load_network_data_request_json( self, json_IN ):
