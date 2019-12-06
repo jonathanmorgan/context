@@ -38,13 +38,15 @@ if __name__ == "__main__":
 #from datetime import date
 from datetime import datetime
 import json
+import logging
 import operator
+import sys
 
 # django database classes
 from django.db.models import Q
 
 # python_utilities
-from python_utilities.boolean.boolean_helper import BooleanHelper
+from python_utilities.booleans.boolean_helper import BooleanHelper
 from python_utilities.parameters.param_container import ParamContainer
 from python_utilities.status.status_container import StatusContainer
 
@@ -78,8 +80,8 @@ class NetworkDataRequest( ContextBase ):
 
     # root-level properties
     PROP_NAME_OUTPUT_SPECIFICATION = "output_specification"
-    PROP_NAME_RELATION_SELECT = "relation_select"
-    PROP_NAME_ENTITY_SELECT = "entity_select"
+    PROP_NAME_RELATION_SELECT = "relation_selection"
+    PROP_NAME_ENTITY_SELECT = "entity_selection"
     
     #--------------------------------------------------------------------------#
     # ! ----> output_details
@@ -577,166 +579,6 @@ class NetworkDataRequest( ContextBase ):
     #-- END method get_relation_select_property() --#
 
 
-    def load_network_data_request_json_file( self, path_to_json_file_IN ):
-        
-        '''
-        Accepts path to network data request JSON file.  Opens the file, reads
-            the JSON into a string, then passes the string on to method for
-            loading JSON from string.
-            
-        Returns StatusContainer. 
-        '''
-        
-        # return reference
-        status_OUT = None
-        
-        # declare variables
-        me = "load_network_data_request_json_file"
-        status_message = None
-        status_code = None
-        result_status = None
-        result_status_is_error = None
-        json_file = None
-        json_string = None
-
-        # init status container
-        status_OUT = StatusContainer()
-        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
-
-        # make sure we have a path
-        if ( ( path_to_json_file_IN is not None ) and ( path_to_json_file_IN != "" ) ):
-        
-            # try to open json file for reading
-        	with open( path_to_json_file_IN ) as json_file:  
-        	
-        	    # read the JSON text.
-        	    json_string = json_file.read()
-        	    
-            #-- END open of JSON file to read it into memory. --#
-            
-    	    # call the method to load from JSON string.
-    	    result_status = self.load_network_data_request_json_string( json_string )
-    	                
-            # errors?
-            result_status_is_error = result_status.is_error()
-            if ( result_status_is_error == True ):
-            
-                # set status to error, add a message, then nest the
-                #     StatusContainer instance.
-                status_message = "In {}(): ERROR - errors loading JSON from string after reading it from file ( path = {} ).  See nested StatusContainer for more details.".format( me, path_to_json_file_IN )
-                self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
-                status_code = StatusContainer.STATUS_CODE_ERROR
-                status_OUT.set_status_code( status_code )
-                status_OUT.add_message( status_message )
-                status_OUT.add_status_container( result_status )
-            
-            #-- END check to see if errors. --#
-                    
-        else:
-        
-            # ERROR - no path passed in.  Why bother?
-            status_message = "In {}(): ERROR - no file path passed in, so nothing to do.".format( me )
-            self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
-            status_code = StatusContainer.STATUS_CODE_ERROR
-            status_OUT.set_status_code( status_code )
-            status_OUT.add_message( status_message )
-        
-        #-- END check to see if JSON file path passed in --#
-        
-        return status_OUT
-
-    #-- END method load_network_data_request_json_file() --#
-    
-
-    def load_network_data_request_json_string( self, json_string_IN ):
-        
-        '''
-        Accepts JSON string - stores it, parses it, then passes it on to method
-            for initializing this instance using the parsed JSON dictionary.
-        '''
-        
-        # return reference
-        status_OUT = None
-        
-        # declare variables
-        me = "load_network_data_request_json_string"
-        status_message = None
-        status_code = None
-        result_status = None
-        result_status_is_error = None
-        json_instance = None
-
-        # init status container
-        status_OUT = StatusContainer()
-        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
-        
-        # make sure we have a JSON string
-        if ( ( json_string_IN is not None ) and ( json_string_IN != "" ) ):
-        
-            # store the raw JSON string.
-            self.m_request_json_string = json_string_IN
-        
-            # try to parse JSON
-            try:
-
-        	    # read the JSON text.
-        	    json_instance = json.loads( json_string_IN )
-        	    
-        	    # call the method to load from JSON string.
-        	    result_status = self.load_network_data_request_json( json_instance )
-        	                
-                # errors?
-                result_status_is_error = result_status.is_error()
-                if ( result_status_is_error == True ):
-                
-                    # set status to error, add a message, then nest the
-                    #     StatusContainer instance.
-                    status_message = "In {}(): ERROR - errors loading JSON from string ( {} ).  See nested StatusContainer for more details.".format( me, json_string_IN )
-                    self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
-                    status_code = StatusContainer.STATUS_CODE_ERROR
-                    status_OUT.set_status_code( status_code )
-                    status_OUT.add_message( status_message )
-                    status_OUT.add_status_container( result_status )
-                
-                #-- END check to see if errors. --#
-    
-            except: # catch *any* exceptions
-            
-                # get, log, and return exception
-                e = sys.exc_info()[0]
-                
-                # update status
-                status_code = StatusContainer.STATUS_CODE_ERROR
-                status_message = "In {}(): ERROR - exception caught while parsing JSON string ( {} ).".format( me, json_string_IN )
-                status_OUT.set_status_code( status_code )
-                status_OUT.add_message( status_message )
-                
-                # process the exception
-                self.process_exception( e, message_IN = status_message, print_details_IN = self.DEBUG_FLAG )
-                
-                # get the details
-                status_message = self.last_exception_details
-                status_OUT.add_message( status_message )
-                status_OUT.set_detail_value( "exception", e )
-
-            #-- try...except. --#
-            
-        else:
-        
-            # ERROR - no string passed in.
-            status_message = "In {}(): ERROR - no JSON string passed in, so nothing to do.".format( me )
-            self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
-            status_code = StatusContainer.STATUS_CODE_ERROR
-            status_OUT.set_status_code( status_code )
-            status_OUT.add_message( status_message )
-        
-        #-- END check to see if JSON string passed in --#
-
-        return status_OUT
-
-    #-- END method load_network_data_request_json_string() --#
-    
-
     def load_network_data_request_json( self, json_IN ):
         
         '''
@@ -834,6 +676,166 @@ class NetworkDataRequest( ContextBase ):
         
         #-- END check to see if JSON string passed in --#        
         
+        return status_OUT
+
+    #-- END method load_network_data_request_json_string() --#
+    
+
+    def load_network_data_request_json_file( self, path_to_json_file_IN ):
+        
+        '''
+        Accepts path to network data request JSON file.  Opens the file, reads
+            the JSON into a string, then passes the string on to method for
+            loading JSON from string.
+            
+        Returns StatusContainer. 
+        '''
+        
+        # return reference
+        status_OUT = None
+        
+        # declare variables
+        me = "load_network_data_request_json_file"
+        status_message = None
+        status_code = None
+        result_status = None
+        result_status_is_error = None
+        json_file = None
+        json_string = None
+
+        # init status container
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+
+        # make sure we have a path
+        if ( ( path_to_json_file_IN is not None ) and ( path_to_json_file_IN != "" ) ):
+        
+            # try to open json file for reading
+            with open( path_to_json_file_IN ) as json_file:  
+            
+                # read the JSON text.
+                json_string = json_file.read()
+                
+            #-- END open of JSON file to read it into memory. --#
+            
+            # call the method to load from JSON string.
+            result_status = self.load_network_data_request_json_string( json_string )
+    	                
+            # errors?
+            result_status_is_error = result_status.is_error()
+            if ( result_status_is_error == True ):
+            
+                # set status to error, add a message, then nest the
+                #     StatusContainer instance.
+                status_message = "In {}(): ERROR - errors loading JSON from string after reading it from file ( path = {} ).  See nested StatusContainer for more details.".format( me, path_to_json_file_IN )
+                self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
+                status_code = StatusContainer.STATUS_CODE_ERROR
+                status_OUT.set_status_code( status_code )
+                status_OUT.add_message( status_message )
+                status_OUT.add_status_container( result_status )
+            
+            #-- END check to see if errors. --#
+                    
+        else:
+        
+            # ERROR - no path passed in.  Why bother?
+            status_message = "In {}(): ERROR - no file path passed in, so nothing to do.".format( me )
+            self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
+            status_code = StatusContainer.STATUS_CODE_ERROR
+            status_OUT.set_status_code( status_code )
+            status_OUT.add_message( status_message )
+        
+        #-- END check to see if JSON file path passed in --#
+        
+        return status_OUT
+
+    #-- END method load_network_data_request_json_file() --#
+    
+
+    def load_network_data_request_json_string( self, json_string_IN ):
+        
+        '''
+        Accepts JSON string - stores it, parses it, then passes it on to method
+            for initializing this instance using the parsed JSON dictionary.
+        '''
+        
+        # return reference
+        status_OUT = None
+        
+        # declare variables
+        me = "load_network_data_request_json_string"
+        status_message = None
+        status_code = None
+        result_status = None
+        result_status_is_error = None
+        json_instance = None
+
+        # init status container
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+        
+        # make sure we have a JSON string
+        if ( ( json_string_IN is not None ) and ( json_string_IN != "" ) ):
+        
+            # store the raw JSON string.
+            self.m_request_json_string = json_string_IN
+        
+            # try to parse JSON
+            try:
+
+                # read the JSON text.
+                json_instance = json.loads( json_string_IN )
+
+                # call the method to load from JSON string.
+                result_status = self.load_network_data_request_json( json_instance )
+                
+                # errors?
+                result_status_is_error = result_status.is_error()
+                if ( result_status_is_error == True ):
+                
+                    # set status to error, add a message, then nest the
+                    #     StatusContainer instance.
+                    status_message = "In {}(): ERROR - errors loading JSON from string ( {} ).  See nested StatusContainer for more details.".format( me, json_string_IN )
+                    self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
+                    status_code = StatusContainer.STATUS_CODE_ERROR
+                    status_OUT.set_status_code( status_code )
+                    status_OUT.add_message( status_message )
+                    status_OUT.add_status_container( result_status )
+                
+                #-- END check to see if errors. --#
+    
+            except: # catch *any* exceptions
+            
+                # get, log, and return exception
+                e = sys.exc_info()[0]
+                
+                # update status
+                status_code = StatusContainer.STATUS_CODE_ERROR
+                status_message = "In {}(): ERROR - exception caught while parsing JSON string ( {} ).".format( me, json_string_IN )
+                status_OUT.set_status_code( status_code )
+                status_OUT.add_message( status_message )
+                
+                # process the exception
+                self.process_exception( e, message_IN = status_message, print_details_IN = self.DEBUG_FLAG )
+                
+                # get the details
+                status_message = self.last_exception_details
+                status_OUT.add_message( status_message )
+                status_OUT.set_detail_value( "exception", e )
+
+            #-- try...except. --#
+            
+        else:
+        
+            # ERROR - no string passed in.
+            status_message = "In {}(): ERROR - no JSON string passed in, so nothing to do.".format( me )
+            self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
+            status_code = StatusContainer.STATUS_CODE_ERROR
+            status_OUT.set_status_code( status_code )
+            status_OUT.add_message( status_message )
+        
+        #-- END check to see if JSON string passed in --#
+
         return status_OUT
 
     #-- END method load_network_data_request_json_string() --#

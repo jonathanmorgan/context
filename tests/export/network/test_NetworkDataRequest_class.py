@@ -1,0 +1,527 @@
+"""
+This file contains tests of the context NetworkDataRequestTest class.
+
+Functions tested:
+- add_entity_type()
+- get_entity_for_identifier()
+- get_entity_trait()
+- get_identifier()
+- set_entity_trait()
+- set_identifier()
+
+"""
+
+# base Python imports
+import json
+import logging
+import os
+import sys
+
+# import six
+import six
+
+# django imports
+import django.test
+
+# context imports
+from context.export.network.network_data_request import NetworkDataRequest
+from context.tests.test_helper import TestHelper
+
+# python_utilities
+from python_utilities.exceptions.exception_helper import ExceptionHelper
+
+
+class NetworkDataRequestTest( django.test.TestCase ):
+    
+
+    #----------------------------------------------------------------------------
+    # ! ==> Constants-ish
+    #----------------------------------------------------------------------------
+
+
+    # DEBUG
+    DEBUG = True
+
+    # CLASS NAME
+    CLASS_NAME = "NetworkDataRequestTest"
+    
+    # JSON files
+    FILE_PATH_BASE_FOLDER = "{}/".format( os.path.dirname( os.path.realpath( __file__ ) ) )
+    FILE_PATH_NETWORK_DATA_REQUEST_BASIC = "{}network_data_request_basic.json".format( FILE_PATH_BASE_FOLDER )
+    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER = "{}network_data_request_with_entity_id_filter.json".format( FILE_PATH_BASE_FOLDER )
+    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT = "{}network_data_request_with_entity_select.json".format( FILE_PATH_BASE_FOLDER )
+    FILE_PATH_LIST = []
+    FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_BASIC )
+    FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER )
+    FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT )
+    
+    # test values
+    TEST_OUTPUT_SPEC_LEN = 5
+    TEST_OUTPUT_TYPE = "file"
+    TEST_OUTPUT_FILE_PATH = "./NetworkDataRequest_test_output.txt"
+    TEST_OUTPUT_FORMAT = "TSV_matrix"
+    TEST_OUTPUT_STRUCTURE = "both_trait_columns"
+    TEST_OUTPUT_INCLUDE_COLUMN_HEADERS = True
+    
+    # map of JSON file paths to associated validate functions
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP = {}
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_BASIC ] = "validate_basic_instance"
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER ] = "validate_id_filter_instance"
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT ] = "validate_entity_select_instance"
+    
+
+    #----------------------------------------------------------------------
+    # ! ==> class methods
+    #----------------------------------------------------------------------
+
+
+    #---------------------------------------------------------------------------
+    # ! ==> overridden built-in methods
+    #---------------------------------------------------------------------------
+
+
+    #----------------------------------------------------------------------------
+    # ! ==> instance methods - setup
+    #----------------------------------------------------------------------------
+
+
+    def setUp( self ):
+        
+        """
+        setup tasks.  Call function that we'll re-use.
+        """
+
+        # call TestHelper.standardSetUp()
+        TestHelper.standardSetUp( self )
+
+    #-- END function setUp() --#
+        
+
+    def test_setup( self ):
+
+        """
+        Tests whether there were errors in setup.
+        """
+        
+        # declare variables
+        me = "test_setup"
+        error_count = -1
+        error_message = ""
+        
+        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        
+        # get setup error count
+        setup_error_count = self.setup_error_count
+        
+        # should be 0
+        error_message = ";".join( self.setup_error_list )
+        self.assertEqual( setup_error_count, 0, msg = error_message )
+        
+    #-- END test method test_django_config_installed() --#
+
+
+    #----------------------------------------------------------------------------
+    # ! ==> instance methods - shared methods
+    #----------------------------------------------------------------------------
+
+
+    def validate_basic_instance( self, test_instance_IN ):
+        
+        # declare variables
+        me = "validate_basic_instance"
+        test_value = None
+        should_be = None
+        error_message = None
+
+        # got test instance?
+        if ( test_instance_IN is not None ):
+        
+            # validate output_specification
+            self.validate_output_spec( test_instance_IN )
+
+        else:
+        
+            # no instance passed in.  Assert Not None here, so we raise Error.
+            test_value = test_instance_IN
+            error_string = "None passed in, should be a NetworkDataRequest instance."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+        #-- END check to see if instance passed in. --#
+        
+    #-- END method validate_basic_instance() --#
+    
+
+    def validate_empty_instance( self, test_instance_IN ):
+        
+        # declare variables
+        pass
+        
+    #-- END method validate_empty_instance() --#
+    
+
+    def validate_entity_select_instance( self, test_instance_IN ):
+        
+        # declare variables
+        me = "validate_entity_select_instance"
+        test_value = None
+        should_be = None
+        error_message = None
+
+        # got test instance?
+        if ( test_instance_IN is not None ):
+        
+            # validate output_specification
+            self.validate_output_spec( test_instance_IN )
+
+        else:
+        
+            # no instance passed in.  Assert Not None here, so we raise Error.
+            test_value = test_instance_IN
+            error_string = "None passed in, should be a NetworkDataRequest instance."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+        #-- END check to see if instance passed in. --#
+        
+    #-- END method validate_entity_select_instance() --#
+    
+
+    def validate_id_filter_instance( self, test_instance_IN ):
+        
+        # declare variables
+        me = "validate_id_filter_instance"
+        test_value = None
+        should_be = None
+        error_message = None
+
+        # got test instance?
+        if ( test_instance_IN is not None ):
+        
+            # validate output_specification
+            self.validate_output_spec( test_instance_IN )
+
+        else:
+        
+            # no instance passed in.  Assert Not None here, so we raise Error.
+            test_value = test_instance_IN
+            error_string = "None passed in, should be a NetworkDataRequest instance."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+        #-- END check to see if instance passed in. --#
+        
+    #-- END method validate_id_filter_instance() --#
+    
+
+    def validate_output_spec( self, test_instance_IN ):
+        
+        # declare variables
+        me = "validate_output_spec"
+        test_value = None
+        should_be = None
+        error_message = None
+        output_spec = None
+        output_spec_length = None
+        output_type = None
+        output_file_path = None
+        output_format = None
+        output_structure = None
+        output_include_column_headers = None
+
+        # got test instance?
+        if ( test_instance_IN is not None ):
+        
+            # is there an output_specification?
+            output_spec = test_instance_IN.get_output_specification()
+            
+            # should not be None
+            test_value = output_spec
+            error_string = "No output_specification found, should be a dictionary instance."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+            # should be 5 things in the output_specification
+            test_value = len( output_spec )
+            should_be = self.TEST_OUTPUT_SPEC_LEN
+            error_string = "nested output_specification dictionary has {} items, should have {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # get output information.
+
+            # output_type
+            output_type = test_instance_IN.get_output_type()
+            test_value = output_type
+            should_be = self.TEST_OUTPUT_TYPE
+            error_string = "nested output_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # output_file_path
+            output_file_path = test_instance_IN.get_output_file_path()
+            test_value = output_file_path
+            should_be = self.TEST_OUTPUT_FILE_PATH
+            error_string = "nested output_file_path is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # output_format
+            output_format = test_instance_IN.get_output_format()
+            test_value = output_format
+            should_be = self.TEST_OUTPUT_FORMAT
+            error_string = "nested output_format is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # output_structure
+            output_structure = test_instance_IN.get_output_structure()
+            test_value = output_structure
+            should_be = self.TEST_OUTPUT_STRUCTURE
+            error_string = "nested output_structure is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # output_include_column_headers
+            output_include_column_headers = test_instance_IN.get_output_include_column_headers()
+            test_value = output_include_column_headers
+            should_be = self.TEST_OUTPUT_INCLUDE_COLUMN_HEADERS
+            error_string = "nested output_include_column_headers is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )            
+
+        else:
+        
+            # no instance passed in.  Assert Not None here, so we raise Error.
+            test_value = test_instance_IN
+            error_string = "None passed in, should be a NetworkDataRequest instance."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+        #-- END check to see if instance passed in. --#
+        
+    #-- END method validate_output_spec() --#
+    
+    #----------------------------------------------------------------------------
+    # ! ==> instance methods - tests
+    #----------------------------------------------------------------------------
+
+
+    def test_load_network_data_request_json( self ):
+        
+        # declare variables
+        me = "test_load_network_data_request_json"
+        debug_flag = None
+        test_instance = None
+        test_value = None
+        should_be = None
+        error_string = None
+        json_file_path_list = None
+        json_file_path = None
+        json_file = None
+        parsed_json = None
+        result_status = None
+        result_status_is_error = None
+        validate_function = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        
+        # init instance.
+        test_instance = NetworkDataRequest()
+        
+        # loop over the JSON files.
+        json_file_path_list = self.FILE_PATH_LIST
+        for json_file_path in json_file_path_list:
+        
+            try:
+        
+                # try to open json file for reading
+                with open( json_file_path ) as json_file:  
+                
+                    # parse the JSON
+                    parsed_json = json.load( json_file )
+                
+                #-- END open of JSON file to read it into memory. --#
+                
+                # call the load_network_data_request_json() method
+                result_status = test_instance.load_network_data_request_json( parsed_json )
+                
+                # errors?
+                result_status_is_error = result_status.is_error()
+
+                # should not be an error
+                test_value = result_status_is_error
+                should_be = False
+                error_string = "Processing JSON {}, got error, status = {}.".format( parsed_json, result_status )
+                self.assertEqual( test_value, should_be, msg = error_string )
+                
+                # get validate function for JSON file path
+                validate_function = self.JSON_FILE_TO_VALIDATE_FUNCTION_MAP.get( json_file_path )
+                
+                # Should be a function, not None.
+                test_value = validate_function
+                error_string = "Retrieving validate function for JSON file path {} returned None ( map = {} )".format( json_file_path, validate_function )
+                self.assertIsNotNone( test_value, msg = error_string )
+            
+                # call the function.
+                getattr( self, validate_function )( test_instance )
+
+            except: # catch *any* exceptions
+            
+                # get, log, and return exception
+                e = sys.exc_info()[0]
+                
+                # log the exception
+                status_message = "In {}(): ERROR - exception caught while processing JSON file {}, JSON = {}.".format( me, json_file_path, parsed_json )
+                ExceptionHelper.log_exception( e, message_IN = status_message, print_details_IN = debug_flag )
+                
+                # assert that e is None, so we fail the test.
+                test_value = e
+                should_be = None
+                error_string = "Processing JSON {}, got exception {}, should be {}.".format( parsed_json, test_value, should_be )
+                self.assertEqual( test_value, should_be, msg = error_string )                
+                
+            #-- try...except. --#
+
+        
+        #-- END loop over file paths. --#
+        
+        
+    #-- END method load_network_data_request_json() --#
+
+
+    def test_load_network_data_request_json_file( self ):
+        
+        # declare variables
+        me = "test_load_network_data_request_json"
+        debug_flag = None
+        test_instance = None
+        test_value = None
+        should_be = None
+        error_string = None
+        json_file_path_list = None
+        json_file_path = None
+        json_file = None
+        result_status = None
+        result_status_is_error = None
+        validate_function = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        
+        # init instance.
+        test_instance = NetworkDataRequest()
+        
+        # loop over the JSON files.
+        json_file_path_list = self.FILE_PATH_LIST
+        for json_file_path in json_file_path_list:
+        
+            # call the load_network_data_request_json() method
+            result_status = test_instance.load_network_data_request_json_file( json_file_path )
+            
+            # errors?
+            result_status_is_error = result_status.is_error()
+
+            # should not be an error
+            test_value = result_status_is_error
+            should_be = False
+            error_string = "Processing JSON file {}, got error, status = {}.".format( json_file_path, result_status )
+            self.assertEqual( test_value, should_be, msg = error_string )
+        
+            # get validate function for JSON file path
+            validate_function = self.JSON_FILE_TO_VALIDATE_FUNCTION_MAP.get( json_file_path )
+            
+            # Should be a function, not None.
+            test_value = validate_function
+            error_string = "Retrieving validate function for JSON file path {} returned None ( map = {} )".format( json_file_path, validate_function )
+            self.assertIsNotNone( test_value, msg = error_string )
+        
+            # call the function.
+            getattr( self, validate_function )( test_instance )
+
+        #-- END loop over file paths. --#
+        
+    #-- END method load_network_data_request_json_file() --#
+
+
+    def test_load_network_data_request_json_string( self ):
+        
+        # declare variables
+        me = "test_load_network_data_request_json"
+        debug_flag = None
+        test_instance = None
+        test_value = None
+        should_be = None
+        error_string = None
+        json_file_path_list = None
+        json_file_path = None
+        json_file = None
+        json_string = None
+        result_status = None
+        result_status_is_error = None
+        validate_function = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        
+        # init instance.
+        test_instance = NetworkDataRequest()
+        
+        # loop over the JSON files.
+        json_file_path_list = self.FILE_PATH_LIST
+        for json_file_path in json_file_path_list:
+        
+            try:
+        
+                # try to open json file for reading
+                with open( json_file_path ) as json_file:  
+                
+                    # parse the JSON
+                    json_string = json_file.read()
+                
+                #-- END open of JSON file to read it into memory. --#
+                
+                # call the load_network_data_request_json() method
+                result_status = test_instance.load_network_data_request_json_string( json_string )
+                
+                # errors?
+                result_status_is_error = result_status.is_error()
+
+                # should not be an error
+                test_value = result_status_is_error
+                should_be = False
+                error_string = "Processing JSON file {} ( {} ), got error, status = {}.".format( json_file_path, json_string, result_status )
+                self.assertEqual( test_value, should_be, msg = error_string )
+
+                # get validate function for JSON file path
+                validate_function = self.JSON_FILE_TO_VALIDATE_FUNCTION_MAP.get( json_file_path )
+                
+                # Should be a function, not None.
+                test_value = validate_function
+                error_string = "Retrieving validate function for JSON file path {} returned None ( map = {} )".format( json_file_path, validate_function )
+                self.assertIsNotNone( test_value, msg = error_string )
+            
+                # call the function.
+                getattr( self, validate_function )( test_instance )
+    
+            except: # catch *any* exceptions
+            
+                # get, log, and return exception
+                e = sys.exc_info()[0]
+                
+                # log the exception
+                status_message = "In {}(): ERROR - exception caught while processing JSON file {}, JSON = {}.".format( me, json_file_path, json_string )
+                ExceptionHelper.log_exception( e, message_IN = status_message, print_details_IN = debug_flag )
+                
+                # assert that e is None, so we fail the test.
+                test_value = e
+                should_be = None
+                error_string = "Processing JSON {}, got exception {}, should be {}.".format( parsed_json, test_value, should_be )
+                self.assertEqual( test_value, should_be, msg = error_string )                
+                
+            #-- try...except. --#
+
+        
+        #-- END loop over file paths. --#
+        
+        
+    #-- END method load_network_data_request_json_string() --#
+
+
+#-- END test class NetworkDataRequestTest --#

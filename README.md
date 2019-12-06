@@ -187,6 +187,12 @@ Specific sets of tests:
     
             python manage.py test context.tests.models.test_Entity_model
 
+- Exporting network data:
+
+    - test NetworkDataRequest class
+    
+            python manage.py test context.tests.export.network.test_NetworkDataRequest_class
+
 ## Test data
 
 There is a set of test data stored in the `fixtures` folder inside this django application.  The files:

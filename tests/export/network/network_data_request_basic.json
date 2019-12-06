@@ -30,7 +30,7 @@
                 "comparison_type": "includes",
                 "value_list": [ "OpenCalais_REST_API_v2" ]
             }
-        ]
+        ],
         "entity_type_slugs_include": [],
         "entity_type_slugs_exclude": [],
         "entity_type_slugs_from_include": [ "person" ],
@@ -51,17 +51,5 @@
                 "value_list": [ 1 ]
             }
         ]
-        "entity_id_filter_combine_type": "AND",
-        "entity_id_filters": [
-            {
-                "name": "person_sourcenet_id",
-                "type_label": "person_sourcenet_id",
-                "comparison_type": "includes",
-                "value_list": [ 1, 2, 3 ]
-            }
-        ],
-        "entity_id_filters_from": [],
-        "entity_id_filters_to": [],
-        "entity_id_filters_through": []
     }
 }
