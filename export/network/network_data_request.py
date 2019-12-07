@@ -356,7 +356,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method is_request_ok() --#
 
 
-    def get_entity_select( self ):
+    def get_entity_selection( self ):
         
         # return reference
         value_OUT = None
@@ -374,10 +374,10 @@ class NetworkDataRequest( ContextBase ):
             prop_dict = {}
             
             # store it.
-            self.set_entity_select( prop_dict )
+            self.set_entity_selection( prop_dict )
             
             # return it.
-            value_OUT = self.get_entity_select()
+            value_OUT = self.get_entity_selection()
             
         else:
         
@@ -388,7 +388,7 @@ class NetworkDataRequest( ContextBase ):
         
         return value_OUT
     
-    #-- END method get_entity_select() --#
+    #-- END method get_entity_selection() --#
 
 
     def get_entity_selection_property( self, name_IN, default_IN = None ):
@@ -400,7 +400,7 @@ class NetworkDataRequest( ContextBase ):
         prop_dict = None
         
         # get output spec
-        prop_dict = self.get_entity_select()
+        prop_dict = self.get_entity_selection()
         
         # retrieve the output_type value.
         value_OUT = prop_dict.get( name_IN, default_IN )
@@ -529,7 +529,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method get_output_type() --#
 
 
-    def get_relation_select( self ):
+    def get_relation_selection( self ):
         
         # return reference
         value_OUT = None
@@ -547,10 +547,10 @@ class NetworkDataRequest( ContextBase ):
             prop_dict = {}
             
             # store it.
-            self.set_relation_select( prop_dict )
+            self.set_relation_selection( prop_dict )
             
             # return it.
-            value_OUT = self.get_relation_select()
+            value_OUT = self.get_relation_selection()
             
         else:
         
@@ -561,7 +561,7 @@ class NetworkDataRequest( ContextBase ):
         
         return value_OUT
     
-    #-- END method get_relation_select() --#
+    #-- END method get_relation_selection() --#
 
 
     def get_relation_selection_property( self, name_IN, default_IN = None ):
@@ -573,7 +573,7 @@ class NetworkDataRequest( ContextBase ):
         prop_dict = None
         
         # get output spec
-        prop_dict = self.get_relation_select()
+        prop_dict = self.get_relation_selection()
         
         # retrieve the output_type value.
         value_OUT = prop_dict.get( name_IN, default_IN )
@@ -642,7 +642,7 @@ class NetworkDataRequest( ContextBase ):
             if ( relation_select_dict is not None ):
             
                 # got one.  Store the output specification.
-                self.set_relation_select( relation_select_dict )
+                self.set_relation_selection( relation_select_dict )
                             
             else:
             
@@ -665,7 +665,7 @@ class NetworkDataRequest( ContextBase ):
             if ( entity_select_dict is not None ):
             
                 # got one.  Store the output specification.
-                self.set_entity_select( entity_select_dict )
+                self.set_entity_selection( entity_select_dict )
                             
             #-- END check to see if entity select spec --#
         
@@ -845,7 +845,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method load_network_data_request_json_string() --#
     
 
-    def set_entity_select( self, value_IN ):
+    def set_entity_selection( self, value_IN ):
         
         # return reference
         value_OUT = None
@@ -854,11 +854,11 @@ class NetworkDataRequest( ContextBase ):
         self.m_entity_selection_dict = value_IN
         
         # return it
-        value_OUT = self.get_entity_select()
+        value_OUT = self.get_entity_selection()
         
         return value_OUT
     
-    #-- END method set_entity_select() --#
+    #-- END method set_entity_selection() --#
 
 
     def set_is_request_ok( self, value_IN ):
@@ -1000,7 +1000,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method set_output_type() --#
 
 
-    def set_relation_select( self, value_IN ):
+    def set_relation_selection( self, value_IN ):
         
         # return reference
         value_OUT = None
@@ -1009,11 +1009,11 @@ class NetworkDataRequest( ContextBase ):
         self.m_relation_selection_dict = value_IN
         
         # return it
-        value_OUT = self.get_relation_select()
+        value_OUT = self.get_relation_selection()
         
         return value_OUT
     
-    #-- END method set_relation_select() --#
+    #-- END method set_relation_selection() --#
 
 
 #-- END class NetworkDataRequest --#

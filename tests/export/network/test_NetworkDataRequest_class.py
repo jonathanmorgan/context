@@ -63,22 +63,38 @@ class NetworkDataRequestTest( django.test.TestCase ):
     TEST_OUTPUT_STRUCTURE = "both_trait_columns"
     TEST_OUTPUT_INCLUDE_COLUMN_HEADERS = True
     
-    # basic
-    TEST_BASIC_RELATION_SELECTION_ITEM_COUNT = 8
-    TEST_BASIC_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
-    TEST_BASIC_RELATION_TYPE_SLUG_FILTERS_COUNT = 1
-    TEST_BASIC_RELATION_TRAIT_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
-    TEST_BASIC_RELATION_TRAIT_FILTERS_COUNT = 3
-    TEST_BASIC_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
-    TEST_BASIC_ENTITY_TYPE_SLUG_FILTERS_COUNT = 3
-    TEST_BASIC_ENTITY_TRAIT_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
-    TEST_BASIC_ENTITY_TRAIT_FILTERS_COUNT = 1
-    
+    # test - relation_selection (RS)
+    TEST_RS_RELATION_SELECTION_ITEM_COUNT = 8
+    TEST_RS_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_RS_RELATION_TYPE_SLUG_FILTERS_COUNT = 1
+    TEST_RS_RELATION_TRAIT_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_RS_RELATION_TRAIT_FILTERS_COUNT = 3
+    TEST_RS_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_RS_ENTITY_TYPE_SLUG_FILTERS_COUNT = 3
+    TEST_RS_ENTITY_TRAIT_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_RS_ENTITY_TRAIT_FILTERS_COUNT = 1
+    TEST_RS_ENTITY_ID_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_RS_ENTITY_ID_FILTERS_COUNT = 1
+
+    # test - entity_selection (ES)
+    TEST_ES_RELATION_SELECTION_ITEM_COUNT = 8
+    TEST_ES_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_ES_RELATION_TYPE_SLUG_FILTERS_COUNT = 1
+    TEST_ES_RELATION_TRAIT_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_ES_RELATION_TRAIT_FILTERS_COUNT = 3
+    TEST_ES_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_ES_ENTITY_TYPE_SLUG_FILTERS_COUNT = 3
+    TEST_ES_ENTITY_TRAIT_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_ES_ENTITY_TRAIT_FILTERS_COUNT = 1
+    TEST_ES_ENTITY_ID_FILTER_COMBINE_TYPE = NetworkDataRequest.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    TEST_ES_ENTITY_ID_FILTERS_COUNT = 1
+
+
     # map of JSON file paths to associated validate functions
     JSON_FILE_TO_VALIDATE_FUNCTION_MAP = {}
-    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_BASIC ] = "validate_basic_instance"
-    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER ] = "validate_id_filter_instance"
-    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT ] = "validate_entity_select_instance"
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_BASIC ] = "validate_instance_basic"
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER ] = "validate_instance_id_filter"
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT ] = "validate_instance_entity_select"
     
 
     #----------------------------------------------------------------------
@@ -187,18 +203,148 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------------
 
 
-    def validate_basic_instance( self,
-                                 test_instance_IN,
-                                 relation_selection_properties_count_IN = TEST_BASIC_RELATION_SELECTION_ITEM_COUNT ):
-        
+    def validate_entity_selection( self,
+                                   test_instance_IN,
+                                   include_entity_id_filter_IN = False ):        
+
         # declare variables
-        me = "validate_basic_instance"
+        me = "validate_entity_selection"
         test_temp = None
         test_value = None
         should_be = None
         error_message = None
-        relation_selection_dict = None
-        relation_selection_count = None
+        properties_count = None
+        entity_selection_dict = None
+        entity_selection_count = None
+
+        # got test instance?
+        if ( test_instance_IN is not None ):
+        
+            # testing entity ID filter?
+            if ( include_entity_id_filter_IN == True ):
+        
+                # testing entity ID filter - 10 properties, not 8
+                properties_count = 10
+                
+            else:
+            
+                # not testing entity ID filter - 8 properties
+                properties_count = 8
+                
+            #-- END check to see if testing entity ID filter. --#
+        
+            # ! ----> validate entity_selection
+            entity_selection_dict = test_instance_IN.get_entity_selection()
+            
+            # count the items
+            entity_selection_count = len( entity_selection_dict )
+            test_value = entity_selection_count
+            should_be = properties_count
+            error_string = "entity_selection has {} items, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! ----> try retrieving entity_selection properties
+            
+            # ! --------> relation_type_slug_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
+            should_be = self.TEST_ES_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
+            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> relation_type_slug_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTERS
+            test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_ES_RELATION_TYPE_SLUG_FILTERS_COUNT
+            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> relation_trait_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
+            should_be = self.TEST_ES_RELATION_TRAIT_FILTER_COMBINE_TYPE
+            error_string = "relation_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> relation_trait_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTERS
+            test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_ES_RELATION_TRAIT_FILTERS_COUNT
+            error_string = "relation_trait_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+                        
+            # ! --------> entity_type_slug_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
+            should_be = self.TEST_ES_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
+            error_string = "entity_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # ! --------> entity_type_slug_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTERS
+            test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_ES_ENTITY_TYPE_SLUG_FILTERS_COUNT
+            error_string = "entity_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> entity_trait_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
+            should_be = self.TEST_ES_ENTITY_TRAIT_FILTER_COMBINE_TYPE
+            error_string = "entity_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )            
+            
+            # ! --------> entity_trait_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTERS
+            test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_ES_ENTITY_TRAIT_FILTERS_COUNT
+            error_string = "entity_trait_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # testing entity ID filter?
+            if ( include_entity_id_filter_IN == True ):
+        
+                # ! --------> entity_id_filter_combine_type
+                test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_ID_FILTER_COMBINE_TYPE
+                test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
+                should_be = self.TEST_ES_ENTITY_ID_FILTER_COMBINE_TYPE
+                error_string = "entity_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+                self.assertEqual( test_value, should_be, msg = error_string )            
+                
+                # ! --------> entity_id_filters
+                test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_ID_FILTERS
+                test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
+                test_value = len( test_temp )
+                should_be = self.TEST_ES_ENTITY_ID_FILTERS_COUNT
+                error_string = "entity_id_filters count is {}, should be {}.".format( test_value, should_be )
+                self.assertEqual( test_value, should_be, msg = error_string )
+                
+            #-- END check to see if testing entity ID filter. --#
+
+        else:
+        
+            # no instance passed in.  Assert Not None here, so we raise Error.
+            test_value = test_instance_IN
+            error_string = "None passed in, should be a NetworkDataRequest instance."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+        #-- END check to see if instance passed in. --#
+        
+    #-- END method validate_entity_selection() --#
+    
+
+    def validate_instance_basic( self, test_instance_IN ):        
+
+        # declare variables
+        me = "validate_instance_basic"
+        test_temp = None
+        test_value = None
+        should_be = None
+        error_message = None
 
         # got test instance?
         if ( test_instance_IN is not None ):
@@ -207,76 +353,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
             self.validate_output_spec( test_instance_IN )
             
             # ! ----> validate relation_selection
-            relation_selection_dict = test_instance_IN.get_relation_select()
-            
-            # count the items
-            relation_selection_count = len( relation_selection_dict )
-            test_value = relation_selection_count
-            should_be = relation_selection_properties_count_IN
-            error_string = "relation_selection has {} items, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! ----> try retrieving relation_selection properties
-            
-            # ! --------> relation_type_slug_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
-            should_be = self.TEST_BASIC_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
-            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> relation_type_slug_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTERS
-            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_BASIC_RELATION_TYPE_SLUG_FILTERS_COUNT
-            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> relation_trait_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
-            should_be = self.TEST_BASIC_RELATION_TRAIT_FILTER_COMBINE_TYPE
-            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> relation_trait_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTERS
-            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_BASIC_RELATION_TRAIT_FILTERS_COUNT
-            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-                        
-            # ! --------> entity_type_slug_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
-            should_be = self.TEST_BASIC_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
-            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-
-            # ! --------> entity_type_slug_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTERS
-            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_BASIC_ENTITY_TYPE_SLUG_FILTERS_COUNT
-            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> entity_trait_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
-            should_be = self.TEST_BASIC_ENTITY_TRAIT_FILTER_COMBINE_TYPE
-            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )            
-            
-            # ! --------> entity_trait_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTERS
-            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_BASIC_ENTITY_TRAIT_FILTERS_COUNT
-            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
+            self.validate_relation_selection( test_instance_IN )
 
         else:
         
@@ -287,21 +364,31 @@ class NetworkDataRequestTest( django.test.TestCase ):
             
         #-- END check to see if instance passed in. --#
         
-    #-- END method validate_basic_instance() --#
+    #-- END method validate_instance_basic() --#
     
 
-    def validate_empty_instance( self, test_instance_IN ):
+    def validate_instance_empty( self, test_instance_IN ):
         
         # declare variables
-        pass
+        me = "validate_instance_empty"
+        test_value = None
+        should_be = None
+        error_message = None
+
+        # got test instance?
+        if ( test_instance_IN is not None ):
+            
+            pass
+            
+        #-- END check if instance --#
         
-    #-- END method validate_empty_instance() --#
+    #-- END method validate_instance_empty() --#
     
 
-    def validate_entity_select_instance( self, test_instance_IN ):
+    def validate_instance_entity_select( self, test_instance_IN ):
         
         # declare variables
-        me = "validate_entity_select_instance"
+        me = "validate_instance_entity_select"
         test_value = None
         should_be = None
         error_message = None
@@ -309,11 +396,14 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # got test instance?
         if ( test_instance_IN is not None ):
         
-            # validate output_specification
+            # ! ----> validate output_specification
             self.validate_output_spec( test_instance_IN )
             
-            # validate same as basic
-            self.validate_basic_instance( test_instance_IN )
+            # ! ----> validate relation_selection
+            self.validate_relation_selection( test_instance_IN )
+
+            # ! ----> validate entity_selection
+            self.validate_entity_selection( test_instance_IN )
 
         else:
         
@@ -324,13 +414,13 @@ class NetworkDataRequestTest( django.test.TestCase ):
             
         #-- END check to see if instance passed in. --#
         
-    #-- END method validate_entity_select_instance() --#
+    #-- END method validate_instance_entity_select() --#
     
 
-    def validate_id_filter_instance( self, test_instance_IN ):
+    def validate_instance_id_filter( self, test_instance_IN ):
         
         # declare variables
-        me = "validate_id_filter_instance"
+        me = "validate_instance_id_filter"
         test_value = None
         should_be = None
         error_message = None
@@ -338,12 +428,12 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # got test instance?
         if ( test_instance_IN is not None ):
         
-            # validate output_specification
+            # ! ----> validate output_specification
             self.validate_output_spec( test_instance_IN )
 
-            # validate same as basic
-            self.validate_basic_instance( test_instance_IN,
-                                          relation_selection_properties_count_IN = 10 )
+            # ! ----> validate same as basic, plus entity id filter
+            self.validate_relation_selection( test_instance_IN,
+                                              include_entity_id_filter_IN = True )
 
         else:
         
@@ -354,7 +444,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
             
         #-- END check to see if instance passed in. --#
         
-    #-- END method validate_id_filter_instance() --#
+    #-- END method validate_instance_id_filter() --#
     
 
     def validate_output_spec( self, test_instance_IN ):
@@ -436,7 +526,142 @@ class NetworkDataRequestTest( django.test.TestCase ):
         #-- END check to see if instance passed in. --#
         
     #-- END method validate_output_spec() --#
+
+
+    def validate_relation_selection( self,
+                                     test_instance_IN,
+                                     include_entity_id_filter_IN = False ):        
+
+        # declare variables
+        me = "validate_relation_selection"
+        test_temp = None
+        test_value = None
+        should_be = None
+        error_message = None
+        properties_count = None
+        relation_selection_dict = None
+        relation_selection_count = None
+
+        # got test instance?
+        if ( test_instance_IN is not None ):
+        
+            # testing entity ID filter?
+            if ( include_entity_id_filter_IN == True ):
+        
+                # testing entity ID filter - 10 properties, not 8
+                properties_count = 10
+                
+            else:
+            
+                # not testing entity ID filter - 8 properties
+                properties_count = 8
+                
+            #-- END check to see if testing entity ID filter. --#
+        
+            # ! ----> validate relation_selection
+            relation_selection_dict = test_instance_IN.get_relation_selection()
+            
+            # count the items
+            relation_selection_count = len( relation_selection_dict )
+            test_value = relation_selection_count
+            should_be = properties_count
+            error_string = "relation_selection has {} items, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! ----> try retrieving relation_selection properties
+            
+            # ! --------> relation_type_slug_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
+            should_be = self.TEST_RS_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
+            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> relation_type_slug_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTERS
+            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_RS_RELATION_TYPE_SLUG_FILTERS_COUNT
+            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> relation_trait_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
+            should_be = self.TEST_RS_RELATION_TRAIT_FILTER_COMBINE_TYPE
+            error_string = "relation_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> relation_trait_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTERS
+            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_RS_RELATION_TRAIT_FILTERS_COUNT
+            error_string = "relation_trait_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+                        
+            # ! --------> entity_type_slug_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
+            should_be = self.TEST_RS_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
+            error_string = "entity_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # ! --------> entity_type_slug_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTERS
+            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_RS_ENTITY_TYPE_SLUG_FILTERS_COUNT
+            error_string = "entity_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # ! --------> entity_trait_filter_combine_type
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE
+            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
+            should_be = self.TEST_RS_ENTITY_TRAIT_FILTER_COMBINE_TYPE
+            error_string = "entity_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )            
+            
+            # ! --------> entity_trait_filters
+            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTERS
+            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
+            test_value = len( test_temp )
+            should_be = self.TEST_RS_ENTITY_TRAIT_FILTERS_COUNT
+            error_string = "entity_trait_filters count is {}, should be {}.".format( test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # testing entity ID filter?
+            if ( include_entity_id_filter_IN == True ):
+        
+                # ! --------> entity_id_filter_combine_type
+                test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_ID_FILTER_COMBINE_TYPE
+                test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
+                should_be = self.TEST_RS_ENTITY_ID_FILTER_COMBINE_TYPE
+                error_string = "entity_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
+                self.assertEqual( test_value, should_be, msg = error_string )            
+                
+                # ! --------> entity_id_filters
+                test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_ID_FILTERS
+                test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
+                test_value = len( test_temp )
+                should_be = self.TEST_RS_ENTITY_ID_FILTERS_COUNT
+                error_string = "entity_id_filters count is {}, should be {}.".format( test_value, should_be )
+                self.assertEqual( test_value, should_be, msg = error_string )
+                
+            #-- END check to see if testing entity ID filter. --#
+
+        else:
+        
+            # no instance passed in.  Assert Not None here, so we raise Error.
+            test_value = test_instance_IN
+            error_string = "None passed in, should be a NetworkDataRequest instance."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+        #-- END check to see if instance passed in. --#
+        
+    #-- END method validate_relation_selection() --#
     
+
     #----------------------------------------------------------------------------
     # ! ==> instance methods - tests
     #----------------------------------------------------------------------------
