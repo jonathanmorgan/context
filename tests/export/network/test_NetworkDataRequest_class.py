@@ -29,6 +29,7 @@ from context.export.network.network_data_request import NetworkDataRequest
 from context.tests.test_helper import TestHelper
 
 # python_utilities
+from python_utilities.booleans.boolean_helper import BooleanHelper
 from python_utilities.exceptions.exception_helper import ExceptionHelper
 
 
@@ -50,11 +51,11 @@ class NetworkDataRequestTest( django.test.TestCase ):
     FILE_PATH_BASE_FOLDER = "{}/".format( os.path.dirname( os.path.realpath( __file__ ) ) )
     FILE_PATH_NETWORK_DATA_REQUEST_BASIC = "{}network_data_request_basic.json".format( FILE_PATH_BASE_FOLDER )
     FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER = "{}network_data_request_with_entity_id_filter.json".format( FILE_PATH_BASE_FOLDER )
-    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT = "{}network_data_request_with_entity_select.json".format( FILE_PATH_BASE_FOLDER )
+    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION = "{}network_data_request_with_entity_select.json".format( FILE_PATH_BASE_FOLDER )
     FILE_PATH_LIST = []
     FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_BASIC )
     FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER )
-    FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT )
+    FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION )
     
     # test values
     TEST_OUTPUT_SPEC_LEN = 5
@@ -90,13 +91,25 @@ class NetworkDataRequestTest( django.test.TestCase ):
     TEST_ES_ENTITY_ID_FILTER_COMBINE_TYPE = FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_AND
     TEST_ES_ENTITY_ID_FILTERS_COUNT = 1
 
-
     # map of JSON file paths to associated validate functions
     JSON_FILE_TO_VALIDATE_FUNCTION_MAP = {}
     JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_BASIC ] = "validate_instance_basic"
     JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER ] = "validate_instance_id_filter"
-    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT ] = "validate_instance_entity_select"
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION ] = "validate_instance_entity_selection"
     
+    # test - get()/set()
+    TEST_SET_ENTITY_SELECTION = "test_set_entity_selection"
+    TEST_SET_IS_REQUEST_OK = "false"
+    TEST_SET_OUTPUT_FILE_PATH = "test_set_output_file_path"
+    TEST_SET_OUTPUT_FORMAT = "test_set_output_format"
+    TEST_SET_OUTPUT_INCLUDE_COLUMN_HEADERS = "test_set_output_include_column_headers"
+    TEST_SET_OUTPUT_SPECIFICATION = "test_set_output_specification"
+    TEST_SET_OUTPUT_SPEC_PROPERTY_NAME = "test_set_output_spec_property_name"
+    TEST_SET_OUTPUT_SPEC_PROPERTY = "test_set_output_spec_property"
+    TEST_SET_OUTPUT_SPEC_PROPERTY_AGAIN = "test_set_output_spec_property_again"
+    TEST_SET_OUTPUT_STRUCTURE = "test_set_output_structure"
+    TEST_SET_OUTPUT_TYPE = "test_set_output_type"
+    TEST_SET_RELATION_SELECTION = "test_set_relation_selection"
 
     #----------------------------------------------------------------------
     # ! ==> class methods
@@ -138,7 +151,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
 
 
     @classmethod
-    def load_with_entity_select( cls ):
+    def load_with_entity_selection( cls ):
         
         # return reference
         instance_OUT = None
@@ -147,11 +160,11 @@ class NetworkDataRequestTest( django.test.TestCase ):
         instance_OUT = NetworkDataRequest()
         
         # load basic.
-        instance_OUT.load_network_data_request_json_file( cls.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECT )
+        instance_OUT.load_network_data_request_json_file( cls.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION )
         
         return instance_OUT
         
-    #-- END class method load_with_entity_select() --#
+    #-- END class method load_with_entity_selection() --#
 
 
     #---------------------------------------------------------------------------
@@ -386,10 +399,10 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #-- END method validate_instance_empty() --#
     
 
-    def validate_instance_entity_select( self, test_instance_IN ):
+    def validate_instance_entity_selection( self, test_instance_IN ):
         
         # declare variables
-        me = "validate_instance_entity_select"
+        me = "validate_instance_entity_selection"
         test_value = None
         should_be = None
         error_message = None
@@ -415,7 +428,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
             
         #-- END check to see if instance passed in. --#
         
-    #-- END method validate_instance_entity_select() --#
+    #-- END method validate_instance_entity_selection() --#
     
 
     def validate_instance_id_filter( self, test_instance_IN ):
@@ -668,6 +681,264 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------------
 
 
+    def test_getters_and_setters( self ):
+
+        # declare variables
+        me = "test_getters_and_setters"
+        debug_flag = None
+        test_instance = None
+        test_method = None
+        original_value = None
+        new_value = None
+        test_value = None
+        should_be = None
+        error_string = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        
+        # ! ----> test get()-ers
+        
+        # load "with_entity_id_filter" to use as test instance.
+        test_instance = self.load_with_entity_id_filter()
+        
+        # first, test getters by calling the validate method
+        self.validate_instance_id_filter( test_instance )
+        
+        # load "with_entity_selection" to use as test instance.
+        test_instance = self.load_with_entity_selection()
+        
+        # first, test getters by calling the validate method
+        self.validate_instance_entity_selection( test_instance )
+
+        # ! ----> test set()-ers
+        
+        # for each (using last loaded test instance):
+        # - get original value and store
+        # - set new value
+        # - get value.
+        # - assertEquals( get value, new value )
+        # - assertNotEqual( get value, original value )
+        
+        # ! --------> set_entity_selection()
+        test_method = "set_entity_selection"
+        original_value = test_instance.get_entity_selection()
+        new_value = self.TEST_SET_ENTITY_SELECTION
+        test_instance.set_entity_selection( new_value )
+        test_value = test_instance.get_entity_selection()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> set_is_request_ok()
+        test_method = "set_is_request_ok"
+        original_value = test_instance.is_request_ok()
+        new_value = self.TEST_SET_IS_REQUEST_OK
+        test_instance.set_is_request_ok( new_value )
+        test_value = test_instance.is_request_ok()
+
+        # setter converts strings to boolean values, so convert this value to
+        #     boolean.
+        new_value = BooleanHelper.convert_value_to_boolean( new_value )
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> set_output_file_path()
+        test_method = "set_output_file_path"
+        original_value = test_instance.get_output_file_path()
+        new_value = self.TEST_SET_OUTPUT_FILE_PATH
+        test_instance.set_output_file_path( new_value )
+        test_value = test_instance.get_output_file_path()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> set_output_format()
+        test_method = "set_output_format"
+        original_value = test_instance.get_output_format()
+        new_value = self.TEST_SET_OUTPUT_FORMAT
+        test_instance.set_output_format( new_value )
+        test_value = test_instance.get_output_format()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> set_output_include_column_headers()
+        test_method = "set_output_include_column_headers"
+        original_value = test_instance.get_output_include_column_headers()
+        new_value = self.TEST_SET_OUTPUT_INCLUDE_COLUMN_HEADERS
+        test_instance.set_output_include_column_headers( new_value )
+        test_value = test_instance.get_output_include_column_headers()
+
+        # setter converts strings to boolean values, so convert this value to
+        #     boolean.
+        new_value = BooleanHelper.convert_value_to_boolean( new_value )
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> set_output_specification()
+        test_method = "set_output_specification"
+        original_value = test_instance.get_output_specification()
+        new_value = self.TEST_SET_OUTPUT_SPECIFICATION
+        test_instance.set_output_specification( new_value )
+        test_value = test_instance.get_output_specification()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+        
+        # put back the original so we have a dictionary there.
+        test_instance.set_output_specification( original_value )
+
+        # ! --------> set_output_spec_property()
+        test_method = "set_output_spec_property"
+        test_name = self.TEST_SET_OUTPUT_SPEC_PROPERTY_NAME
+        original_value = test_instance.get_output_spec_property( test_name )
+        new_value = self.TEST_SET_OUTPUT_SPEC_PROPERTY
+        test_instance.set_output_spec_property( test_name, new_value )
+        test_value = test_instance.get_output_spec_property( test_name )
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # set it again.
+        original_value = test_instance.get_output_spec_property( test_name )
+        new_value = self.TEST_SET_OUTPUT_SPEC_PROPERTY_AGAIN
+        test_instance.set_output_spec_property( test_name, new_value )
+        test_value = test_instance.get_output_spec_property( test_name )
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # set to None.
+        original_value = test_instance.get_output_spec_property( test_name )
+        new_value = None
+        test_instance.set_output_spec_property( test_name, new_value )
+        test_value = test_instance.get_output_spec_property( test_name )
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> set_output_structure()
+        test_method = "set_output_structure"
+        original_value = test_instance.get_output_structure()
+        new_value = self.TEST_SET_OUTPUT_STRUCTURE
+        test_instance.set_output_structure( new_value )
+        test_value = test_instance.get_output_structure()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> set_output_type()
+        test_method = "set_output_type"
+        original_value = test_instance.get_output_type()
+        new_value = self.TEST_SET_OUTPUT_TYPE
+        test_instance.set_output_type( new_value )
+        test_value = test_instance.get_output_type()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> set_relation_selection
+        test_method = "set_relation_selection"
+        original_value = test_instance.get_relation_selection()
+        new_value = self.TEST_SET_RELATION_SELECTION
+        test_instance.set_relation_selection( new_value )
+        test_value = test_instance.get_relation_selection()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+    #-- END test method test_getters() --#
+
+
     def test_load_network_data_request_json( self ):
         
         # declare variables
@@ -759,7 +1030,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
     def test_load_network_data_request_json_file( self ):
         
         # declare variables
-        me = "test_load_network_data_request_json"
+        me = "test_load_network_data_request_json_file"
         debug_flag = None
         test_instance = None
         test_value = None
@@ -815,7 +1086,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
     def test_load_network_data_request_json_string( self ):
         
         # declare variables
-        me = "test_load_network_data_request_json"
+        me = "test_load_network_data_request_json_string"
         debug_flag = None
         test_instance = None
         test_value = None

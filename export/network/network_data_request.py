@@ -764,7 +764,7 @@ class NetworkDataRequest( ContextBase ):
         value_OUT = None
         
         # return it
-        value_OUT = self.set_output_spec_value( self.PROP_NAME_OUTPUT_FILE_PATH, value_IN )
+        value_OUT = self.set_output_spec_property( self.PROP_NAME_OUTPUT_FILE_PATH, value_IN )
         
         return value_OUT
     
@@ -777,7 +777,7 @@ class NetworkDataRequest( ContextBase ):
         value_OUT = None
         
         # return it
-        value_OUT = self.set_output_spec_value( self.PROP_NAME_OUTPUT_FORMAT, value_IN )
+        value_OUT = self.set_output_spec_property( self.PROP_NAME_OUTPUT_FORMAT, value_IN )
         
         return value_OUT
     
@@ -798,7 +798,7 @@ class NetworkDataRequest( ContextBase ):
             boolean_value = BooleanHelper.convert_value_to_boolean( value_IN )
             
             # store and return it
-            value_OUT = self.set_output_spec_value( self.PROP_NAME_OUTPUT_INCLUDE_COLUMN_HEADERS, boolean_value )
+            value_OUT = self.set_output_spec_property( self.PROP_NAME_OUTPUT_INCLUDE_COLUMN_HEADERS, boolean_value )
             
         #-- END check to see if value is non-empty. --#
         
@@ -842,7 +842,7 @@ class NetworkDataRequest( ContextBase ):
         
         return value_OUT
     
-    #-- END method set_output_spec_value() --#
+    #-- END method set_output_spec_property() --#
 
 
     def set_output_structure( self, value_IN ):
@@ -851,7 +851,7 @@ class NetworkDataRequest( ContextBase ):
         value_OUT = None
         
         # return it
-        value_OUT = self.set_output_spec_value( self.PROP_NAME_OUTPUT_STRUCTURE, value_IN )
+        value_OUT = self.set_output_spec_property( self.PROP_NAME_OUTPUT_STRUCTURE, value_IN )
         
         return value_OUT
     
@@ -864,7 +864,7 @@ class NetworkDataRequest( ContextBase ):
         value_OUT = None
         
         # return it
-        value_OUT = self.set_output_spec_value( self.PROP_NAME_OUTPUT_TYPE, value_IN )
+        value_OUT = self.set_output_spec_property( self.PROP_NAME_OUTPUT_TYPE, value_IN )
         
         return value_OUT
     
