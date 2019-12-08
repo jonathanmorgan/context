@@ -936,7 +936,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
         self.assertNotEqual( test_value, should_not_be, msg = error_string )
 
-    #-- END test method test_getters() --#
+    #-- END test method test_getters_and_setters() --#
 
 
     def test_load_network_data_request_json( self ):
