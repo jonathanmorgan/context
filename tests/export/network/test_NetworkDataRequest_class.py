@@ -26,7 +26,7 @@ import django.test
 # context imports
 from context.export.network.filter_spec import FilterSpec
 from context.export.network.network_data_request import NetworkDataRequest
-from context.tests.test_helper import TestHelper
+from context.tests.export.network.test_helper import TestHelper
 
 # python_utilities
 from python_utilities.booleans.boolean_helper import BooleanHelper
@@ -47,16 +47,8 @@ class NetworkDataRequestTest( django.test.TestCase ):
     # CLASS NAME
     CLASS_NAME = "NetworkDataRequestTest"
     
-    # JSON files
-    FILE_PATH_BASE_FOLDER = "{}/".format( os.path.dirname( os.path.realpath( __file__ ) ) )
-    FILE_PATH_NETWORK_DATA_REQUEST_BASIC = "{}network_data_request_basic.json".format( FILE_PATH_BASE_FOLDER )
-    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER = "{}network_data_request_with_entity_id_filter.json".format( FILE_PATH_BASE_FOLDER )
-    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION = "{}network_data_request_with_entity_select.json".format( FILE_PATH_BASE_FOLDER )
-    FILE_PATH_LIST = []
-    FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_BASIC )
-    FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER )
-    FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION )
-    
+    # JSON files details are in network-specific TestHelper now.
+
     # test values
     TEST_OUTPUT_SPEC_LEN = 5
     TEST_OUTPUT_TYPE = "file"
@@ -93,9 +85,9 @@ class NetworkDataRequestTest( django.test.TestCase ):
 
     # map of JSON file paths to associated validate functions
     JSON_FILE_TO_VALIDATE_FUNCTION_MAP = {}
-    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_BASIC ] = "validate_instance_basic"
-    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER ] = "validate_instance_id_filter"
-    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION ] = "validate_instance_entity_selection"
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ TestHelper.FILE_PATH_NETWORK_DATA_REQUEST_BASIC ] = "validate_instance_basic"
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ TestHelper.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER ] = "validate_instance_id_filter"
+    JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ TestHelper.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION ] = "validate_instance_entity_selection"
     
     # test - get()/set()
     TEST_SET_ENTITY_SELECTION = "test_set_entity_selection"
@@ -114,57 +106,6 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------
     # ! ==> class methods
     #----------------------------------------------------------------------
-
-
-    @classmethod
-    def load_basic( cls ):
-        
-        # return reference
-        instance_OUT = None
-        
-        # create instance
-        instance_OUT = NetworkDataRequest()
-        
-        # load basic.
-        instance_OUT.load_network_data_request_json_file( cls.FILE_PATH_NETWORK_DATA_REQUEST_BASIC )
-        
-        return instance_OUT
-        
-    #-- END class method load_basic() --#
-
-
-    @classmethod
-    def load_with_entity_id_filter( cls ):
-        
-        # return reference
-        instance_OUT = None
-        
-        # create instance
-        instance_OUT = NetworkDataRequest()
-        
-        # load basic.
-        instance_OUT.load_network_data_request_json_file( cls.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER )
-        
-        return instance_OUT
-        
-    #-- END class method load_with_entity_id_filter() --#
-
-
-    @classmethod
-    def load_with_entity_selection( cls ):
-        
-        # return reference
-        instance_OUT = None
-        
-        # create instance
-        instance_OUT = NetworkDataRequest()
-        
-        # load basic.
-        instance_OUT.load_network_data_request_json_file( cls.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION )
-        
-        return instance_OUT
-        
-    #-- END class method load_with_entity_selection() --#
 
 
     #---------------------------------------------------------------------------
@@ -200,7 +141,8 @@ class NetworkDataRequestTest( django.test.TestCase ):
         error_count = -1
         error_message = ""
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # get setup error count
         setup_error_count = self.setup_error_count
@@ -697,18 +639,19 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # init debug
         debug_flag = self.DEBUG
         
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # ! ----> test get()-ers
         
         # load "with_entity_id_filter" to use as test instance.
-        test_instance = self.load_with_entity_id_filter()
+        test_instance = TestHelper.load_with_entity_id_filter()
         
         # first, test getters by calling the validate method
         self.validate_instance_id_filter( test_instance )
         
         # load "with_entity_selection" to use as test instance.
-        test_instance = self.load_with_entity_selection()
+        test_instance = TestHelper.load_with_entity_selection()
         
         # first, test getters by calling the validate method
         self.validate_instance_entity_selection( test_instance )
@@ -959,13 +902,14 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # init debug
         debug_flag = self.DEBUG
         
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # init instance.
         test_instance = NetworkDataRequest()
         
         # loop over the JSON files.
-        json_file_path_list = self.FILE_PATH_LIST
+        json_file_path_list = TestHelper.FILE_PATH_LIST
         for json_file_path in json_file_path_list:
         
             try:
@@ -1046,13 +990,14 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # init debug
         debug_flag = self.DEBUG
         
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # init instance.
         test_instance = NetworkDataRequest()
         
         # loop over the JSON files.
-        json_file_path_list = self.FILE_PATH_LIST
+        json_file_path_list = TestHelper.FILE_PATH_LIST
         for json_file_path in json_file_path_list:
         
             # call the load_network_data_request_json() method
@@ -1103,13 +1048,14 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # init debug
         debug_flag = self.DEBUG
         
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # init instance.
         test_instance = NetworkDataRequest()
         
         # loop over the JSON files.
-        json_file_path_list = self.FILE_PATH_LIST
+        json_file_path_list = TestHelper.FILE_PATH_LIST
         for json_file_path in json_file_path_list:
         
             try:

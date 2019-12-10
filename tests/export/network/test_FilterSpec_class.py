@@ -139,7 +139,8 @@ class FilterSpecTest( django.test.TestCase ):
         # init debug
         debug_flag = self.DEBUG
         
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # create a test instance    
         test_instance = FilterSpec()

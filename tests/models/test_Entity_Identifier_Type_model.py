@@ -66,7 +66,8 @@ class Entity_Identifier_TypeModelTest( django.test.TestCase ):
         error_count = -1
         error_message = ""
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # get setup error count
         setup_error_count = self.setup_error_count
@@ -90,7 +91,8 @@ class Entity_Identifier_TypeModelTest( django.test.TestCase ):
         test_type_id = None
         match_count = -1
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # loop over name to ID map
         for type_name_string, type_id in six.iteritems( self.TYPE_NAME_TO_ID_MAP ):

@@ -56,9 +56,21 @@ class TestHelper( object ):
 
 
     # fixtures paths, in order they should be loaded.
-    FIXTURE_UNIT_TEST_CONTEXT_METADATA = "context-sourcenet_entities_and_relations.json"
-    FIXTURE_LIST = []
-    FIXTURE_LIST.append( FIXTURE_UNIT_TEST_CONTEXT_METADATA )
+    FIXTURE_UNIT_TEST_CONTEXT_METADATA = "context-sourcenet_entity_and_relation_types.json"
+    FIXTURE_UNIT_TEST_CONTEXT_DATA = "context-sourcenet_entities_and_relations.json"
+    FIXTURE_UNIT_TEST_CONTEXT_COMPLETE = "context-sourcenet_entities_and_relations-full.json"
+    
+    # basic metadata fixture list.
+    FIXTURE_LIST_METADATA = []
+    FIXTURE_LIST_METADATA.append( FIXTURE_UNIT_TEST_CONTEXT_METADATA )
+    
+    # full data fixture list.
+    FIXTURE_LIST_DATA = []
+    FIXTURE_LIST_DATA.append( FIXTURE_UNIT_TEST_CONTEXT_METADATA )
+    FIXTURE_LIST_DATA.append( FIXTURE_UNIT_TEST_CONTEXT_DATA )
+    
+    # default fixture list (just metadata).
+    FIXTURE_LIST = FIXTURE_LIST_METADATA
     
     # Test user
     TEST_USER_NAME = "test_user"
@@ -800,6 +812,16 @@ class TestHelper( object ):
     
     #-- END method output_debug() --#
         
+
+    @classmethod
+    def print_test_header( cls, class_name_IN, method_name_IN ):
+        
+        print( '\n\n================================================================================' )
+        print( '====> {} --> {}'.format( class_name_IN, method_name_IN ) )
+        print( '================================================================================\n' )
+        
+    #-- END class method print_test_header() --#
+
 
     @classmethod
     def standardSetUp( cls, test_case_IN = None, fixture_list_IN = FIXTURE_LIST ):

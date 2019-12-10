@@ -77,7 +77,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         error_count = -1
         error_message = ""
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # get setup error count
         setup_error_count = self.setup_error_count
@@ -116,7 +117,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # init
         test_trait_value = TestHelper.TEST_ENTITY_TRAIT_VALUE
@@ -135,7 +137,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         my_trait_label = trait_instance.label
         my_trait_value = trait_instance.get_trait_value()
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         print( "trait_instance: {}".format( trait_instance ) )
 
         #======================================================================#
@@ -177,7 +180,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # init
         test_trait_value_string = self.TEST_ENTITY_TRAIT_VALUE_INT
@@ -201,7 +205,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         my_trait_label = trait_instance.label
         my_trait_value = trait_instance.get_trait_value_as_int()
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         print( "trait_instance: {}".format( trait_instance ) )
 
         #======================================================================#
@@ -244,7 +249,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # init
         test_trait_value_string = self.TEST_ENTITY_TRAIT_VALUE_DATETIME
@@ -269,7 +275,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         my_trait_label = trait_instance.label
         my_trait_value = trait_instance.get_trait_value_as_datetime( test_format_string )
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         print( "trait_instance: {}".format( trait_instance ) )
 
         #======================================================================#
@@ -312,7 +319,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # init
         test_trait_value_string = TestHelper.TEST_ENTITY_TRAIT_VALUE_JSON
@@ -336,7 +344,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         my_trait_label = trait_instance.label
         my_trait_value = trait_instance.get_trait_value_as_json()
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         print( "trait_instance: {}".format( trait_instance ) )
 
         #======================================================================#
@@ -379,7 +388,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # init
         test_trait_value_string = TestHelper.TEST_ENTITY_TRAIT_VALUE_JSON
@@ -399,7 +409,8 @@ class Entity_TraitModelTest( django.test.TestCase ):
         my_trait_label = trait_instance.label
         my_trait_value = trait_instance.get_value_json()
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         print( "trait_instance: {}".format( trait_instance ) )
 
         #======================================================================#

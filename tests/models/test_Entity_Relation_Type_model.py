@@ -69,7 +69,8 @@ class Entity_Relation_TypeModelTest( django.test.TestCase ):
         error_count = -1
         error_message = ""
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # get setup error count
         setup_error_count = self.setup_error_count
@@ -97,7 +98,8 @@ class Entity_Relation_TypeModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # ! ----> try a slug that should have a match
         test_slug = TestHelper.CONTEXT_RELATION_TYPE_SLUG_MENTIONED

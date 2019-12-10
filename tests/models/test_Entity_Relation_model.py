@@ -76,7 +76,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         error_count = -1
         error_message = ""
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # get setup error count
         setup_error_count = self.setup_error_count
@@ -448,7 +449,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # create test relation data.
         TestHelper.create_test_relations()
@@ -602,7 +604,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # create test relation data.
         TestHelper.create_test_relations()
@@ -710,7 +713,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # create test relation data.
         TestHelper.create_test_relations()
@@ -815,7 +819,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # create test relation data.
         TestHelper.create_test_relations()
@@ -949,7 +954,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # init debug
         debug_flag = self.DEBUG
         
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
 
         # init - test relation data
         TestHelper.create_test_relations()
@@ -1503,7 +1509,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
 
         # create test relation data.
         TestHelper.create_test_relations()
@@ -1559,7 +1566,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         my_trait_slug = trait_instance.slug
         my_trait_label = trait_instance.label
         
-        print( '\n====> In {}.{}'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         print( "trait_instance: {}".format( trait_instance ) )
 
         #======================================================================#
@@ -1791,7 +1799,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # init debug
         debug_flag = self.DEBUG
         
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
 
         # init - test relation data
         TestHelper.create_test_relations()
@@ -2329,7 +2338,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # init debug
         debug_flag = self.DEBUG
         
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
 
         # init - test relation data
         TestHelper.create_test_relations()
@@ -2593,7 +2603,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # create test relation data.
         TestHelper.create_test_relations()
@@ -2745,7 +2756,8 @@ class Entity_RelationModelTest( django.test.TestCase ):
         # debug
         debug_flag = self.DEBUG
 
-        print( '\n\n====> In {}.{}\n'.format( self.CLASS_NAME, me ) )
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
         
         # create test relation data.
         TestHelper.create_test_relations()
