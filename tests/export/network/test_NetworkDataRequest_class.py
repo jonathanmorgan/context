@@ -623,6 +623,118 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------------
 
 
+    def test_get_selection_filters( self ):
+
+        # declare variables
+        me = "test_get_selection_filters"
+        debug_flag = None
+        test_instance = None
+        relation_selection = None
+        entity_selection = None
+        test_value = None
+        should_be = None
+        should_not_be = None
+        error_string = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # ! ----> test one without entity selection
+        
+        # load "with_entity_selection" to use as test instance.
+        test_instance = TestHelper.load_basic()
+        
+        # retrieve the relation_selection directly.
+        relation_selection = test_instance.get_relation_selection()
+        entity_selection = test_instance.get_entity_selection()
+        
+        # relation should not be empty
+        test_value = relation_selection
+        should_not_be = 0
+        error_string = "BASIC - relation_selection count = {}, should not be {}.".format( test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+                
+        # entity should be empty dict
+        test_value = len( entity_selection )
+        should_be = 0
+        error_string = "BASIC - entity_selection count = {}, should be {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # ! --------> load, passing no argument (entity_relation = False)
+        test_value = test_instance.get_selection_filters()
+
+        # relation_selection should equal test
+        should_be = relation_selection
+        error_string = "BASIC - get_selection_filters(): got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # ! --------> load, use_entity_selection_IN = False
+        test_value = test_instance.get_selection_filters( use_entity_selection_IN = False )
+
+        # relation_selection should equal test
+        should_be = relation_selection
+        error_string = "BASIC - get_selection_filters(): got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> load, use_entity_selection_IN = True
+        test_value = test_instance.get_selection_filters( use_entity_selection_IN = True )
+
+        # relation_selection should equal test
+        should_be = relation_selection
+        error_string = "BASIC - get_selection_filters(): got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! ----> test one with entity selection
+        
+        # load "with_entity_selection" to use as test instance.
+        test_instance = TestHelper.load_with_entity_selection()
+        
+        # retrieve the relation_selection directly.
+        relation_selection = test_instance.get_relation_selection()
+        entity_selection = test_instance.get_entity_selection()
+        
+        # relation should not be empty
+        test_value = relation_selection
+        should_not_be = 0
+        error_string = "W/ENTITY - relation_selection count = {}, should not be {}.".format( test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+                
+        # entity should not be empty
+        test_value = len( entity_selection )
+        should_not_be = 0
+        error_string = "W/ENTITY - entity_selection, count = {}, should not be {}.".format( test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+                
+        # ! --------> load, passing no argument (entity_relation = False)
+        test_value = test_instance.get_selection_filters()
+
+        # relation_selection should equal test
+        should_be = relation_selection
+        error_string = "W/ENTITY - get_selection_filters(): got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # ! --------> load, use_entity_selection_IN = False
+        test_value = test_instance.get_selection_filters( use_entity_selection_IN = False )
+
+        # relation_selection should equal test
+        should_be = relation_selection
+        error_string = "W/ENTITY - get_selection_filters(): got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> load, use_entity_selection_IN = True
+        test_value = test_instance.get_selection_filters( use_entity_selection_IN = True )
+
+        # entity_selection should equal test
+        should_be = entity_selection
+        error_string = "W/ENTITY - get_selection_filters(): got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+    #-- END test method test_get_selection_filters() --#
+
+
     def test_getters_and_setters( self ):
 
         # declare variables

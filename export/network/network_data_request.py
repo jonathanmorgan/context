@@ -50,6 +50,9 @@ from python_utilities.booleans.boolean_helper import BooleanHelper
 from python_utilities.parameters.param_container import ParamContainer
 from python_utilities.status.status_container import StatusContainer
 
+# Import the classes for our context application
+from context.models import Entity_Relation
+
 # Import context shared classes.
 from context.shared.context_base import ContextBase
 
@@ -127,20 +130,47 @@ class NetworkDataRequest( ContextBase ):
     OUTPUT_STRUCTURE_VALUES.append( PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_ROWS )
     
     #--------------------------------------------------------------------------#
+    # ! ----> filter types - name prefixes/types and variable name suffixes.
+    FILTER_TYPE_RELATION_TYPE_SLUG = "relation_type_slug"
+    FILTER_TYPE_RELATION_TRAIT = "relation_trait"
+    FILTER_TYPE_ENTITY_TYPE_SLUG = "entity_type_slug"
+    FILTER_TYPE_ENTITY_TRAIT = "entity_trait"
+    FILTER_TYPE_ENTITY_ID = "entity_id"
+    FILTER_TYPE_LIST = []
+    FILTER_TYPE_LIST.append( FILTER_TYPE_RELATION_TYPE_SLUG )
+    FILTER_TYPE_LIST.append( FILTER_TYPE_RELATION_TRAIT )
+    FILTER_TYPE_LIST.append( FILTER_TYPE_ENTITY_TYPE_SLUG )
+    FILTER_TYPE_LIST.append( FILTER_TYPE_ENTITY_TRAIT )
+    FILTER_TYPE_LIST.append( FILTER_TYPE_ENTITY_ID )
+    
+    # variable name suffixes
+    SUFFIX_FILTER_COMBINE_TYPE = "_filter_combine_type"
+    SUFFIX_FILTERS = "_filters"
+    
+    # map of type to build function name.
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP = {}
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_RELATION_TYPE_SLUG ] = "build_filter_spec_{}_q".format( FILTER_TYPE_RELATION_TYPE_SLUG )
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_RELATION_TRAIT ] = "build_filter_spec_{}_q".format( FILTER_TYPE_RELATION_TRAIT )
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_ENTITY_TYPE_SLUG ] = "build_filter_spec_{}_q".format( FILTER_TYPE_ENTITY_TYPE_SLUG )
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_ENTITY_TRAIT ] = "build_filter_spec_{}_q".format( FILTER_TYPE_ENTITY_TRAIT )
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_ENTITY_ID ] = "build_filter_spec_{}_q".format( FILTER_TYPE_ENTITY_ID )
+    
+    
+    #--------------------------------------------------------------------------#
     # ! ----> filter criteria - relations
-    PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE = "relation_type_slug_filter_combine_type"
-    PROP_NAME_RELATION_TYPE_SLUG_FILTERS = "relation_type_slug_filters"
-    PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE = "relation_trait_filter_combine_type"
-    PROP_NAME_RELATION_TRAIT_FILTERS = "relation_trait_filters"
+    PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_RELATION_TYPE_SLUG, SUFFIX_FILTER_COMBINE_TYPE )
+    PROP_NAME_RELATION_TYPE_SLUG_FILTERS = "{}{}".format( FILTER_TYPE_RELATION_TYPE_SLUG, SUFFIX_FILTERS )
+    PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_RELATION_TRAIT, SUFFIX_FILTER_COMBINE_TYPE )
+    PROP_NAME_RELATION_TRAIT_FILTERS = "{}{}".format( FILTER_TYPE_RELATION_TRAIT, SUFFIX_FILTERS )
     
     #--------------------------------------------------------------------------#
     # ! ----> filter criteria - entities
-    PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE = "entity_type_slug_filter_combine_type"
-    PROP_NAME_ENTITY_TYPE_SLUG_FILTERS = "entity_type_slug_filters"
-    PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE = "entity_trait_filter_combine_type"
-    PROP_NAME_ENTITY_TRAIT_FILTERS = "entity_trait_filters"
-    PROP_NAME_ENTITY_ID_FILTER_COMBINE_TYPE = "entity_id_filter_combine_type"
-    PROP_NAME_ENTITY_ID_FILTERS = "entity_id_filters"
+    PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_ENTITY_TYPE_SLUG, SUFFIX_FILTER_COMBINE_TYPE )
+    PROP_NAME_ENTITY_TYPE_SLUG_FILTERS = "{}{}".format( FILTER_TYPE_ENTITY_TYPE_SLUG, SUFFIX_FILTERS )
+    PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_ENTITY_TRAIT, SUFFIX_FILTER_COMBINE_TYPE )
+    PROP_NAME_ENTITY_TRAIT_FILTERS = "{}{}".format( FILTER_TYPE_ENTITY_TRAIT, SUFFIX_FILTERS )
+    PROP_NAME_ENTITY_ID_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_ENTITY_ID, SUFFIX_FILTER_COMBINE_TYPE )
+    PROP_NAME_ENTITY_ID_FILTERS = "{}{}".format( FILTER_TYPE_ENTITY_ID, SUFFIX_FILTERS )
     
     #--------------------------------------------------------------------------#
     # !----> filter criteria - shared
@@ -215,16 +245,855 @@ class NetworkDataRequest( ContextBase ):
     #---------------------------------------------------------------------------
 
 
-    def is_request_ok( self ):
+    def build_filter_spec_aggregate_q( self, filter_spec_IN = None, filter_type_IN = None ):
         
         # return reference
-        value_OUT = None
+        q_OUT = None
         
-        value_OUT = self.m_is_request_ok
+        # declare variables
+        me = "build_filter_spec_aggregate_q"
+        debug_flag = False
+        status_message = None
+        filter_spec_list = None
+        filter_combine_type = None
+        filter_q_list = None
+        filter_spec_dict = None
+        filter_spec = None
+        filter_q = None
+        collected_q = None
+        filter_q_count = None
+        filter_q_counter = None
         
-        return value_OUT
+        # init debug_flag
+        debug_flag = self.DEBUG_FLAG
+        
+        # make sure we have filter spec
+        if ( filter_spec_IN is not None ):
+        
+            # filter spec list OK?
+            filter_spec_list = filter_spec_IN.get_value_list()
+            if ( ( filter_spec_list is not None ) and ( len( filter_spec_list ) > 0 ) ):
+            
+                # make sure we have a type
+                filter_combine_type = filter_spec_IN.get_comparison_type()
+                if ( ( filter_combine_type is None ) or ( filter_combine_type != "" ) ):
+                
+                    # use default.
+                    filter_combine_type = FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_DEFAULT
+                    
+                #-- END check to see if combine type passed in. --#
+                    
+                # make sure combine type is valid.
+                if ( filter_combine_type in FilterSpec.FILTER_COMBINE_TYPE_VALUES ):
+                                
+                    # loop over filters, build a Q() list.
+                    filter_q_list = []
+                    for filter_spec_dict in filter_spec_list:
+                    
+                        # load into FilterSpec instance.
+                        filter_spec = FilterSpec()
+                        filter_spec.set_filter_spec( filter_spec_dict )
+                        
+                        # call the method to create a Q() filter based on type.
+                        filter_q = self.build_filter_spec_q( filter_spec_IN = filter_spec,
+                                                             filter_type_IN = filter_type_IN )
+                        
+                        # add to list?
+                        if ( filter_q is not None ):
+                        
+                            # add to list.
+                            filter_q_list.append( filter_q )
+                            
+                        #-- END check to see if anything returned --#
+                        
+                    #-- END loop over filter specs. --#
+                    
+                    # now, based on the combine type, combine Qs and filter QuerySet
+                    #     with the result.
+                    collected_q = None
+                    
+                    # how many Qs?
+                    filter_q_count = len( filter_q_list )
+                    if ( filter_q_count == 1 )
     
-    #-- END method is_request_ok() --#
+                        # just one thing.  Get it, store it in collected_q.
+                        collected_q = filter_q_list[ 0 ]
+                        
+                    elif ( filter_q_count > 1 ):
+                    
+                        # loop over list
+                        filter_q_counter = 0
+                        for filter_q in filter_q_list:
+                        
+                            # increment counter
+                            filter_q_counter += 1
+                            
+                            # what position in list?
+                            if ( filter_q_counter == 1 ):
+                            
+                                # first - seed collected_q with first thing.
+                                collected_q = filter_q
+                                
+                            else:
+                            
+                                # second+ - combine based on combine type.                        
+                                if ( filter_combine_type == FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_AND ):
+                                
+                                    # AND ( "&" ) the current Q to the collected.
+                                    collected_q = collected_q & filter_q
+                                
+                                elif ( filter_combine_type == FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_OR ):
+                                
+                                    # OR ( "|" ) the Qs together.
+                                    collected_q = collected_q | filter_q
+                
+                                else:
+                                
+                                    # ERROR - valid but unknown combine type...
+                                    status_message = "In {}(): ERROR (and strange) - valid but unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
+                                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                                    
+                                #-- END check of combine type. --#
+                                
+                            #-- END check of index of current filter --#
+                        
+                        #-- END loop over filter Qs --#
+                        
+                    elif ( filter_q_count == 0 ):
+                    
+                        # WARNING - no Qs.
+                        status_message = "In {}(): WARNING - No Qs resulted from processing.  filters: {}".format( me, selection_filters )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                    
+                    else:
+                    
+                        # ERROR - unexpected value.
+                        status_message = "In {}(): ERROR - filter count not 0, 1, or > 1. filters: {}".format( me, selection_filters )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                    #-- END check of count of filter Qs. --#
+                                    
+                else:
+                
+                    # ERROR - unknown combine type.
+                    status_message = "In {}(): ERROR - unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                #-- END check to make sure combine type is known and valid --#    
+                    
+            else:
+            
+                # ERROR - no filter list passed in.
+                status_message = "In {}(): ERROR - no filter list passed in ( {} ), nothing to do.".format( me, filter_spec_list )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                
+            #-- END check to make sure combine type is known and valid --#
+            
+        else:
+        
+            # ERROR - no filter spec passed in.
+            status_message = "In {}(): ERROR - no filter spec passed in ( {} ), nothing to do.".format( me, filter_spec_IN )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+        #-- END check to make sure combine type is known and valid --#
+        
+        # set return reference.
+        q_OUT = collected_q
+
+        return q_OUT
+
+    #-- END method build_filter_spec_aggregate_q() --#
+                    
+
+    def build_filter_spec_entity_id_q( self, filter_spec_IN, filter_type_IN ):
+        
+        # return reference
+        q_OUT = None
+        
+        # declare variables
+        me = "build_filter_spec_entity_id_q"
+        filter_spec = None
+        comparison_type = None
+        method_name = None
+        method_pointer = None
+        
+        # got a filter spec passed in?
+        if ( filter_spec_IN is not None ):
+
+            # make FilterSpec instance and load dictionary
+            filter_spec = filter_spec_IN
+
+            # retrieve comparison type
+            comparison_type = filter_spec.get_comparison_type()
+            
+            # valid type?
+            if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
+            
+                # figure out what to do based on type - recursive or not?
+                if ( comparison_type in recursive_comparison_type_list ):
+                
+                    # call method to build aggregate Q from filter spec.
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
+                                                                filter_type_IN = filter_type_IN )
+                    
+                else:
+                
+                    # not recursive, comparison type will tell us what to do.
+                    if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE ):
+                    
+                        pass
+                    
+                    else:
+                    
+                        # ERROR - unknown comparison type.
+                        status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                    #-- END check to see what comparison type. --#
+                    
+                #-- END check to see if recursive type, or atomic. --#
+                
+            else:
+            
+                # ERROR - unknown comparison type.
+                status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if valid comparison type. --#   
+            
+        else:
+        
+            # ERROR - no spec passed in.
+            status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+
+        #-- END check to make sure spec passed in. --#
+        
+    #-- END method build_filter_spec_entity_id_q() --#
+
+
+    def build_filter_spec_entity_trait_q( self, filter_spec_IN, filter_type_IN ):
+        
+        # return reference
+        q_OUT = None
+        
+        # declare variables
+        me = "build_filter_spec_entity_trait_q"
+        filter_spec = None
+        comparison_type = None
+        method_name = None
+        method_pointer = None
+        
+        # got a filter spec passed in?
+        if ( filter_spec_IN is not None ):
+
+            # make FilterSpec instance and load dictionary
+            filter_spec = filter_spec_IN
+
+            # retrieve comparison type
+            comparison_type = filter_spec.get_comparison_type()
+            
+            # valid type?
+            if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
+            
+                # figure out what to do based on type - recursive or not?
+                if ( comparison_type in recursive_comparison_type_list ):
+                
+                    # call method to build aggregate Q from filter spec.
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
+                                                                filter_type_IN = filter_type_IN )
+                    
+                else:
+                
+                    # not recursive, comparison type will tell us what to do.
+                    if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE ):
+                    
+                        pass
+                    
+                    else:
+                    
+                        # ERROR - unknown comparison type.
+                        status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                    #-- END check to see what comparison type. --#
+                    
+                #-- END check to see if recursive type, or atomic. --#
+                
+            else:
+            
+                # ERROR - unknown comparison type.
+                status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if valid comparison type. --#   
+            
+        else:
+        
+            # ERROR - no spec passed in.
+            status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+
+        #-- END check to make sure spec passed in. --#
+        
+    #-- END method build_filter_spec_entity_trait_q() --#
+
+
+    def build_filter_spec_entity_type_slug_q( self, filter_spec_IN, filter_type_IN ):
+        
+        # return reference
+        q_OUT = None
+        
+        # declare variables
+        me = "build_filter_spec_entity_type_slug_q"
+        filter_spec = None
+        comparison_type = None
+        method_name = None
+        method_pointer = None
+        
+        # got a filter spec passed in?
+        if ( filter_spec_IN is not None ):
+
+            # make FilterSpec instance and load dictionary
+            filter_spec = filter_spec_IN
+
+            # retrieve comparison type
+            comparison_type = filter_spec.get_comparison_type()
+            
+            # valid type?
+            if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
+            
+                # figure out what to do based on type - recursive or not?
+                if ( comparison_type in recursive_comparison_type_list ):
+                
+                    # call method to build aggregate Q from filter spec.
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
+                                                                filter_type_IN = filter_type_IN )
+                    
+                else:
+                
+                    # not recursive, comparison type will tell us what to do.
+                    if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE ):
+                    
+                        pass
+                    
+                    else:
+                    
+                        # ERROR - unknown comparison type.
+                        status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                    #-- END check to see what comparison type. --#
+                    
+                #-- END check to see if recursive type, or atomic. --#
+                
+            else:
+            
+                # ERROR - unknown comparison type.
+                status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if valid comparison type. --#   
+            
+        else:
+        
+            # ERROR - no spec passed in.
+            status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+
+        #-- END check to make sure spec passed in. --#
+        
+    #-- END method build_filter_spec_entity_type_slug_q() --#
+
+
+    def build_filter_spec_q( self, filter_spec_IN, filter_type_IN ):
+        
+        # return reference
+        q_OUT = None
+        
+        # declare variables
+        me = "build_filter_spec_q"
+        recursive_comparison_type_list = None
+        filter_spec = None
+        comparison_type = None
+        method_name = None
+        method_pointer = None        
+        
+        # init
+        recursive_comparison_type_list = []
+        recursive_comparison_type_list.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+        recursive_comparison_type_list.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR )
+        
+        # got a filter spec passed in?
+        if ( filter_spec_IN is not None ):
+
+            # make FilterSpec instance and load dictionary
+            filter_spec = filter_spec_IN
+
+            # retrieve comparison type
+            comparison_type = filter_spec.get_comparison_type()
+            
+            # valid type?
+            if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
+            
+                # figure out what to do based on type - recursive or not?
+                if ( comparison_type in recursive_comparison_type_list ):
+                
+                    # call method to build aggregate Q from filter spec.
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
+                                                                filter_type_IN = filter_type_IN )
+                    
+                else:
+                
+                    # not recursive - call appropriate method based on filter
+                    #     type, then let it implement the different comparisons.
+                    
+                    # get method name
+                    method_name = self.FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP.get( filter_type_IN )
+                    
+                    # get method pointer
+                    method_pointer = getattr( self, method_name )
+                    
+                    # call method, passing spec.
+                    q_OUT = method_pointer( filter_spec )
+                
+                #-- END check to see what to do based on filter type. --#
+                    
+                        
+                if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR ):
+                
+                else:
+                
+                    # ERROR - unknown comparison type.
+                    status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                
+                #-- END check to see what comparison type. --#
+                
+            else:
+            
+                # ERROR - unknown comparison type.
+                status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if valid comparison type. --#   
+            
+        else:
+        
+            # ERROR - no spec passed in.
+            status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+
+        #-- END check to make sure spec passed in. --#
+        
+    #-- END method build_filter_spec_q() --#
+
+
+    def build_filter_spec_relation_trait_q( self, filter_spec_IN, filter_type_IN ):
+        
+        # return reference
+        q_OUT = None
+        
+        # declare variables
+        me = "build_filter_spec_relation_trait_q"
+        filter_spec = None
+        comparison_type = None
+        method_name = None
+        method_pointer = None
+        
+        # got a filter spec passed in?
+        if ( filter_spec_IN is not None ):
+
+            # make FilterSpec instance and load dictionary
+            filter_spec = filter_spec_IN
+
+            # retrieve comparison type
+            comparison_type = filter_spec.get_comparison_type()
+            
+            # valid type?
+            if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
+            
+                # figure out what to do based on type - recursive or not?
+                if ( comparison_type in recursive_comparison_type_list ):
+                
+                    # call method to build aggregate Q from filter spec.
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
+                                                                filter_type_IN = filter_type_IN )
+                    
+                else:
+                
+                    # not recursive, comparison type will tell us what to do.
+                    if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE ):
+                    
+                        pass
+                    
+                    else:
+                    
+                        # ERROR - unknown comparison type.
+                        status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                    #-- END check to see what comparison type. --#
+                    
+                #-- END check to see if recursive type, or atomic. --#
+                
+            else:
+            
+                # ERROR - unknown comparison type.
+                status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if valid comparison type. --#   
+            
+        else:
+        
+            # ERROR - no spec passed in.
+            status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+
+        #-- END check to make sure spec passed in. --#
+        
+    #-- END method build_filter_spec_relation_trait_q() --#
+
+
+    def build_filter_spec_relation_type_slug_q( self, filter_spec_IN, filter_type_IN ):
+        
+        # return reference
+        q_OUT = None
+        
+        # declare variables
+        me = "build_filter_spec_relation_type_slug_q"
+        filter_spec = None
+        comparison_type = None
+        method_name = None
+        method_pointer = None
+        
+        # got a filter spec passed in?
+        if ( filter_spec_IN is not None ):
+
+            # make FilterSpec instance and load dictionary
+            filter_spec = filter_spec_IN
+
+            # retrieve comparison type
+            comparison_type = filter_spec.get_comparison_type()
+            
+            # valid type?
+            if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
+            
+                # figure out what to do based on type - recursive or not?
+                if ( comparison_type in recursive_comparison_type_list ):
+                
+                    # call method to build aggregate Q from filter spec.
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
+                                                                filter_type_IN = filter_type_IN )
+                    
+                else:
+                
+                    # not recursive, comparison type will tell us what to do.
+                    if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES ):
+                    
+                        pass
+                    
+                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE ):
+                    
+                        pass
+                    
+                    else:
+                    
+                        # ERROR - unknown comparison type.
+                        status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                    #-- END check to see what comparison type. --#
+                    
+                #-- END check to see if recursive type, or atomic. --#
+                
+            else:
+            
+                # ERROR - unknown comparison type.
+                status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if valid comparison type. --#   
+            
+        else:
+        
+            # ERROR - no spec passed in.
+            status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+
+        #-- END check to make sure spec passed in. --#
+        
+    #-- END method build_filter_spec_relation_type_slug_q() --#
+
+
+    def filter_relation_query_set( self, qs_IN = None, use_entity_selection_IN = False ):
+        
+        '''
+        Uses nested selection filters to it to build up an Entity_Relation
+            QuerySet that filters as requested.
+        '''
+
+        # return reference
+        qs_OUT = None
+
+        # declare variables
+        me = "filter_relation_query_set"
+        debug_flag = None
+        my_logger = None
+        selection_filters = None
+        filter_type_list = None
+        filter_type = None
+        
+        # initialize.
+        debug_flag = self.DEBUG_FLAG
+
+        # get selection_filters
+        slection_filters = self.get_selection_filters( use_entity_selection_IN )
+        
+        # got filters?
+        if ( selection_filters is not None ):
+        
+            # set up QuerySet - QuerySet passed in?
+            if ( qs_IN is not None ):
+            
+                # use QuerySet passed in.
+                qs_OUT = qs_IN
+                
+            else:
+            
+                # start with all relations.
+                qs_OUT = Entity_Relation.objects.all()
+                
+            #-- END initialize QuerySet --#
+        
+            # ! ----> process the different types of filters.
+
+            # loop over filter types.
+            filter_type_list = self.FILTER_TYPE_LIST
+            for filter_type in filter_type_list:
+            
+                # call filter_relations() with the selected filters and
+                #     current filter type.
+                qs_OUT = self.filter_relations( qs_IN = qs_OUT,
+                                                selection_filters_IN = selection_filters,
+                                                filter_type_IN = filter_type )
+            
+            #-- END loop over filter types. --#
+            
+        else:
+
+            # ERROR - no selection filters, can't process.
+            status_message = "In {}(): ERROR - no selection filters found in NetworkDataRequest, so nothing to do.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if we have selection filters --#
+
+        return qs_OUT
+
+    #-- end method filter_relation_query_set() ---------------------------#
+
+
+    def filter_relations( self, qs_IN = None, selection_filters_IN = None, filter_type_IN = None ):
+        
+        '''
+        Uses nested selection filters to it to build up an Entity_Relation
+            QuerySet that filters as requested.
+        '''
+
+        # ! TODO - change so we pass in the type of filters, then use the type
+        #     to retrieve the combine type and filter list, do shared processing
+        #     until we get to teh poitn where we actually process the filter,
+        #     then call appropriate processing method for the type, passing it
+        #     the filter dict and the type.  Should have a single method that
+        #     accepts type, then calls the appropriate child, so you recurse
+        #     through there, and soo only have one copy of AND and OR.
+
+        # return reference
+        qs_OUT = None
+
+        # declare variables
+        me = "filter_relations"
+        debug_flag = None
+        my_logger = None
+        is_filter_type_valid = None
+        selection_filters = None
+        filter_combine_type_property_name = None
+        filter_combine_type = None
+        filter_spec_list_property_name = None
+        filter_spec_list = None
+        filter_spec = None
+        result_q = None
+        
+        # initialize.
+        debug_flag = self.DEBUG_FLAG
+        qs_OUT = qs_IN
+        selection_filters = selection_filters_IN
+        
+        # got filters?
+        if ( selection_filters is not None ):
+        
+            # valid filter type?
+            if ( ( filter_type_IN is not None ) and ( filter_type_IN in self.FILTER_TYPE_LIST ) ):
+            
+                # valid filter type - set up QuerySet - QuerySet passed in?
+                if ( qs_IN is not None ):
+                
+                    # use QuerySet passed in.
+                    qs_OUT = qs_IN
+                    
+                else:
+                
+                    # start with all relations.
+                    qs_OUT = Entity_Relation.objects.all()
+                    
+                #-- END initialize QuerySet --#
+            
+                # get combine type...
+                filter_combine_type_property_name = "{}{}".format( filter_type_IN, self.SUFFIX_FILTER_COMBINE_TYPE )
+                filter_combine_type = selection_filters.get( filter_combine_type_property_name, FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_DEFAULT )
+    
+                # ...and filter specs based on type.
+                filter_spec_list_property_name = "{}{}".format( filter_type_IN, self.SUFFIX_FILTERS )
+                filter_spec_list = selection_filters.get( filter_spec_list_property_name )
+                
+                # make sure combine type is valid.
+                if ( filter_combine_type in FilterSpec.FILTER_COMBINE_TYPE_VALUES ):
+                
+                    # create filter_spec for list, with comparison type =
+                    #     combine type.
+                    filter_spec = FilterSpec()
+                    filter_spec.set_comparison_type( filter_combine_type )
+                    filter_spec.set_value_list( filter_spec_list )
+                    filter_spec.set_data_type( FilterSpec.PROP_VALUE_DATA_TYPE_FILTER )
+                    
+                    # call method build_filter_spec_aggregate_q()
+                    result_q = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
+                                                                   filter_type_IN = filter_type_IN )
+                
+                    # if result_q is not None, filter.
+                    if ( result_q is not None ):
+                    
+                        # got something.  Filter and return.
+                        qs_OUT = qs_OUT.filter( result_q )
+                    
+                    #-- END check to see if result_q has anything in it. --#
+                
+                else:
+                
+                    # ERROR - unknown combine type.
+                    status_message = "In {}(): ERROR - unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                #-- END check to make sure combine type is known and valid --#            
+                
+            else:
+    
+                # ERROR - invalid filter type.
+                status_message = "In {}(): ERROR - unknown filter type {}, nothing to do.  Valid types: {}".format( me, filter_type_IN, self.FILTER_TYPE_LIST )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if we have selection filters --#
+    
+        else:
+
+            # ERROR - no selection filters, can't process.
+            status_message = "In {}(): ERROR - no selection filters passed in, so nothing to do.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if we have selection filters --#
+
+        return qs_OUT
+
+    #-- end method filter_relations() ---------------------------#
 
 
     def get_entity_selection( self ):
@@ -452,6 +1321,73 @@ class NetworkDataRequest( ContextBase ):
         return value_OUT
     
     #-- END method get_relation_selection_property() --#
+
+
+    def get_selection_filters( self, use_entity_selection_IN = False ):
+        
+        '''
+        Uses nested selection filters to it to build up an Entity_Relation
+            QuerySet that filters as requested.
+        '''
+
+        # return reference
+        filters_OUT = None
+
+        # declare variables
+        me = "get_selection_filters"
+        debug_flag = None
+        status_message = None
+        selection_filters = None
+        
+        # initialize.
+        debug_flag = self.DEBUG_FLAG
+        
+        # which selection criteria do we use?
+        if ( use_entity_selection_IN == True ):
+
+            status_message = "In {}(): use_entity_selection_IN is True".format( me )
+            self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.DEBUG )
+                
+            # try to retrieve entity selection.
+            selection_filters = self.get_entity_selection()
+            
+            # got something?
+            if ( ( selection_filters is None ) or ( len( selection_filters ) == 0 ) ):
+            
+                # no.  Output info message, default to relation_selection.
+                status_message = "In {}(): \"entity_selection\" filtering was requested, but not specified in the request.  Defaulting to \"relation_selection\".".format( me )
+                self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
+                selection_filters = self.get_relation_selection()
+                
+            #-- END check to see if "entity_selection" is missing --#
+            
+        else:
+        
+            status_message = "In {}(): use_entity_selection_IN is False".format( me )
+            self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.DEBUG )
+                
+            # use relation_selection.
+            selection_filters = self.get_relation_selection()
+            
+        #-- END check to ee if we use "entity_selection" --#
+        
+        filters_OUT = selection_filters
+        
+        return filters_OUT
+
+    #-- end method get_selection_filters() ---------------------------#
+
+
+    def is_request_ok( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        value_OUT = self.m_is_request_ok
+        
+        return value_OUT
+    
+    #-- END method is_request_ok() --#
 
 
     def load_network_data_request_json( self, json_IN ):
@@ -715,6 +1651,69 @@ class NetworkDataRequest( ContextBase ):
 
     #-- END method load_network_data_request_json_string() --#
     
+    
+    def process_relation_type_slug_filter_spec( self, filter_spec_IN ):
+        
+        # return reference
+        q_OUT = None
+        
+        # declare variables
+        filter_spec = None
+        comparison_type = None
+        
+        # got a filter spec passed in?
+        if ( filter_spec_IN is not None ):
+
+            # make FilterSpec instance and load dictionary
+            filter_spec = filter_spec_IN
+
+            # retrieve comparison type
+            comparison_type = filter_spec.get_comparison_type()
+            
+            # valid type?
+            if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
+            
+                # figure out what to do based on type
+                if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND ):
+                
+                elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR ):
+                
+                else:
+                
+                    # ERROR - unknown comparison type.
+                    status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                
+                #-- END check to see what comparison type. --#
+                
+            else:
+            
+                # ERROR - unknown comparison type.
+                status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if valid comparison type. --#   
+            
+        else:
+        
+            # ERROR - no spec passed in.
+            status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+
+        #-- END check to make sure spec passed in. --#
+        
+    #-- END method process_filter_spec() --#
+
 
     def set_entity_selection( self, value_IN ):
         

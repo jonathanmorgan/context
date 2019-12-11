@@ -76,7 +76,6 @@
         "relation_trait_filter_combine_type": "AND",
         "relation_trait_filters": [
             {
-                "name": "pub_date",
                 "data_type": "filter",
                 "comparison_type": "OR",
                 "value_list": [
