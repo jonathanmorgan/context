@@ -54,7 +54,7 @@ class FilterSpecTest( django.test.TestCase ):
     TEST_SET_FILTER_SPEC_PROPERTY_NAME = "test_set_filter_spec_property_name"
     TEST_SET_FILTER_SPEC_PROPERTY = "test_set_filter_spec_property"
     TEST_SET_NAME = "test_set_name"
-    TEST_SET_RELATION_ROLES_LIST = "test_set_relation_roles_list"
+    TEST_SET_RELATION_ROLES_LIST = [ FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM, FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO ]
     TEST_SET_TYPE_ID = "test_set_type_id"
     TEST_SET_TYPE_LABEL = "test_set_type_label"
     TEST_SET_VALUE = "test_set_value"
@@ -331,7 +331,7 @@ class FilterSpecTest( django.test.TestCase ):
         #----------------------------------------------------------------------#
         # ! --------> set_relation_roles_list()
         test_method = "set_relation_roles_list"
-        original_value = test_instance.get_relation_roles_list()
+        original_value = list( test_instance.get_relation_roles_list() )
         new_value = self.TEST_SET_RELATION_ROLES_LIST
         test_instance.set_relation_roles_list( new_value )
         test_value = test_instance.get_relation_roles_list()
@@ -347,14 +347,14 @@ class FilterSpecTest( django.test.TestCase ):
         self.assertNotEqual( test_value, should_not_be, msg = error_string )
 
         # set it again.
-        original_value = test_instance.get_relation_roles_list()
-        new_value = "{}{}".format( self.TEST_SET_RELATION_ROLES_LIST, self.TEST_AGAIN )
+        original_value = list ( test_instance.get_relation_roles_list() )
+        new_value.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
         test_instance.set_relation_roles_list( new_value )
         test_value = test_instance.get_relation_roles_list()
 
         # new should equal test
         should_be = new_value
-        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        error_string = "Testing {}(), new = {}, retrieved {}, should = {}.".format( test_method, new_value, test_value, should_be )
         self.assertEqual( test_value, should_be, msg = error_string )
                 
         # new should not equal original

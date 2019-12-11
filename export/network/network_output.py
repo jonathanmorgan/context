@@ -254,7 +254,7 @@ class NetworkOutput( ContextBase ):
         # declare variables
         me = "create_entity_dict"
         my_logger = None
-        request_IN = None
+        network_data_request = None
         relation_query_set = None
         current_relation = None
         author_qs = None
@@ -264,16 +264,16 @@ class NetworkOutput( ContextBase ):
         my_logger = self.get_logger()
 
         # get request instance
-        request_IN = self.get_network_data_request()
+        network_data_request = self.get_network_data_request()
 
         # got request?
-        if ( request_IN ):
+        if ( network_data_request ):
 
             # get query set to loop over Entity_Relations that match the filter
             #     criteria in the request for selecting included Entities.  This
             #     might or might not be the same as the QuerySet for included
             #     Entity_Relations.
-            relation_query_set = self.create_relation_query_set( use_entity_selection_IN = True )
+            relation_query_set = network_data_request.filter_relation_query_set( use_entity_selection_IN = True )
             
             my_logger.debug( "In {}(): relation_query_set.count() = {}".filter( me, relation_query_set.count() ) )
 
@@ -292,113 +292,6 @@ class NetworkOutput( ContextBase ):
         return dict_OUT
 
     #-- END function create_entity_dict() --#
-
-
-    def filter_relation_query_set( self, use_entity_selection_IN = False, qs_IN = None ):
-        
-        '''
-        retrieves the nested NetworkDataRequest, uses it to build up a
-            Entity_Relation
-        '''
-
-        # return reference
-        qs_OUT = None
-
-        # declare variables
-        me = "create_relation_query_set"
-        debug_flag = None
-        my_logger = None
-        network_request = None
-        selection_filters = None
-        filter_spec_dict = None
-        comparison_type = None
-        
-        # initialize.
-        debug_flag = self.DEBUG_FLAG
-        
-        # retrieve NetworkDataRequest
-        network_request = self.get_network_data_request()
-        if ( network_request is not None ):
-        
-            # which selection criteria do we use?
-            if ( use_entity_selection_IN == True ):
-
-                status_message = "In {}: use_entity_selection_IN is True".format( me )
-                self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.DEBUG )
-                    
-                # try to retrieve entity selection.
-                selection_filters = network_request.get_entity_selection()
-                
-                # got something?
-                if ( selection_filters is None ):
-                
-                    # no.  Output info message, default to relation_selection.
-                    status_message = "In {}: \"entity_selection\" filtering was requested, but not specified in the request.  Defaulting to \"relation_selection\".".format( me )
-                    self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
-                    selection_filters = network_request.get_relation_selection()
-                    
-                #-- END check to see if "entity_selection" is missing --#
-                
-            else:
-            
-                status_message = "In {}: use_entity_selection_IN is False".format( me )
-                self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.DEBUG )
-                    
-                # use relation_selection.
-                selection_filters = network_request.get_relation_selection()
-                
-            #-- END check to ee if we use "entity_selection" --#
-        
-            # got filters?
-            if ( selection_filters is not None ):
-            
-                # set up QuerySet - QuerySet passed in?
-                if ( qs_IN is not None ):
-                
-                    # use QuerySet passed in.
-                    qs_OUT = qs_IN
-                    
-                else:
-                
-                    # start with all relations.
-                    qs_OUT = Entity_Relation.objects.all()
-                    
-                #-- END initialize QuerySet --#
-            
-                # make a filter_spec instance to re-use
-                filter_spec = FilterSpec()
-            
-                # ! ----> pull in and process the different types of filters.
-                
-                # ! TODO - relation_type_slug_filters
-                
-                # ! TODO - relation_trait_filters
-                
-                # ! TODO - entity_type_slug_filters
-
-                # ! TODO - entity_trait_filters
-
-                # ! TODO - entity_id_filters
-
-            else:
-
-                # ERROR - no selection filters, can't process.
-                status_message = "In {}(): ERROR - no selection filters found in NetworkDataRequest, so nothing to do.".format( me )
-                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-            
-            #-- END check to see if we have selection filters --#
-            
-        else:
-        
-            # ERROR - no NetworkDataRequest, can't process.
-            status_message = "In {}(): ERROR - no NetworkDataRequest instance found, so nothing to do.".format( me )
-            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-        
-        #-- END check to see if NetworkDataRequest --#
-
-        return qs_OUT
-
-    #-- end method create_relation_query_set() ---------------------------#
 
 
     def get_network_data_request( self ):

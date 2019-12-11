@@ -3822,8 +3822,63 @@ class Entity_Relation_Trait( Abstract_Trait ):
 
     #-- END method __init__() --#
 
+
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got name?
+        if ( self.name is not None ):
+        
+            string_list.append( str( self.name ) )
+            
+        #-- END check for name. --#
+
+        # got slug?
+        if ( self.slug is not None ):
+        
+            string_list.append( "( {} )".format( str( self.slug ) ) )
+            
+        #-- END check to see if slug. --#
+        
+        # got value?
+        if ( self.value is not None ):
+        
+            string_list.append( "= {}".format( str( self.value ) ) )
+            
+        #-- END check to see if value. --#
+        
+        # related type?
+        if ( self.entity_relation_type_trait is not None ):
+        
+            string_list.append( "--> Type: {}".format( self.entity_relation_type_trait ) )
+            
+        #-- END check for type --#
+        
+        # Entity
+        if ( self.entity_relation is not None ):
+        
+            string_list.append( "Entity: {}".format( self.entity_relation ) )
+        
+        #-- END check for entity. --#
+ 
+        string_OUT += " - ".join( string_list )
+        
+        return string_OUT
+
+    #-- END method __str__() --#
     
-    # use parent def __str__( self ):
 
     #----------------------------------------------------------------------
     # ! ----> instance methods
@@ -4031,7 +4086,45 @@ class Entity_Relation_Type_Trait( Abstract_Related_Type_Trait ):
 
     #-- END method __init__() --#
 
-    # use parent def __str__( self ):
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got name?
+        if ( self.name is not None ):
+        
+            string_list.append( str( self.name ) )
+            
+        #-- END check for name. --#
+
+        # got slug?
+        if ( self.slug is not None ):
+        
+            string_list.append( "( {} )".format( str( self.slug ) ) )
+            
+        #-- END check to see if slug. --#
+        
+        # related type?
+        if ( self.related_type is not None ):
+        
+            string_list.append( "--> Type: {}".format( self.related_type ) )
+        
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
 
     
 #-- END model Entity_Relation_Type_Trait --#
@@ -4097,8 +4190,62 @@ class Entity_Trait( Abstract_Trait ):
     #-- END method __init__() --#
 
     
-    # use parent def __str__( self ):
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got name?
+        if ( self.name is not None ):
+        
+            string_list.append( str( self.name ) )
+            
+        #-- END check for name. --#
 
+        # got slug?
+        if ( self.slug is not None ):
+        
+            string_list.append( "( {} )".format( str( self.slug ) ) )
+            
+        #-- END check to see if slug. --#
+        
+        # got value?
+        if ( self.value is not None ):
+        
+            string_list.append( "= {}".format( str( self.value ) ) )
+            
+        #-- END check to see if value. --#
+        
+        # related type?
+        if ( self.entity_type_trait is not None ):
+        
+            string_list.append( "--> Type: {}".format( self.entity_type_trait ) )
+            
+        #-- END check for type --#
+        
+        # Entity
+        if ( self.entity is not None ):
+        
+            string_list.append( "Entity: {}".format( self.entity ) )
+        
+        #-- END check for entity. --#
+ 
+        string_OUT += " - ".join( string_list )
+        
+        return string_OUT
+
+    #-- END method __str__() --#
+    
 
     #----------------------------------------------------------------------
     # ! ----> instance methods
@@ -4291,8 +4438,46 @@ class Entity_Type_Trait( Abstract_Related_Type_Trait ):
 
     #-- END method __init__() --#
 
-    # just use the stuff in the parent class.
+    def __str__( self ):
+ 
+        # return reference
+        string_OUT = ''
+        
+        # declare variables
+        string_list = []
+        
+        # id
+        if ( self.id is not None ):
+        
+            string_list.append( str( self.id ) )
+            
+        #-- END check to see if ID --#
+        
+        # got name?
+        if ( self.name is not None ):
+        
+            string_list.append( str( self.name ) )
+            
+        #-- END check for name. --#
 
+        # got slug?
+        if ( self.slug is not None ):
+        
+            string_list.append( "( {} )".format( str( self.slug ) ) )
+            
+        #-- END check to see if slug. --#
+        
+        # related type?
+        if ( self.related_type is not None ):
+        
+            string_list.append( "--> Type: {}".format( self.related_type ) )
+        
+        string_OUT += " - ".join( string_list )
+ 
+        return string_OUT
+
+    #-- END method __str__() --#
+    
 
     #---------------------------------------------------------------------------
     # instance methods

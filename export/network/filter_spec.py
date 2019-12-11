@@ -121,8 +121,6 @@ class FilterSpec( ContextBase ):
     PROP_VALUE_RELATION_ROLES_LIST_TO = ContextBase.RELATION_ROLES_TO
     PROP_VALUE_RELATION_ROLES_LIST_THROUGH = ContextBase.RELATION_ROLES_THROUGH
     PROP_VALUE_RELATION_ROLES_LIST_ALL = ContextBase.RELATION_ROLES_ALL
-    PROP_VALUE_RELATION_ROLES_LIST_EMPTY = ContextBase.RELATION_ROLES_EMPTY
-    PROP_VALUE_RELATION_ROLES_LIST_NONE = ContextBase.RELATION_ROLES_NONE
     PROP_VALUE_RELATION_ROLES_LIST_DEFAULT = PROP_VALUE_RELATION_ROLES_LIST_ALL
     RELATION_ROLES_LIST_VALUES = ContextBase.RELATION_ROLES_VALUES
 
@@ -262,9 +260,27 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
+        # declare variables
+        temp_list = None
+        
         # retrieve the output_type value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_RELATION_ROLES_LIST )
         
+        # check if empty.  If so, set it to default (all).
+        if ( ( value_OUT is None ) or ( value_OUT == "" ) or ( len( value_OUT ) == 0 ) ):
+        
+            # not set, or empty.  Set to default.
+            temp_list = []
+            temp_list.append( self.PROP_VALUE_RELATION_ROLES_LIST_DEFAULT )
+            
+            # store it.
+            self.set_relation_roles_list( temp_list )
+
+            # retrieve and return it.
+            value_OUT = self.get_relation_roles_list()
+        
+        #-- END check if empty. --#
+
         return value_OUT
     
     #-- END method get_relation_roles_list() --#
