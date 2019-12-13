@@ -51,6 +51,7 @@ from python_utilities.parameters.param_container import ParamContainer
 from python_utilities.status.status_container import StatusContainer
 
 # Import the classes for our context application
+from context.models import Entity
 from context.models import Entity_Relation
 
 # Import context shared classes.
@@ -452,7 +453,7 @@ class NetworkDataRequest( ContextBase ):
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
                 # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in recursive_comparison_type_list ):
+                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
                     q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
@@ -596,7 +597,7 @@ class NetworkDataRequest( ContextBase ):
         #-- END check to see if Q() passed in.
         
         # got roles list?
-        if ( ( filter_relation_roles_list_IN is not None ) and ( len( filter_relation_roles_list_IN > 0 ) ) ):
+        if ( ( filter_relation_roles_list_IN is not None ) and ( len( filter_relation_roles_list_IN ) > 0 ) ):
         
             # got a QuerySet?
             if ( entity_qs_IN is not None ):
@@ -735,7 +736,7 @@ class NetworkDataRequest( ContextBase ):
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
                 # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in recursive_comparison_type_list ):
+                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
                     q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
@@ -888,7 +889,7 @@ class NetworkDataRequest( ContextBase ):
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
                 # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in recursive_comparison_type_list ):
+                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
                     q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
@@ -907,20 +908,8 @@ class NetworkDataRequest( ContextBase ):
                     filter_value_to = filter_spec.get_value_to()
                     filter_relation_roles_list = filter_spec.get_relation_roles_list()
                     
-                    # ! ----> check for required fields
+                    # ! ----> no required fields
 
-                    # name
-                    if ( ( filter_name is None ) or ( filter_name == "" ) ):
-                    
-                        # filter name is required.  not OK.
-                        is_ok = False
-                        
-                        # ERROR - required elements of spec missing.  could not filter.
-                        status_message = "In {}(): ERROR - name is required type \"{}\", is missing from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
-                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
-                    
-                    #-- END check to see if name set. --#
-                    
                     # OK to proceed?
                     if ( is_ok == True ):
                     
@@ -1020,14 +1009,10 @@ class NetworkDataRequest( ContextBase ):
         
         # declare variables
         me = "build_filter_spec_q"
-        recursive_comparison_type_list = None
         filter_spec = None
         comparison_type = None
         method_name = None
         method_pointer = None        
-        
-        # init
-        recursive_comparison_type_list = self.RECURSIVE_COMPARISON_TYPE_LIST
         
         # got a filter spec passed in?
         if ( filter_spec_IN is not None ):
@@ -1042,7 +1027,7 @@ class NetworkDataRequest( ContextBase ):
             if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
                 # figure out what to do based on type - recursive or not?
-                if ( comparison_type in recursive_comparison_type_list ):
+                if ( comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
                     q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
@@ -1060,7 +1045,7 @@ class NetworkDataRequest( ContextBase ):
                     method_pointer = getattr( self, method_name )
                     
                     # call method, passing spec.
-                    q_OUT = method_pointer( filter_spec )
+                    q_OUT = method_pointer( filter_spec, filter_type_IN )
                 
                 #-- END check to see what to do based on filter type. --#
                                 
@@ -1123,7 +1108,7 @@ class NetworkDataRequest( ContextBase ):
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
                 # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in recursive_comparison_type_list ):
+                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
                     q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
@@ -1272,7 +1257,7 @@ class NetworkDataRequest( ContextBase ):
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
                 # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in recursive_comparison_type_list ):
+                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
                     q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,

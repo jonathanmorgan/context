@@ -1,14 +1,5 @@
 """
 This file contains tests of the context NetworkDataRequestTest class.
-
-Functions tested:
-- add_entity_type()
-- get_entity_for_identifier()
-- get_entity_trait()
-- get_identifier()
-- set_entity_trait()
-- set_identifier()
-
 """
 
 # base Python imports
@@ -26,6 +17,7 @@ import django.test
 # context imports
 from context.export.network.filter_spec import FilterSpec
 from context.export.network.network_data_request import NetworkDataRequest
+from context.models import Entity_Relation
 from context.tests.export.network.test_helper import TestHelper
 
 # python_utilities
@@ -125,7 +117,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         """
 
         # call TestHelper.standardSetUp()
-        TestHelper.standardSetUp( self )
+        TestHelper.standardSetUp( self, fixture_list_IN = TestHelper.FIXTURE_LIST_DATA )
 
     #-- END function setUp() --#
         
@@ -292,6 +284,61 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
     #-- END method validate_entity_selection() --#
     
+
+    def validate_filter_spec( self,
+                              test_instance_IN,
+                              filter_spec_IN,
+                              result_count_IN,
+                              filter_type_IN ):
+        
+        # declare variables
+        me = "validate_filter_spec"
+        test_instance = None
+        test_filter_spec = None
+        result_count = None
+        test_filter_type = None
+        relation_qs = None
+        method_name = None
+        method_pointer = None
+        test_q = None
+        test_value = None
+        should_be = None
+        error_string = None
+        test_qs = None
+        test_count = None
+        
+        # init
+        test_instance = test_instance_IN
+        test_filter_spec = filter_spec_IN
+        test_filter_type = filter_type_IN
+        result_count = result_count_IN
+        relation_qs = Entity_Relation.objects.all()
+        
+        # call method based on filter type
+        method_name = NetworkDataRequest.FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP.get( test_filter_type, None )
+        
+        # get method pointer
+        method_pointer = getattr( test_instance_IN, method_name )
+        
+        # call method, passing spec.
+        test_q = method_pointer( test_filter_spec, test_filter_type )
+
+        # test_q should not be None
+        test_value = test_q
+        error_string = "Retrieving Q() for filter spec {}, returned None".format( test_filter_spec )
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # use it to filter relations.
+        test_qs = relation_qs.filter( test_q )
+        test_count = test_qs.count()
+
+        # should be 0
+        test_value = test_count
+        should_be = result_count
+        error_string = "Processing filter spec {}, found {} relations, should_be: {}.".format( test_filter_spec, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )        
+    
+    #-- END method 
 
     def validate_instance_basic( self, test_instance_IN ):        
 
@@ -621,6 +668,990 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------------
     # ! ==> instance methods - tests
     #----------------------------------------------------------------------------
+
+
+    def test_build_filter_spec_entity_id_q( self ):
+
+        # declare variables
+        me = "test_build_filter_spec_entity_id_q"
+        debug_flag = None
+        test_instance = None
+        test_q = None
+        test_value = None
+        relation_qs = None
+        should_be = None
+        error_string = None
+        test_filter_spec = None
+        test_filter_type = None
+        test_role_list = None
+        test_qs = None
+        test_count = None
+        test_value_list = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # init
+        test_instance = TestHelper.load_with_entity_id_filter()
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_ID
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "equals"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "person_sourcenet_id" )
+        test_filter_spec.set_value( "2020202" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # counts for good match.
+        match_all = 28
+        match_from_to = match_all
+        match_from = 11
+        match_to = 17
+        match_through = 0
+        
+        # --------> single match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "person_sourcenet_id" )
+        test_filter_spec.set_value( "202" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "includes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "person_sourcenet_id" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "20202020" )
+        test_value_list.append( "20202021" )
+        test_value_list.append( "20202022" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # counts for good match.
+        match_all = 135
+        match_from_to = match_all
+        match_from = 88
+        match_to = 63
+        match_through = 0
+        
+        # --------> default roles = "ALL".
+        test_value_list = []
+        test_value_list.append( "46" )
+        test_value_list.append( "163" )
+        test_value_list.append( "161" )
+        test_value_list.append( "164" )
+        test_value_list.append( "30" )
+        test_value_list.append( "175" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "excludes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "person_sourcenet_id" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
+        test_value_list = []
+        test_value_list.append( "20202020" )
+        test_value_list.append( "20202021" )
+        test_value_list.append( "20202022" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 3162
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # counts for good match.
+        match_all = 3124
+        match_from_to = match_all
+        match_from = 2228
+        match_to = 3099
+        match_through = 0
+        
+        # --------> default roles = "ALL".
+        test_value_list = []
+        test_value_list.append( "46" )
+        test_value_list.append( "163" )
+        test_value_list.append( "161" )
+        test_value_list.append( "164" )
+        test_value_list.append( "30" )
+        test_value_list.append( "175" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+    #-- END test method test_build_filter_spec_entity_id_q() --#
+
+
+    def test_build_filter_spec_entity_trait_q( self ):
+
+        # declare variables
+        me = "test_build_filter_spec_entity_trait_q"
+        debug_flag = None
+        test_instance = None
+        test_q = None
+        test_value = None
+        relation_qs = None
+        should_be = None
+        error_string = None
+        test_filter_spec = None
+        test_filter_type = None
+        test_role_list = None
+        test_qs = None
+        test_count = None
+        test_value_list = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # init
+        test_instance = TestHelper.load_with_entity_id_filter()
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TRAIT
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "equals"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "first_name" )
+        test_filter_spec.set_value( "needboxestakeplenty" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # counts for good match.
+        match_all = 175
+        match_from_to = match_all
+        match_from = 68
+        match_to = 107
+        match_through = 0
+        
+        # --------> single match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "first_name" )
+        test_filter_spec.set_value( "John" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "includes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "first_name" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "20202020" )
+        test_value_list.append( "20202021" )
+        test_value_list.append( "20202022" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # counts for good match.
+        match_all = 353
+        match_from_to = match_all
+        match_from = 139
+        match_to = 218
+        match_through = 0
+        
+        # --------> default roles = "ALL".
+        test_value_list = []
+        test_value_list.append( "John" )
+        test_value_list.append( "Michael" )
+        test_value_list.append( "Robert" )
+        test_value_list.append( "Steve" )
+        test_value_list.append( "Larry" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "excludes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "first_name" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
+        test_value_list = []
+        test_value_list.append( "20202020" )
+        test_value_list.append( "20202021" )
+        test_value_list.append( "20202022" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 3162
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # counts for good match.
+        match_all = 3094
+        match_from_to = match_all
+        match_from = 2177
+        match_to = 2944
+        match_through = 0
+        
+        # --------> default roles = "ALL".
+        test_value_list = []
+        test_value_list.append( "John" )
+        test_value_list.append( "Michael" )
+        test_value_list.append( "Robert" )
+        test_value_list.append( "Steve" )
+        test_value_list.append( "Larry" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+    #-- END test method test_build_filter_spec_entity_trait_q() --#
+
+
+    def test_build_filter_spec_entity_type_q( self ):
+
+        # declare variables
+        me = "test_build_filter_spec_entity_type_q"
+        debug_flag = None
+        test_instance = None
+        test_q = None
+        test_value = None
+        relation_qs = None
+        should_be = None
+        error_string = None
+        test_filter_spec = None
+        test_filter_type = None
+        test_role_list = None
+        test_qs = None
+        test_count = None
+        test_value_list = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # init
+        test_instance = TestHelper.load_with_entity_id_filter()
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TYPE_SLUG
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "equals"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_value( "peregrine" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # counts for good match.
+        match_all = 3169
+        match_from_to = match_all
+        match_from = 2320
+        match_to = match_all
+        match_through = 0
+        
+        # --------> single match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_value( "person" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "includes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "peregrine" )
+        test_value_list.append( "chartreuse" )
+        test_value_list.append( "bumblebee" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 0
+        
+        # counts for good match.
+        match_all = 3215
+        match_from_to = match_all
+        match_from = 2746
+        match_to = 3215
+        match_through = 2743
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> default roles = "ALL".
+        test_value_list = []
+        test_value_list.append( "person" )
+        test_value_list.append( "article" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "excludes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
+        test_value_list = []
+        test_value_list.append( "peregrine" )
+        test_value_list.append( "chartreuse" )
+        test_value_list.append( "bumblebee" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 3215
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # counts for good match.
+        match_all = 3215
+        match_from_to = match_all
+        match_from = 2789
+        match_to = 3169
+        match_through = 0
+        
+        # --------> default roles = "ALL".
+        test_value_list = []
+        test_value_list.append( "article" )
+        test_value_list.append( "peregrine" )
+        test_value_list.append( "chartreuse" )
+        test_value_list.append( "bumblebee" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+    #-- END test method test_build_filter_spec_entity_type_q() --#
 
 
     def test_get_selection_filters( self ):
@@ -1080,7 +2111,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         #-- END loop over file paths. --#
         
         
-    #-- END method load_network_data_request_json() --#
+    #-- END method test_load_network_data_request_json() --#
 
 
     def test_load_network_data_request_json_file( self ):
@@ -1137,7 +2168,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
 
         #-- END loop over file paths. --#
         
-    #-- END method load_network_data_request_json_file() --#
+    #-- END method test_load_network_data_request_json_file() --#
 
 
     def test_load_network_data_request_json_string( self ):
@@ -1225,7 +2256,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         #-- END loop over file paths. --#
         
         
-    #-- END method load_network_data_request_json_string() --#
+    #-- END method test_load_network_data_request_json_string() --#
 
 
 #-- END test class NetworkDataRequestTest --#

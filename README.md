@@ -171,27 +171,47 @@ Specific sets of tests:
           
 - context model instances:
 
-    - test Entity_Identifier_Type model
-    
-            python manage.py test context.tests.models.test_Entity_Identifier_Type_model
-
     - test Entity_Identifier model
     
             python manage.py test context.tests.models.test_Entity_Identifier_model
 
-    - test Entity_Trait model
+    - test Entity_Identifier_Type model
     
-            python manage.py test context.tests.models.test_Entity_Trait_model
+            python manage.py test context.tests.models.test_Entity_Identifier_Type_model
 
     - test Entity model
     
             python manage.py test context.tests.models.test_Entity_model
 
+    - test Entity_Relation model
+    
+            python manage.py test context.tests.models.test_Entity_Relation_model
+
+    - test Entity_Relation_Type model
+    
+            python manage.py test context.tests.models.test_Entity_Relation_Type_model
+
+    - test Entity_Trait model
+    
+            python manage.py test context.tests.models.test_Entity_Trait_model
+
+    - test Entity_Type model
+    
+            python manage.py test context.tests.models.test_Entity_Type_model
+
 - Exporting network data:
+
+    - test FilterSpec class
+    
+            python manage.py test context.tests.export.network.test_FilterSpec_class
 
     - test NetworkDataRequest class
     
             python manage.py test context.tests.export.network.test_NetworkDataRequest_class
+
+    - test NetworkOutput class
+    
+            python manage.py test context.tests.export.network.test_NetworkOutput_class
 
 ## Test data
 
