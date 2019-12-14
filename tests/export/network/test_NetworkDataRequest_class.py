@@ -12,11 +12,13 @@ import sys
 import six
 
 # django imports
+from django.db.models import Q
 import django.test
 
 # context imports
 from context.export.network.filter_spec import FilterSpec
 from context.export.network.network_data_request import NetworkDataRequest
+from context.models import Entity
 from context.models import Entity_Relation
 from context.tests.export.network.test_helper import TestHelper
 
@@ -1002,6 +1004,363 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #-- END test method test_build_filter_spec_entity_id_q() --#
 
 
+    def test_build_filter_spec_entity_q_target_roles( self ):
+        
+        # declare variables
+        me = "test_build_filter_spec_entity_trait_q"
+        debug_flag = None
+        test_instance = None
+        test_filter_type = None
+        entity_qs = None
+        entity_filter_q = None
+        test_q = None
+        relation_qs = None
+
+        test_value = None
+        relation_qs = None
+        should_be = None
+        error_string = None
+        test_filter_spec = None
+        test_role_list = None
+        test_qs = None
+        test_count = None
+        test_value_list = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # init
+        test_instance = TestHelper.load_with_entity_id_filter()
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TYPE_SLUG
+
+        # ! ----> type slugs "person" or "article"
+        
+        # make QuerySet of entities (to start, entity types person and article)
+        entity_qs = Entity.objects.all()
+        test_value_list = []
+        test_value_list.append( "person" )
+        test_value_list.append( "article" )
+        entity_filter_q = Q( entity_types__entity_type__slug__in = test_value_list )
+        entity_qs = entity_qs.filter( entity_filter_q )
+        
+        # make sure we have right entity count
+        test_value = entity_qs.count()
+        should_be = 315
+        error_string = "Filtered entities: count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # start with Entity_Relation QS
+        relation_qs = Entity_Relation.objects.all()
+
+        # make sure we have right starting relation count
+        test_value = relation_qs.count()
+        should_be = 3215
+        error_string = "Total relations: count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> ALL
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 3215
+        error_string = "ALL count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> FROM | TO | THROUGH
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 3215
+        error_string = "FROM | TO | THROUGH count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> FROM | TO
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 3215
+        error_string = "FROM | TO count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> FROM | THROUGH
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 3169
+        error_string = "FROM | THROUGH count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> TO | THROUGH
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 3215
+        error_string = "TO | THROUGH count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> FROM
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 2746
+        error_string = "FROM count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> TO
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 3215
+        error_string = "TO count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> THROUGH
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 2743
+        error_string = "THROUGH count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! ----> type slugs "newspaper" or "article"
+        
+        # make QuerySet of entities (to start, entity types person and article)
+        entity_qs = Entity.objects.all()
+        test_value_list = []
+        test_value_list.append( "newspaper" )
+        test_value_list.append( "article" )
+        entity_filter_q = Q( entity_types__entity_type__slug__in = test_value_list )
+        entity_qs = entity_qs.filter( entity_filter_q )
+        
+        # make sure we have right entity count
+        test_value = entity_qs.count()
+        should_be = 49
+        error_string = "Filtered entities: count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # start with Entity_Relation QS
+        relation_qs = Entity_Relation.objects.all()
+
+        # make sure we have right starting relation count
+        test_value = relation_qs.count()
+        should_be = 3215
+        error_string = "Total relations: count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> ALL
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 3215
+        error_string = "ALL count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> FROM | TO | THROUGH
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 3215
+        error_string = "FROM | TO | THROUGH count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> FROM | TO
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 895
+        error_string = "FROM | TO count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> FROM | THROUGH
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 3215
+        error_string = "FROM | THROUGH count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> TO | THROUGH
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 2789
+        error_string = "TO | THROUGH count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> FROM
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 895
+        error_string = "FROM count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> TO
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 46
+        error_string = "TO count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> THROUGH
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+
+        # call method build_filter_spec_entity_id_q
+        test_q = test_instance.build_filter_spec_entity_q_target_roles( entity_qs, test_role_list )
+
+        # run query and test count.
+        test_qs = relation_qs.filter( test_q )
+        test_value = test_qs.count()
+        should_be = 2743
+        error_string = "THROUGH count = {}, should = {} ( SQL: {} ).".format( test_value, should_be, entity_qs.query )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+    #-- END test method test_build_filter_spec_entity_q_target_roles() --#
+    
+    
     def test_build_filter_spec_entity_trait_q( self ):
 
         # declare variables
@@ -1329,6 +1688,100 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # validate
         self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
         
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "in_range"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "pub_date" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE )
+        test_filter_spec.set_value_from( "2019-12-01" )
+        test_filter_spec.set_value_to( "2019-12-31" )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # counts for good match.
+        match_all = 1443
+        match_from_to = 188
+        match_from = 170
+        match_to = 18
+        match_through = 1255
+        
+        # --------> match.
+        test_filter_spec.set_value_from( "2010-02-08" )
+        test_filter_spec.set_value_to( "2010-02-13" )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> single match - roles = "ALL".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_all
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM", "TO".
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "FROM"
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_from
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "TO"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_to
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        # --------> single match - roles = "THROUGH"
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = match_through
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
     #-- END test method test_build_filter_spec_entity_trait_q() --#
 
 
@@ -1652,6 +2105,248 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
         
     #-- END test method test_build_filter_spec_entity_type_q() --#
+
+
+    def test_build_filter_spec_relation_trait_q( self ):
+
+        # declare variables
+        me = "test_build_filter_spec_relation_trait_q"
+        debug_flag = None
+        test_instance = None
+        test_q = None
+        test_value = None
+        relation_qs = None
+        should_be = None
+        error_string = None
+        test_filter_spec = None
+        test_filter_type = None
+        test_role_list = None
+        test_qs = None
+        test_count = None
+        test_value_list = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # init
+        test_instance = TestHelper.load_with_entity_id_filter()
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TRAIT
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "equals"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "pub_date" )
+        test_filter_spec.set_value( "2019-12-13" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> match.
+        test_filter_spec.set_value( "2009-12-07" )
+        should_be = 167
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "includes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "pub_date" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "20202020" )
+        test_value_list.append( "20202021" )
+        test_value_list.append( "20202022" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> match.
+        test_value_list = []
+        test_value_list.append( "2009-12-07" )
+        test_value_list.append( "2010-02-13" )
+        test_value_list.append( "2010-02-08" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 793
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "excludes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "pub_date" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
+        test_value_list = []
+        test_value_list.append( "20202020" )
+        test_value_list.append( "20202021" )
+        test_value_list.append( "20202022" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 3211
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> match.
+        test_value_list = []
+        test_value_list.append( "2009-12-07" )
+        test_value_list.append( "2010-02-13" )
+        test_value_list.append( "2010-02-08" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 2418
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "in_range"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "pub_date" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE )
+        test_filter_spec.set_value_from( "2019-12-01" )
+        test_filter_spec.set_value_to( "2019-12-31" )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> match.
+        test_filter_spec.set_value_from( "2010-02-08" )
+        test_filter_spec.set_value_to( "2010-02-13" )
+        should_be = 1443
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+    #-- END test method test_build_filter_spec_relation_trait_q() --#
+
+
+    def test_build_filter_spec_relation_type_q( self ):
+
+        # declare variables
+        me = "test_build_filter_spec_relation_type_q"
+        debug_flag = None
+        test_instance = None
+        test_q = None
+        test_value = None
+        relation_qs = None
+        should_be = None
+        error_string = None
+        test_filter_spec = None
+        test_filter_type = None
+        test_role_list = None
+        test_qs = None
+        test_count = None
+        test_value_list = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # init
+        test_instance = TestHelper.load_with_entity_id_filter()
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TYPE_SLUG
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "equals"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_value( "peregrine" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_value( "quoted" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        should_be = 155
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "includes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "peregrine" )
+        test_value_list.append( "chartreuse" )
+        test_value_list.append( "bumblebee" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> match.
+        test_value_list = []
+        test_value_list.append( "quoted" )
+        test_value_list.append( "mentioned" )
+        test_value_list.append( "shared_byline" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 437
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        #----------------------------------------------------------------------#
+        # ! ----> comparison type "excludes"
+        #----------------------------------------------------------------------#
+        
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
+        test_value_list = []
+        test_value_list.append( "peregrine" )
+        test_value_list.append( "chartreuse" )
+        test_value_list.append( "bumblebee" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 3215
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+        # --------> match.
+        test_value_list = []
+        test_value_list.append( "quoted" )
+        test_value_list.append( "mentioned" )
+        test_value_list.append( "shared_byline" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 2778
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+
+    #-- END test method test_build_filter_spec_relation_type_q() --#
 
 
     def test_get_selection_filters( self ):

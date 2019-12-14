@@ -566,7 +566,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method build_filter_spec_entity_id_q() --#
 
 
-    def build_filter_spec_entity_q_target_roles( self, entity_qs_IN, filter_relation_roles_list_IN, q_IN = None ):
+    def build_filter_spec_entity_q_target_roles( self, filtered_entity_qs_IN, filter_relation_roles_list_IN, q_IN = None ):
 
         '''
         Accepts entity QuerySet and list of roles whose entities should be
@@ -600,11 +600,11 @@ class NetworkDataRequest( ContextBase ):
         if ( ( filter_relation_roles_list_IN is not None ) and ( len( filter_relation_roles_list_IN ) > 0 ) ):
         
             # got a QuerySet?
-            if ( entity_qs_IN is not None ):
+            if ( filtered_entity_qs_IN is not None ):
 
                 # yes - set up variables
                 filter_relation_roles_list = filter_relation_roles_list_IN
-                entity_qs = entity_qs_IN
+                entity_qs = filtered_entity_qs_IN
                 
                 # ! ----> which relation roles?
                 
@@ -1276,20 +1276,8 @@ class NetworkDataRequest( ContextBase ):
                     filter_value_to = filter_spec.get_value_to()
                     filter_relation_roles_list = filter_spec.get_relation_roles_list()
                     
-                    # ! ----> check for required fields
+                    # ! ----> no non-filter-related required fields
 
-                    # name
-                    if ( ( filter_name is None ) or ( filter_name == "" ) ):
-                    
-                        # filter name is required.  not OK.
-                        is_ok = False
-                        
-                        # ERROR - required elements of spec missing.  could not filter.
-                        status_message = "In {}(): ERROR - name is required type \"{}\", is missing from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
-                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
-                    
-                    #-- END check to see if name set. --#
-                    
                     # OK to proceed?
                     if ( is_ok == True ):
                     
