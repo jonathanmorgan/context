@@ -7,135 +7,164 @@
         "output_include_column_headers": true
     },
     "relation_selection": {
-        "relation_type_slug_filter_combine_type": "AND",
-        "relation_type_slug_filters": [
-            {
-                "comparison_type": "includes",
-                "value_list": [ "mentioned", "qouted", "shared_byline" ]
-            }
-        ],
-        "relation_trait_filter_combine_type": "AND",
-        "relation_trait_filters": [
-            {
-                "name": "pub_date",
-                "data_type": "date",
-                "comparison_type": "in_range",
-                "value_from": "2009-12-01",
-                "value_to": "2009-12-31"
-            },
-            {
-                "name": "sourcenet-coder-User-username",
-                "data_type": "string",
-                "comparison_type": "includes",
-                "value_list": [ "automated" ]
-            },
-            {
-                "name": "coder_type",
-                "data_type": "string",
-                "comparison_type": "includes",
-                "value_list": [ "OpenCalais_REST_API_v2" ]
-            }
-        ],
-        "entity_type_slug_filter_combine_type": "AND",
-        "entity_type_slug_filters": [
-            {
-                "comparison_type": "includes",
-                "value_list": [ "person" ],
-                "relation_roles_list": [ "FROM" ]
-            },
-            {
-                "comparison_type": "includes",
-                "value_list": [ "person" ],
-                "relation_roles_list": [ "TO" ]
-            },
-            {
-                "comparison_type": "includes",
-                "value_list": [ "article" ],
-                "relation_roles_list": [ "THROUGH" ]
-            }            
-        ],
-        "entity_trait_filter_combine_type": "AND",
-        "entity_trait_filters": [
-            {
-                "name": "sourcenet-Newspaper-ID",
-                "data_type": "int",
-                "comparison_type": "includes",
-                "value_list": [ 1 ],
-                "relation_roles_list": [ "THROUGH" ]
-            }
-        ]
+        "filter_specification": {
+            "filter_type": "AND",
+            "comparison_type": "AND",
+            "value_list": [
+                {
+                    "filter_type": "relation_type_slug",
+                    "comparison_type": "includes",
+                    "value_list": [ "mentioned", "qouted", "shared_byline" ]
+                },
+                {
+                    "filter_type": "relation_trait",
+                    "comparison_type": "AND",
+                    "value_list": [
+                        {
+                            "filter_type": "relation_trait",
+                            "name": "pub_date",
+                            "data_type": "date",
+                            "comparison_type": "in_range",
+                            "value_from": "2009-12-01",
+                            "value_to": "2009-12-31"
+                        },
+                        {
+                            "filter_type": "relation_trait",
+                            "name": "sourcenet-coder-User-username",
+                            "data_type": "string",
+                            "comparison_type": "includes",
+                            "value_list": [ "automated" ]
+                        },
+                        {
+                            "filter_type": "relation_trait",
+                            "name": "coder_type",
+                            "data_type": "string",
+                            "comparison_type": "includes",
+                            "value_list": [ "OpenCalais_REST_API_v2" ]
+                        }
+                    ]
+                },
+                {
+                    "filter_type": "entity_type_slug",
+                    "comparison_type": "AND",
+                    "value_list": [
+                        {
+                            "filter_type": "entity_type_slug",
+                            "comparison_type": "includes",
+                            "value_list": [ "person" ],
+                            "relation_roles_list": [ "FROM" ]
+                        },
+                        {
+                            "filter_type": "entity_type_slug",
+                            "comparison_type": "includes",
+                            "value_list": [ "person" ],
+                            "relation_roles_list": [ "TO" ]
+                        },
+                        {
+                            "filter_type": "entity_type_slug",
+                            "comparison_type": "includes",
+                            "value_list": [ "article" ],
+                            "relation_roles_list": [ "THROUGH" ]
+                        }            
+                    ]
+                },
+                {
+                    "filter_type": "entity_trait",
+                    "name": "sourcenet-Newspaper-ID",
+                    "data_type": "int",
+                    "comparison_type": "includes",
+                    "value_list": [ 1 ],
+                    "relation_roles_list": [ "THROUGH" ]
+                }
+            ]
+        }
     },
     "entity_selection": {
-        "relation_type_slug_filter_combine_type": "AND",
-        "relation_type_slug_filters": [
-            {
-                "comparison_type": "includes",
-                "value_list": [ "mentioned", "qouted", "shared_byline" ]
-            }
-        ],
-        "relation_trait_filter_combine_type": "AND",
-        "relation_trait_filters": [
-            {
-                "data_type": "filter",
-                "comparison_type": "OR",
-                "value_list": [
-                    {
-                        "name": "pub_date",
-                        "data_type": "date",
-                        "comparison_type": "in_range",
-                        "value_from": "2009-12-01",
-                        "value_to": "2009-12-31"
-                    },
-                    {
-                        "name": "pub_date",
-                        "data_type": "date",
-                        "comparison_type": "in_range",
-                        "value_from": "2010-12-01",
-                        "value_to": "2010-12-31"
-                    }
-                ]
-
-            },
-            {
-                "name": "sourcenet-coder-User-username",
-                "data_type": "string",
-                "comparison_type": "includes",
-                "value_list": [ "automated", "minnesota1", "minnesota2", "minnesota3", "ground_truth" ]
-            },
-            {
-                "name": "coder_type",
-                "data_type": "string",
-                "comparison_type": "includes",
-                "value_list": [ "EMPTY_VALUE", "OpenCalais_REST_API_v2" ]
-            }
-        ],
-        "entity_type_slug_filter_combine_type": "AND",
-        "entity_type_slug_filters": [
-            {
-                "comparison_type": "includes",
-                "value_list": [ "person" ],
-                "relation_roles_list": [ "FROM" ]
-            },
-            {
-                "comparison_type": "includes",
-                "value_list": [ "person" ],
-                "relation_roles_list": [ "TO" ]
-            },
-            {
-                "comparison_type": "includes",
-                "value_list": [ "article" ],
-                "relation_roles_list": [ "THROUGH" ]
-            }            
-        ],
-        "entity_trait_filter_combine_type": "AND",
-        "entity_trait_filters": [
-            {
-                "name": "sourcenet-Newspaper-ID",
-                "data_type": "int",
-                "comparison_type": "includes",
-                "value_list": [ 1, 2 ],
-                "relation_roles_list": [ "THROUGH" ]
-            }
-        ]
+        "filter_specification": {
+            "filter_type": "AND",
+            "comparison_type": "AND",
+            "value_list": [
+                {
+                    "filter_type": "relation_type_slug",
+                    "comparison_type": "includes",
+                    "value_list": [ "mentioned", "qouted", "shared_byline" ]
+                },
+                {
+                    "filter_type": "relation_trait",
+                    "comparison_type": "AND",
+                    "value_list": [
+                        {
+                            "filter_type": "relation_trait",
+                            "data_type": "filter",
+                            "comparison_type": "OR",
+                            "value_list": [
+                                {
+                                    "filter_type": "relation_trait",
+                                    "name": "pub_date",
+                                    "data_type": "date",
+                                    "comparison_type": "in_range",
+                                    "value_from": "2009-12-01",
+                                    "value_to": "2009-12-31"
+                                },
+                                {
+                                    "filter_type": "relation_trait",
+                                    "name": "pub_date",
+                                    "data_type": "date",
+                                    "comparison_type": "in_range",
+                                    "value_from": "2010-12-01",
+                                    "value_to": "2010-12-31"
+                                }
+                            ]
+                        },
+                        {
+                            "filter_type": "relation_trait",
+                            "name": "sourcenet-coder-User-username",
+                            "data_type": "string",
+                            "comparison_type": "includes",
+                            "value_list": [ "automated", "minnesota1", "minnesota2", "minnesota3", "ground_truth" ]
+                        },
+                        {
+                            "filter_type": "relation_trait",
+                            "name": "coder_type",
+                            "data_type": "string",
+                            "comparison_type": "includes",
+                            "value_list": [ "EMPTY_VALUE", "OpenCalais_REST_API_v2" ]
+                        }
+                    ]
+                },
+                {
+                    "filter_type": "entity_type_slug",
+                    "comparison_type": "AND",
+                    "value_list": [
+                        {
+                            "filter_type": "entity_type_slug",
+                            "comparison_type": "includes",
+                            "value_list": [ "person" ],
+                            "relation_roles_list": [ "FROM" ]
+                        },
+                        {
+                            "filter_type": "entity_type_slug",
+                            "comparison_type": "includes",
+                            "value_list": [ "person" ],
+                            "relation_roles_list": [ "TO" ]
+                        },
+                        {
+                            "filter_type": "entity_type_slug",
+                            "comparison_type": "includes",
+                            "value_list": [ "article" ],
+                            "relation_roles_list": [ "THROUGH" ]
+                        }            
+                    ]
+                },
+                {
+                    "filter_type": "entity_trait",
+                    "name": "sourcenet-Newspaper-ID",
+                    "data_type": "int",
+                    "comparison_type": "includes",
+                    "value_list": [ 1, 2 ],
+                    "relation_roles_list": [ "THROUGH" ]
+                }
+            ]
+        }
     }
 }

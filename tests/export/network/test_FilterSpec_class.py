@@ -53,6 +53,7 @@ class FilterSpecTest( django.test.TestCase ):
     TEST_SET_FILTER_SPEC = "test_set_filter_spec"
     TEST_SET_FILTER_SPEC_PROPERTY_NAME = "test_set_filter_spec_property_name"
     TEST_SET_FILTER_SPEC_PROPERTY = "test_set_filter_spec_property"
+    TEST_SET_FILTER_TYPE = "test_set_filter_type"
     TEST_SET_NAME = "test_set_name"
     TEST_SET_RELATION_ROLES_LIST = [ FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM, FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO ]
     TEST_SET_TYPE_ID = "test_set_type_id"
@@ -294,6 +295,40 @@ class FilterSpecTest( django.test.TestCase ):
         error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
         self.assertNotEqual( test_value, should_not_be, msg = error_string )
         
+        #----------------------------------------------------------------------#
+        # ! --------> set_filter_type()
+        test_method = "set_filter_type"
+        original_value = test_instance.get_filter_type()
+        new_value = self.TEST_SET_FILTER_TYPE
+        test_instance.set_filter_type( new_value )
+        test_value = test_instance.get_filter_type()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # set it again.
+        original_value = test_instance.get_filter_type()
+        new_value = "{}{}".format( self.TEST_SET_FILTER_TYPE, self.TEST_AGAIN )
+        test_instance.set_filter_type( new_value )
+        test_value = test_instance.get_filter_type()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
         #----------------------------------------------------------------------#
         # ! --------> set_name()
         test_method = "set_name"

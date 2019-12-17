@@ -120,6 +120,9 @@ class NetworkDataRequestTest( django.test.TestCase ):
 
         # call TestHelper.standardSetUp()
         TestHelper.standardSetUp( self, fixture_list_IN = TestHelper.FIXTURE_LIST_DATA )
+        
+        # debug flag
+        NetworkDataRequest.DEBUG_FLAG = True
 
     #-- END function setUp() --#
         
@@ -153,9 +156,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------------
 
 
-    def validate_entity_selection( self,
-                                   test_instance_IN,
-                                   include_entity_id_filter_IN = False ):        
+    def validate_entity_selection( self, test_instance_IN ):        
 
         # declare variables
         me = "validate_entity_selection"
@@ -170,18 +171,8 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # got test instance?
         if ( test_instance_IN is not None ):
         
-            # testing entity ID filter?
-            if ( include_entity_id_filter_IN == True ):
-        
-                # testing entity ID filter - 10 properties, not 8
-                properties_count = 10
-                
-            else:
-            
-                # not testing entity ID filter - 8 properties
-                properties_count = 8
-                
-            #-- END check to see if testing entity ID filter. --#
+            # there is just one property.
+            properties_count = 1
         
             # ! ----> validate entity_selection
             entity_selection_dict = test_instance_IN.get_entity_selection()
@@ -193,88 +184,6 @@ class NetworkDataRequestTest( django.test.TestCase ):
             error_string = "entity_selection has {} items, should be {}.".format( test_value, should_be )
             self.assertEqual( test_value, should_be, msg = error_string )
             
-            # ! ----> try retrieving entity_selection properties
-            
-            # ! --------> relation_type_slug_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
-            should_be = self.TEST_ES_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
-            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> relation_type_slug_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTERS
-            test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_ES_RELATION_TYPE_SLUG_FILTERS_COUNT
-            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> relation_trait_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
-            should_be = self.TEST_ES_RELATION_TRAIT_FILTER_COMBINE_TYPE
-            error_string = "relation_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> relation_trait_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTERS
-            test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_ES_RELATION_TRAIT_FILTERS_COUNT
-            error_string = "relation_trait_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-                        
-            # ! --------> entity_type_slug_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
-            should_be = self.TEST_ES_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
-            error_string = "entity_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-
-            # ! --------> entity_type_slug_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTERS
-            test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_ES_ENTITY_TYPE_SLUG_FILTERS_COUNT
-            error_string = "entity_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> entity_trait_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
-            should_be = self.TEST_ES_ENTITY_TRAIT_FILTER_COMBINE_TYPE
-            error_string = "entity_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )            
-            
-            # ! --------> entity_trait_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTERS
-            test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_ES_ENTITY_TRAIT_FILTERS_COUNT
-            error_string = "entity_trait_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # testing entity ID filter?
-            if ( include_entity_id_filter_IN == True ):
-        
-                # ! --------> entity_id_filter_combine_type
-                test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_ID_FILTER_COMBINE_TYPE
-                test_value = test_instance_IN.get_entity_selection_property( test_prop_name )
-                should_be = self.TEST_ES_ENTITY_ID_FILTER_COMBINE_TYPE
-                error_string = "entity_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-                self.assertEqual( test_value, should_be, msg = error_string )            
-                
-                # ! --------> entity_id_filters
-                test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_ID_FILTERS
-                test_temp = test_instance_IN.get_entity_selection_property( test_prop_name )
-                test_value = len( test_temp )
-                should_be = self.TEST_ES_ENTITY_ID_FILTERS_COUNT
-                error_string = "entity_id_filters count is {}, should be {}.".format( test_value, should_be )
-                self.assertEqual( test_value, should_be, msg = error_string )
-                
-            #-- END check to see if testing entity ID filter. --#
-
         else:
         
             # no instance passed in.  Assert Not None here, so we raise Error.
@@ -290,16 +199,15 @@ class NetworkDataRequestTest( django.test.TestCase ):
     def validate_filter_spec( self,
                               test_instance_IN,
                               filter_spec_IN,
-                              result_count_IN,
-                              filter_type_IN ):
+                              result_count_IN ):
         
         # declare variables
         me = "validate_filter_spec"
         test_instance = None
         test_filter_spec = None
         result_count = None
-        test_filter_type = None
         relation_qs = None
+        comparison_type = None
         method_name = None
         method_pointer = None
         test_q = None
@@ -312,19 +220,12 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # init
         test_instance = test_instance_IN
         test_filter_spec = filter_spec_IN
-        test_filter_type = filter_type_IN
         result_count = result_count_IN
         relation_qs = Entity_Relation.objects.all()
         
-        # call method based on filter type
-        method_name = NetworkDataRequest.FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP.get( test_filter_type, None )
+        # call the appropriate build method.
+        test_q = test_instance.build_filter_spec_q( test_filter_spec )
         
-        # get method pointer
-        method_pointer = getattr( test_instance_IN, method_name )
-        
-        # call method, passing spec.
-        test_q = method_pointer( test_filter_spec, test_filter_type )
-
         # test_q should not be None
         test_value = test_q
         error_string = "Retrieving Q() for filter spec {}, returned None".format( test_filter_spec )
@@ -334,13 +235,13 @@ class NetworkDataRequestTest( django.test.TestCase ):
         test_qs = relation_qs.filter( test_q )
         test_count = test_qs.count()
 
-        # should be 0
+        # should be value passed in.
         test_value = test_count
         should_be = result_count
         error_string = "Processing filter spec {}, found {} relations, should_be: {}.".format( test_filter_spec, test_value, should_be )
         self.assertEqual( test_value, should_be, msg = error_string )        
     
-    #-- END method 
+    #-- END method validate_filter_spec() --#
 
     def validate_instance_basic( self, test_instance_IN ):        
 
@@ -437,8 +338,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
             self.validate_output_spec( test_instance_IN )
 
             # ! ----> validate same as basic, plus entity id filter
-            self.validate_relation_selection( test_instance_IN,
-                                              include_entity_id_filter_IN = True )
+            self.validate_relation_selection( test_instance_IN )
 
         else:
         
@@ -533,9 +433,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #-- END method validate_output_spec() --#
 
 
-    def validate_relation_selection( self,
-                                     test_instance_IN,
-                                     include_entity_id_filter_IN = False ):        
+    def validate_relation_selection( self, test_instance_IN ):        
 
         # declare variables
         me = "validate_relation_selection"
@@ -550,19 +448,9 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # got test instance?
         if ( test_instance_IN is not None ):
         
-            # testing entity ID filter?
-            if ( include_entity_id_filter_IN == True ):
-        
-                # testing entity ID filter - 10 properties, not 8
-                properties_count = 10
+            # should just be 1 property, for now, the filter_specification.
+            properties_count = 1
                 
-            else:
-            
-                # not testing entity ID filter - 8 properties
-                properties_count = 8
-                
-            #-- END check to see if testing entity ID filter. --#
-        
             # ! ----> validate relation_selection
             relation_selection_dict = test_instance_IN.get_relation_selection()
             
@@ -573,88 +461,6 @@ class NetworkDataRequestTest( django.test.TestCase ):
             error_string = "relation_selection has {} items, should be {}.".format( test_value, should_be )
             self.assertEqual( test_value, should_be, msg = error_string )
             
-            # ! ----> try retrieving relation_selection properties
-            
-            # ! --------> relation_type_slug_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
-            should_be = self.TEST_RS_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE
-            error_string = "relation_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> relation_type_slug_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TYPE_SLUG_FILTERS
-            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_RS_RELATION_TYPE_SLUG_FILTERS_COUNT
-            error_string = "relation_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> relation_trait_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
-            should_be = self.TEST_RS_RELATION_TRAIT_FILTER_COMBINE_TYPE
-            error_string = "relation_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> relation_trait_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_RELATION_TRAIT_FILTERS
-            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_RS_RELATION_TRAIT_FILTERS_COUNT
-            error_string = "relation_trait_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-                        
-            # ! --------> entity_type_slug_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
-            should_be = self.TEST_RS_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE
-            error_string = "entity_type_slug_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-
-            # ! --------> entity_type_slug_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TYPE_SLUG_FILTERS
-            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_RS_ENTITY_TYPE_SLUG_FILTERS_COUNT
-            error_string = "entity_type_slug_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # ! --------> entity_trait_filter_combine_type
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE
-            test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
-            should_be = self.TEST_RS_ENTITY_TRAIT_FILTER_COMBINE_TYPE
-            error_string = "entity_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )            
-            
-            # ! --------> entity_trait_filters
-            test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_TRAIT_FILTERS
-            test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
-            test_value = len( test_temp )
-            should_be = self.TEST_RS_ENTITY_TRAIT_FILTERS_COUNT
-            error_string = "entity_trait_filters count is {}, should be {}.".format( test_value, should_be )
-            self.assertEqual( test_value, should_be, msg = error_string )
-            
-            # testing entity ID filter?
-            if ( include_entity_id_filter_IN == True ):
-        
-                # ! --------> entity_id_filter_combine_type
-                test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_ID_FILTER_COMBINE_TYPE
-                test_value = test_instance_IN.get_relation_selection_property( test_prop_name )
-                should_be = self.TEST_RS_ENTITY_ID_FILTER_COMBINE_TYPE
-                error_string = "entity_trait_filter_combine_type is {}, should be {}.".format( test_value, should_be )
-                self.assertEqual( test_value, should_be, msg = error_string )            
-                
-                # ! --------> entity_id_filters
-                test_prop_name = NetworkDataRequest.PROP_NAME_ENTITY_ID_FILTERS
-                test_temp = test_instance_IN.get_relation_selection_property( test_prop_name )
-                test_value = len( test_temp )
-                should_be = self.TEST_RS_ENTITY_ID_FILTERS_COUNT
-                error_string = "entity_id_filters count is {}, should be {}.".format( test_value, should_be )
-                self.assertEqual( test_value, should_be, msg = error_string )
-                
-            #-- END check to see if testing entity ID filter. --#
-
         else:
         
             # no instance passed in.  Assert Not None here, so we raise Error.
@@ -670,6 +476,195 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------------
     # ! ==> instance methods - tests
     #----------------------------------------------------------------------------
+
+
+    def test_build_filter_spec_aggregate_q( self ):
+
+        # declare variables
+        me = "test_build_filter_spec_aggregate_q"
+        debug_flag = None
+        test_filter_list = None
+        test_instance = None
+        test_q = None
+        test_value = None
+        relation_qs = None
+        should_be = None
+        error_string = None
+        test_filter_spec = None
+        test_filter_type = None
+        test_role_list = None
+        test_qs = None
+        test_count = None
+        test_value_list = None
+        nested_test_filter_list = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # init
+        test_instance = TestHelper.load_with_entity_id_filter()
+        nested_test_filter_list = []
+        
+        #----------------------------------------------------------------------#
+        # ! ----> simple - 1 level - entity type slug
+        #----------------------------------------------------------------------#
+        
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TYPE_SLUG
+        test_filter_list = []
+        
+        # --------> filter 1 - FROM entity type slug = "person"
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        test_filter_spec.set_value( "person" )
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 2320
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+       
+        # add to list
+        test_filter_list.append( test_filter_spec )
+
+        # --------> filter 2 - TO entity type slug = "person"
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        test_filter_spec.set_value( "person" )
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 3169
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+       
+        # add to list
+        test_filter_list.append( test_filter_spec )
+
+        # --------> filter 3 - THROUGH entity type slug = "article"
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        test_filter_spec.set_value( "article" )
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 2743
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+       
+        # add to list
+        test_filter_list.append( test_filter_spec )
+        
+        # ! --------> AND
+        
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+        test_filter_spec.set_value_list( test_filter_list )
+        should_be = 2320
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        
+        # and, add to nested test list.
+        nested_test_filter_list.append( test_filter_spec )
+
+        # ! --------> OR
+
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR )
+        test_filter_spec.set_value_list( test_filter_list )
+        should_be = 3169
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        #----------------------------------------------------------------------#
+        # ! ----> more complex - 1 level - relation_trait
+        #----------------------------------------------------------------------#
+        
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TRAIT
+        test_filter_list = []
+        
+        # --------> filter 1 - pub_date in range 2009-12-01 to 2009-12-31
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_name( "pub_date" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE )
+        test_filter_spec.set_value_from( "2009-12-01" )
+        test_filter_spec.set_value_to( "2009-12-31" )
+        should_be = 1703
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        
+        # add to list
+        test_filter_list.append( test_filter_spec )
+
+        # --------> filter 2 - coder user in "automated"
+
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_name( "sourcenet-coder-User-username" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "automated" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 2739
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        
+        # add to list
+        test_filter_list.append( test_filter_spec )
+
+        # --------> filter 3 - coder type in "OpenCalais_REST_API_v2"
+
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_name( "coder_type" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "OpenCalais_REST_API_v2" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 2739
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        
+        # add to list
+        test_filter_list.append( test_filter_spec )
+
+        # ! --------> AND
+        
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+        test_filter_spec.set_value_list( test_filter_list )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        
+        # and, add to nested test list.
+        nested_test_filter_list.append( test_filter_spec )
+
+    #-- END test method build_filter_spec_aggregate_q() --#
 
 
     def test_build_filter_spec_entity_id_q( self ):
@@ -706,13 +701,14 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "person_sourcenet_id" )
         test_filter_spec.set_value( "2020202" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # counts for good match.
         match_all = 28
@@ -723,13 +719,14 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> single match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "person_sourcenet_id" )
         test_filter_spec.set_value( "202" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -738,7 +735,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -749,7 +746,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO" (should be same as all).
         test_role_list = []
@@ -760,7 +757,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -771,7 +768,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -782,7 +779,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -793,7 +790,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "includes"
@@ -801,6 +798,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "person_sourcenet_id" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
         test_value_list = []
@@ -811,7 +809,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # counts for good match.
         match_all = 135
@@ -832,7 +830,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -841,7 +839,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -852,7 +850,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO".
         test_role_list = []
@@ -863,7 +861,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -874,7 +872,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -885,7 +883,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -896,7 +894,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "excludes"
@@ -904,6 +902,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "person_sourcenet_id" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
         test_value_list = []
@@ -914,7 +913,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 3162
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # counts for good match.
         match_all = 3124
@@ -935,7 +934,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -944,7 +943,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -955,7 +954,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO".
         test_role_list = []
@@ -966,7 +965,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -977,7 +976,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -988,7 +987,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -999,7 +998,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
     #-- END test method test_build_filter_spec_entity_id_q() --#
 
@@ -1395,13 +1394,14 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "first_name" )
         test_filter_spec.set_value( "needboxestakeplenty" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # counts for good match.
         match_all = 175
@@ -1412,13 +1412,14 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> single match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "first_name" )
         test_filter_spec.set_value( "John" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -1427,7 +1428,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -1438,7 +1439,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO" (should be same as all).
         test_role_list = []
@@ -1449,7 +1450,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -1460,7 +1461,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -1471,7 +1472,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -1482,7 +1483,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "includes"
@@ -1490,6 +1491,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "first_name" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
         test_value_list = []
@@ -1500,7 +1502,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # counts for good match.
         match_all = 353
@@ -1520,7 +1522,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -1529,7 +1531,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -1540,7 +1542,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO".
         test_role_list = []
@@ -1551,7 +1553,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -1562,7 +1564,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -1573,7 +1575,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -1584,7 +1586,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "excludes"
@@ -1592,6 +1594,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "first_name" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
         test_value_list = []
@@ -1602,7 +1605,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 3162
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # counts for good match.
         match_all = 3094
@@ -1622,7 +1625,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -1631,7 +1634,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -1642,7 +1645,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO".
         test_role_list = []
@@ -1653,7 +1656,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -1664,7 +1667,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -1675,7 +1678,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -1686,7 +1689,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "in_range"
@@ -1694,6 +1697,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match.
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "pub_date" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE )
         test_filter_spec.set_value_from( "2019-12-01" )
@@ -1701,7 +1705,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # counts for good match.
         match_all = 1443
@@ -1716,7 +1720,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -1725,7 +1729,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -1736,7 +1740,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO".
         test_role_list = []
@@ -1747,7 +1751,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -1758,7 +1762,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -1769,7 +1773,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -1780,15 +1784,15 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
     #-- END test method test_build_filter_spec_entity_trait_q() --#
 
 
-    def test_build_filter_spec_entity_type_q( self ):
+    def test_build_filter_spec_entity_type_slug_q( self ):
 
         # declare variables
-        me = "test_build_filter_spec_entity_type_q"
+        me = "test_build_filter_spec_entity_type_slug_q"
         debug_flag = None
         test_instance = None
         test_q = None
@@ -1819,12 +1823,13 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_value( "peregrine" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # counts for good match.
         match_all = 3169
@@ -1835,12 +1840,13 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> single match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_value( "person" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -1849,7 +1855,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -1860,7 +1866,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO" (should be same as all).
         test_role_list = []
@@ -1871,7 +1877,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -1882,7 +1888,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -1893,7 +1899,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -1904,7 +1910,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "includes"
@@ -1912,6 +1918,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
         test_value_list = []
         test_value_list.append( "peregrine" )
@@ -1928,7 +1935,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         match_through = 2743
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> default roles = "ALL".
         test_value_list = []
@@ -1938,7 +1945,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -1947,7 +1954,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -1958,7 +1965,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO".
         test_role_list = []
@@ -1969,7 +1976,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -1980,7 +1987,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -1991,7 +1998,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -2002,7 +2009,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "excludes"
@@ -2010,6 +2017,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match - default roles = "ALL".
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
         test_value_list = []
         test_value_list.append( "peregrine" )
@@ -2019,7 +2027,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 3215
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # counts for good match.
         match_all = 3215
@@ -2038,7 +2046,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> single match - roles = "ALL".
         test_role_list = []
@@ -2047,7 +2055,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO", "THROUGH" (should be same as all).
         test_role_list = []
@@ -2058,7 +2066,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_all
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM", "TO".
         test_role_list = []
@@ -2069,7 +2077,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "FROM"
         test_role_list = []
@@ -2080,7 +2088,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_from
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "TO"
         test_role_list = []
@@ -2091,7 +2099,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_to
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # --------> single match - roles = "THROUGH"
         test_role_list = []
@@ -2102,9 +2110,215 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = match_through
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
-    #-- END test method test_build_filter_spec_entity_type_q() --#
+    #-- END test method test_build_filter_spec_entity_type_slug_q() --#
+
+
+    def test_build_filter_spec_q( self ):
+
+        # declare variables
+        me = "test_build_filter_spec_q"
+        debug_flag = None
+        test_filter_type = None
+        test_instance = None
+        test_q = None
+        test_value = None
+        relation_qs = None
+        should_be = None
+        error_string = None
+        test_filter_spec = None
+        test_filter_type = None
+        test_role_list = None
+        test_qs = None
+        test_count = None
+        test_value_list = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # init
+        test_instance = TestHelper.load_with_entity_id_filter()
+        
+        #----------------------------------------------------------------------#
+        # ! ----> entity ID
+        #----------------------------------------------------------------------#
+        
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_ID
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_name( "person_sourcenet_id" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "20202020" )
+        test_value_list.append( "20202021" )
+        test_value_list.append( "20202022" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        # --------> "ALL".
+        test_value_list = []
+        test_value_list.append( "46" )
+        test_value_list.append( "163" )
+        test_value_list.append( "161" )
+        test_value_list.append( "164" )
+        test_value_list.append( "30" )
+        test_value_list.append( "175" )
+        test_filter_spec.set_value_list( test_value_list )
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 135
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        #----------------------------------------------------------------------#
+        # ! ----> entity trait
+        #----------------------------------------------------------------------#
+        
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TRAIT
+        
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_name( "first_name" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "20202020" )
+        test_value_list.append( "20202021" )
+        test_value_list.append( "20202022" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        # --------> roles = "FROM", "TO"
+        test_value_list = []
+        test_value_list.append( "John" )
+        test_value_list.append( "Michael" )
+        test_value_list.append( "Robert" )
+        test_value_list.append( "Steve" )
+        test_value_list.append( "Larry" )
+        test_filter_spec.set_value_list( test_value_list )
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 353
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        #----------------------------------------------------------------------#
+        # ! ----> entity type slug
+        #----------------------------------------------------------------------#
+
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TYPE_SLUG
+
+        # --------> no match - default roles = "ALL".
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "peregrine" )
+        test_value_list.append( "chartreuse" )
+        test_value_list.append( "bumblebee" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        # --------> default roles = "ALL".
+        test_value_list = []
+        test_value_list.append( "person" )
+        test_value_list.append( "article" )
+        test_filter_spec.set_value_list( test_value_list )
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_ALL )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 3215        
+
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        #----------------------------------------------------------------------#
+        # ! ----> relation trait
+        #----------------------------------------------------------------------#
+        
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TRAIT
+
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_name( "pub_date" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE )
+        test_filter_spec.set_value_from( "2019-12-01" )
+        test_filter_spec.set_value_to( "2019-12-31" )
+        should_be = 0
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        # --------> match.
+        test_filter_spec.set_value_from( "2010-02-08" )
+        test_filter_spec.set_value_to( "2010-02-13" )
+        should_be = 1443
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        #----------------------------------------------------------------------#
+        # ! ----> relation type slug
+        #----------------------------------------------------------------------#
+        
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TYPE_SLUG
+
+        # --------> no match.
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
+        test_value_list = []
+        test_value_list.append( "peregrine" )
+        test_value_list.append( "chartreuse" )
+        test_value_list.append( "bumblebee" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 3215
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        # --------> match.
+        test_value_list = []
+        test_value_list.append( "quoted" )
+        test_value_list.append( "mentioned" )
+        test_value_list.append( "shared_byline" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 2778
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
+        #----------------------------------------------------------------------#
+        # ! TODO ----> AND
+        #----------------------------------------------------------------------#
+        
+        #----------------------------------------------------------------------#
+        # ! TODO ----> OR
+        #----------------------------------------------------------------------#
+        
+    #-- END test method test_build_filter_spec_q() --#
 
 
     def test_build_filter_spec_relation_trait_q( self ):
@@ -2141,20 +2355,21 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match.
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "pub_date" )
         test_filter_spec.set_value( "2019-12-13" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> match.
         test_filter_spec.set_value( "2009-12-07" )
         should_be = 167
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "includes"
@@ -2162,6 +2377,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match.
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "pub_date" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
         test_value_list = []
@@ -2172,7 +2388,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> match.
         test_value_list = []
@@ -2183,7 +2399,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 793
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "excludes"
@@ -2191,6 +2407,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match.
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "pub_date" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
         test_value_list = []
@@ -2201,7 +2418,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 3211
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> match.
         test_value_list = []
@@ -2212,7 +2429,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 2418
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         #----------------------------------------------------------------------#
         # ! ----> comparison type "in_range"
@@ -2220,6 +2437,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match.
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "pub_date" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE )
         test_filter_spec.set_value_from( "2019-12-01" )
@@ -2227,7 +2445,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> match.
         test_filter_spec.set_value_from( "2010-02-08" )
@@ -2235,15 +2453,15 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 1443
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
     #-- END test method test_build_filter_spec_relation_trait_q() --#
 
 
-    def test_build_filter_spec_relation_type_q( self ):
+    def test_build_filter_spec_relation_type_slug_q( self ):
 
         # declare variables
-        me = "test_build_filter_spec_relation_type_q"
+        me = "test_build_filter_spec_relation_type_slug_q"
         debug_flag = None
         test_instance = None
         test_q = None
@@ -2274,21 +2492,23 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match.
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_value( "peregrine" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> match.
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_value( "quoted" )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
         should_be = 155
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         #----------------------------------------------------------------------#
         # ! ----> comparison type "includes"
@@ -2296,6 +2516,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match.
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
         test_value_list = []
         test_value_list.append( "peregrine" )
@@ -2305,7 +2526,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 0
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> match.
         test_value_list = []
@@ -2316,7 +2537,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 437
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         #----------------------------------------------------------------------#
         # ! ----> comparison type "excludes"
@@ -2324,6 +2545,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # --------> no match.
         test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EXCLUDES )
         test_value_list = []
         test_value_list.append( "peregrine" )
@@ -2333,7 +2555,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 3215
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         # --------> match.
         test_value_list = []
@@ -2344,9 +2566,9 @@ class NetworkDataRequestTest( django.test.TestCase ):
         should_be = 2778
         
         # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be, test_filter_type )
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
-    #-- END test method test_build_filter_spec_relation_type_q() --#
+    #-- END test method test_build_filter_spec_relation_type_slug_q() --#
 
 
     def test_get_selection_filters( self ):

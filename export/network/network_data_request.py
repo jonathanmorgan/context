@@ -74,7 +74,7 @@ class NetworkDataRequest( ContextBase ):
 
 
     # LOGGING
-    DEBUG_FLAG = True
+    DEBUG_FLAG = False
     LOGGER_NAME = "context.export.network.network_data_request.NetworkDataRequest"
     ME = LOGGER_NAME
 
@@ -137,24 +137,26 @@ class NetworkDataRequest( ContextBase ):
     FILTER_TYPE_ENTITY_TYPE_SLUG = "entity_type_slug"
     FILTER_TYPE_ENTITY_TRAIT = "entity_trait"
     FILTER_TYPE_ENTITY_ID = "entity_id"
+    FILTER_TYPE_AND = FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_AND
+    FILTER_TYPE_OR = FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_OR
     FILTER_TYPE_LIST = []
     FILTER_TYPE_LIST.append( FILTER_TYPE_RELATION_TYPE_SLUG )
     FILTER_TYPE_LIST.append( FILTER_TYPE_RELATION_TRAIT )
     FILTER_TYPE_LIST.append( FILTER_TYPE_ENTITY_TYPE_SLUG )
     FILTER_TYPE_LIST.append( FILTER_TYPE_ENTITY_TRAIT )
     FILTER_TYPE_LIST.append( FILTER_TYPE_ENTITY_ID )
-    
-    # variable name suffixes
-    SUFFIX_FILTER_COMBINE_TYPE = "_filter_combine_type"
-    SUFFIX_FILTERS = "_filters"
+    FILTER_TYPE_LIST.append( FILTER_TYPE_AND )
+    FILTER_TYPE_LIST.append( FILTER_TYPE_OR )
     
     # map of type to build function name.
+    BUILD_FUNCTION_NAME_PREFIX = "build_filter_spec_"
+    BUILD_FUNCTION_NAME_SUFFIX = "_q"
     FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP = {}
-    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_RELATION_TYPE_SLUG ] = "build_filter_spec_{}_q".format( FILTER_TYPE_RELATION_TYPE_SLUG )
-    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_RELATION_TRAIT ] = "build_filter_spec_{}_q".format( FILTER_TYPE_RELATION_TRAIT )
-    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_ENTITY_TYPE_SLUG ] = "build_filter_spec_{}_q".format( FILTER_TYPE_ENTITY_TYPE_SLUG )
-    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_ENTITY_TRAIT ] = "build_filter_spec_{}_q".format( FILTER_TYPE_ENTITY_TRAIT )
-    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_ENTITY_ID ] = "build_filter_spec_{}_q".format( FILTER_TYPE_ENTITY_ID )
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_RELATION_TYPE_SLUG ] = "{}{}{}".format( BUILD_FUNCTION_NAME_PREFIX, FILTER_TYPE_RELATION_TYPE_SLUG, BUILD_FUNCTION_NAME_SUFFIX )
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_RELATION_TRAIT ] = "{}{}{}".format( BUILD_FUNCTION_NAME_PREFIX, FILTER_TYPE_RELATION_TRAIT, BUILD_FUNCTION_NAME_SUFFIX )
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_ENTITY_TYPE_SLUG ] = "{}{}{}".format( BUILD_FUNCTION_NAME_PREFIX, FILTER_TYPE_ENTITY_TYPE_SLUG, BUILD_FUNCTION_NAME_SUFFIX )
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_ENTITY_TRAIT ] = "{}{}{}".format( BUILD_FUNCTION_NAME_PREFIX, FILTER_TYPE_ENTITY_TRAIT, BUILD_FUNCTION_NAME_SUFFIX )
+    FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP[ FILTER_TYPE_ENTITY_ID ] = "{}{}{}".format( BUILD_FUNCTION_NAME_PREFIX, FILTER_TYPE_ENTITY_ID, BUILD_FUNCTION_NAME_SUFFIX )
     
     #--------------------------------------------------------------------------#
     # ! ----> filter spec - comparison types
@@ -164,20 +166,8 @@ class NetworkDataRequest( ContextBase ):
     
     
     #--------------------------------------------------------------------------#
-    # ! ----> filter criteria - relations
-    PROP_NAME_RELATION_TYPE_SLUG_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_RELATION_TYPE_SLUG, SUFFIX_FILTER_COMBINE_TYPE )
-    PROP_NAME_RELATION_TYPE_SLUG_FILTERS = "{}{}".format( FILTER_TYPE_RELATION_TYPE_SLUG, SUFFIX_FILTERS )
-    PROP_NAME_RELATION_TRAIT_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_RELATION_TRAIT, SUFFIX_FILTER_COMBINE_TYPE )
-    PROP_NAME_RELATION_TRAIT_FILTERS = "{}{}".format( FILTER_TYPE_RELATION_TRAIT, SUFFIX_FILTERS )
-    
-    #--------------------------------------------------------------------------#
-    # ! ----> filter criteria - entities
-    PROP_NAME_ENTITY_TYPE_SLUG_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_ENTITY_TYPE_SLUG, SUFFIX_FILTER_COMBINE_TYPE )
-    PROP_NAME_ENTITY_TYPE_SLUG_FILTERS = "{}{}".format( FILTER_TYPE_ENTITY_TYPE_SLUG, SUFFIX_FILTERS )
-    PROP_NAME_ENTITY_TRAIT_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_ENTITY_TRAIT, SUFFIX_FILTER_COMBINE_TYPE )
-    PROP_NAME_ENTITY_TRAIT_FILTERS = "{}{}".format( FILTER_TYPE_ENTITY_TRAIT, SUFFIX_FILTERS )
-    PROP_NAME_ENTITY_ID_FILTER_COMBINE_TYPE = "{}{}".format( FILTER_TYPE_ENTITY_ID, SUFFIX_FILTER_COMBINE_TYPE )
-    PROP_NAME_ENTITY_ID_FILTERS = "{}{}".format( FILTER_TYPE_ENTITY_ID, SUFFIX_FILTERS )
+    # ! ----> filter spec - property that holds spec
+    PROP_NAME_FILTER_SPECIFICATION = "filter_specification"
     
     #--------------------------------------------------------------------------#
     # !----> filter criteria - shared
@@ -252,7 +242,7 @@ class NetworkDataRequest( ContextBase ):
     #---------------------------------------------------------------------------
 
 
-    def build_filter_spec_aggregate_q( self, filter_spec_IN = None, filter_type_IN = None ):
+    def build_filter_spec_aggregate_q( self, filter_spec_IN ):
         
         # return reference
         q_OUT = None
@@ -261,6 +251,8 @@ class NetworkDataRequest( ContextBase ):
         me = "build_filter_spec_aggregate_q"
         debug_flag = False
         status_message = None
+        comparison_type = None
+        filter_type = None
         filter_spec_list = None
         filter_combine_type = None
         filter_q_list = None
@@ -277,124 +269,136 @@ class NetworkDataRequest( ContextBase ):
         # make sure we have filter spec
         if ( filter_spec_IN is not None ):
         
-            # filter spec list OK?
-            filter_spec_list = filter_spec_IN.get_value_list()
-            if ( ( filter_spec_list is not None ) and ( len( filter_spec_list ) > 0 ) ):
+            # get comparison type, make sure it is recursive type
+            comparison_type = filter_spec_IN.get_comparison_type()
+        
+            # figure out what to do based on type - recursive (AND or OR)?
+            if ( comparison_type not in self.RECURSIVE_COMPARISON_TYPE_LIST ):
             
-                # make sure we have a type
-                filter_combine_type = filter_spec_IN.get_comparison_type()
-                if ( ( filter_combine_type is None ) or ( filter_combine_type != "" ) ):
+                # not recursive type - call standard build method.
+                q_OUT = self.build_filter_spec_q( filter_spec_IN = filter_spec )
                 
-                    # use default.
-                    filter_combine_type = FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_DEFAULT
-                    
-                #-- END check to see if combine type passed in. --#
-                    
-                # make sure combine type is valid.
-                if ( filter_combine_type in FilterSpec.FILTER_COMBINE_TYPE_VALUES ):
-                                
-                    # loop over filters, build a Q() list.
-                    filter_q_list = []
-                    for filter_spec_dict in filter_spec_list:
-                    
-                        # load into FilterSpec instance.
-                        filter_spec = FilterSpec()
-                        filter_spec.set_filter_spec( filter_spec_dict )
-                        
-                        # call the method to create a Q() filter based on type.
-                        filter_q = self.build_filter_spec_q( filter_spec_IN = filter_spec,
-                                                             filter_type_IN = filter_type_IN )
-                        
-                        # add to list?
-                        if ( filter_q is not None ):
-                        
-                            # add to list.
-                            filter_q_list.append( filter_q )
-                            
-                        #-- END check to see if anything returned --#
-                        
-                    #-- END loop over filter specs. --#
-                    
-                    # now, based on the combine type, combine Qs and filter QuerySet
-                    #     with the result.
-                    collected_q = None
-                    
-                    # how many Qs?
-                    filter_q_count = len( filter_q_list )
-                    if ( filter_q_count == 1 ):
-    
-                        # just one thing.  Get it, store it in collected_q.
-                        collected_q = filter_q_list[ 0 ]
-                        
-                    elif ( filter_q_count > 1 ):
-                    
-                        # loop over list
-                        filter_q_counter = 0
-                        for filter_q in filter_q_list:
-                        
-                            # increment counter
-                            filter_q_counter += 1
-                            
-                            # what position in list?
-                            if ( filter_q_counter == 1 ):
-                            
-                                # first - seed collected_q with first thing.
-                                collected_q = filter_q
-                                
-                            else:
-                            
-                                # second+ - combine based on combine type.                        
-                                if ( filter_combine_type == FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_AND ):
-                                
-                                    # AND ( "&" ) the current Q to the collected.
-                                    collected_q = collected_q & filter_q
-                                
-                                elif ( filter_combine_type == FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_OR ):
-                                
-                                    # OR ( "|" ) the Qs together.
-                                    collected_q = collected_q | filter_q
-                
-                                else:
-                                
-                                    # ERROR - valid but unknown combine type...
-                                    status_message = "In {}(): ERROR (and strange) - valid but unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
-                                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                                    
-                                #-- END check of combine type. --#
-                                
-                            #-- END check of index of current filter --#
-                        
-                        #-- END loop over filter Qs --#
-                        
-                    elif ( filter_q_count == 0 ):
-                    
-                        # WARNING - no Qs.
-                        status_message = "In {}(): WARNING - No Qs resulted from processing.  filters: {}".format( me, selection_filters )
-                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
-                    
-                    else:
-                    
-                        # ERROR - unexpected value.
-                        status_message = "In {}(): ERROR - filter count not 0, 1, or > 1. filters: {}".format( me, selection_filters )
-                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                    
-                    #-- END check of count of filter Qs. --#
-                                    
-                else:
-                
-                    # ERROR - unknown combine type.
-                    status_message = "In {}(): ERROR - unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
-                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                    
-                #-- END check to make sure combine type is known and valid --#    
-                    
             else:
             
-                # ERROR - no filter list passed in.
-                status_message = "In {}(): ERROR - no filter list passed in ( {} ), nothing to do.".format( me, filter_spec_list )
-                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                # comparison type is AND or OR - nested list of filter specs OK?
+                filter_spec_list = filter_spec_IN.get_value_list()
+                if ( ( filter_spec_list is not None ) and ( len( filter_spec_list ) > 0 ) ):
                 
-            #-- END check to make sure combine type is known and valid --#
+                    # make sure we have a type
+                    filter_combine_type = comparison_type
+                    if ( ( filter_combine_type is None ) or ( filter_combine_type != "" ) ):
+                    
+                        # use default.
+                        filter_combine_type = FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_DEFAULT
+                        
+                    #-- END check to see if combine type passed in. --#
+                        
+                    # make sure combine type is valid.
+                    if ( filter_combine_type in FilterSpec.FILTER_COMBINE_TYPE_VALUES ):
+                                    
+                        # loop over filters, build a Q() list.
+                        filter_q_list = []
+                        for filter_spec_dict in filter_spec_list:
+                        
+                            # load into FilterSpec instance.
+                            filter_spec = FilterSpec()
+                            filter_spec.set_filter_spec( filter_spec_dict )
+                            
+                            # call the method to create a Q() filter based on type.
+                            filter_q = self.build_filter_spec_q( filter_spec )
+                            
+                            # add to list?
+                            if ( filter_q is not None ):
+                            
+                                # add to list.
+                                filter_q_list.append( filter_q )
+                                
+                            #-- END check to see if anything returned --#
+                            
+                        #-- END loop over filter specs. --#
+                        
+                        # now, based on the combine type, combine Qs and filter QuerySet
+                        #     with the result.
+                        collected_q = None
+                        
+                        # how many Qs?
+                        filter_q_count = len( filter_q_list )
+                        if ( filter_q_count == 1 ):
+        
+                            # just one thing.  Get it, store it in collected_q.
+                            collected_q = filter_q_list[ 0 ]
+                            
+                        elif ( filter_q_count > 1 ):
+                        
+                            # loop over list
+                            filter_q_counter = 0
+                            for filter_q in filter_q_list:
+                            
+                                # increment counter
+                                filter_q_counter += 1
+                                
+                                # what position in list?
+                                if ( filter_q_counter == 1 ):
+                                
+                                    # first - seed collected_q with first thing.
+                                    collected_q = filter_q
+                                    
+                                else:
+                                
+                                    # second+ - combine based on combine type.                        
+                                    if ( filter_combine_type == FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_AND ):
+                                    
+                                        # AND ( "&" ) the current Q to the collected.
+                                        collected_q = collected_q & filter_q
+                                    
+                                    elif ( filter_combine_type == FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_OR ):
+                                    
+                                        # OR ( "|" ) the Qs together.
+                                        collected_q = collected_q | filter_q
+                    
+                                    else:
+                                    
+                                        # ERROR - valid but unknown combine type...
+                                        status_message = "In {}(): ERROR (and strange - how did you get here with bad combine type?) - valid but unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
+                                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                                        
+                                    #-- END check of combine type. --#
+                                    
+                                #-- END check of index of current filter --#
+                            
+                            #-- END loop over filter Qs --#
+                            
+                        elif ( filter_q_count == 0 ):
+                        
+                            # WARNING - no Qs.
+                            status_message = "In {}(): WARNING - No Qs resulted from processing.  filters: {}".format( me, filter_spec_list )
+                            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                        
+                        else:
+                        
+                            # ERROR - unexpected value.
+                            status_message = "In {}(): ERROR - filter count not 0, 1, or > 1. filters: {}".format( me, filter_spec_list )
+                            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                        
+                        #-- END check of count of filter Qs. --#
+                                        
+                    else:
+                    
+                        # ERROR - unknown combine type.
+                        status_message = "In {}(): ERROR - unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                        
+                    #-- END check to make sure combine type is known and valid --#    
+                        
+                else:
+                
+                    # ERROR - no filter list passed in.
+                    status_message = "In {}(): ERROR - no filter list passed in ( {} ), nothing to do.".format( me, filter_spec_list )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                #-- END check to make there is a nested list of filters --#
+                
+            #-- END check to make sure the type is recursive (AND or OR) --#
             
         else:
         
@@ -412,7 +416,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method build_filter_spec_aggregate_q() --#
                     
 
-    def build_filter_spec_entity_id_q( self, filter_spec_IN, filter_type_IN ):
+    def build_filter_spec_entity_id_q( self, filter_spec_IN ):
         
         # return reference
         q_OUT = None
@@ -456,8 +460,7 @@ class NetworkDataRequest( ContextBase ):
                 if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
-                                                                filter_type_IN = filter_type_IN )
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
@@ -695,7 +698,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method build_filter_spec_entity_q_target_roles() --#
 
 
-    def build_filter_spec_entity_trait_q( self, filter_spec_IN, filter_type_IN ):        
+    def build_filter_spec_entity_trait_q( self, filter_spec_IN ):        
         
         # return reference
         q_OUT = None
@@ -739,8 +742,7 @@ class NetworkDataRequest( ContextBase ):
                 if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
-                                                                filter_type_IN = filter_type_IN )
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
@@ -848,7 +850,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method build_filter_spec_entity_trait_q() --#
 
 
-    def build_filter_spec_entity_type_slug_q( self, filter_spec_IN, filter_type_IN ):
+    def build_filter_spec_entity_type_slug_q( self, filter_spec_IN ):
 
         # return reference
         q_OUT = None
@@ -892,8 +894,7 @@ class NetworkDataRequest( ContextBase ):
                 if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
-                                                                filter_type_IN = filter_type_IN )
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
@@ -992,10 +993,10 @@ class NetworkDataRequest( ContextBase ):
     #-- END method build_filter_spec_entity_type_slug_q() --#
 
 
-    def build_filter_spec_q( self, filter_spec_IN, filter_type_IN ):
+    def build_filter_spec_q( self, filter_spec_IN ):
         
         '''
-        Accepts filter spec and filter type, returns a Q that filters
+        Accepts filter spec, returns a Q that filters
             appropriately to match the filters specified in the spec passed in.
             If the filter type is AND or OR, hands off processing to method
             build_filter_spec_aggregate_q(), which then recursively calls this
@@ -1009,10 +1010,16 @@ class NetworkDataRequest( ContextBase ):
         
         # declare variables
         me = "build_filter_spec_q"
+        debug_flag = False
+        status_message = None
         filter_spec = None
+        filter_type = None
         comparison_type = None
         method_name = None
-        method_pointer = None        
+        method_pointer = None
+        
+        # init
+        debug_flag = self.DEBUG_FLAG       
         
         # got a filter spec passed in?
         if ( filter_spec_IN is not None ):
@@ -1023,29 +1030,43 @@ class NetworkDataRequest( ContextBase ):
             # retrieve comparison type
             comparison_type = filter_spec.get_comparison_type()
             
+            if ( debug_flag == True ):
+                print( "In {}(): comparison type = {}".format( me, comparison_type ) )
+            #-- END DEBUG --#
+
             # valid type?
             if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
                 # figure out what to do based on type - recursive or not?
                 if ( comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
+                    if ( debug_flag == True ):
+                        print( "----> In {}(): calling aggregate method.".format( me, comparison_type ) )
+                    #-- END DEBUG --#
+        
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
-                                                                filter_type_IN = filter_type_IN )
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
                     # not recursive - call appropriate method based on filter
                     #     type, then let it implement the different comparisons.
                     
-                    # get method name
-                    method_name = self.FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP.get( filter_type_IN )
+                    # get filter type
+                    filter_type = filter_spec.get_filter_type()
                     
+                    # get method name for filter type
+                    method_name = self.FILTER_TYPE_TO_BUILD_FUNCTION_NAME_MAP.get( filter_type )
+                    
+                    if ( debug_flag == True ):
+                        print( "----> In {}(): method_name: {}; for filter_type: {}".format( me, method_name, filter_type ) )
+                    #-- END DEBUG --#
+        
                     # get method pointer
                     method_pointer = getattr( self, method_name )
                     
                     # call method, passing spec.
-                    q_OUT = method_pointer( filter_spec, filter_type_IN )
+                    q_OUT = method_pointer( filter_spec )
                 
                 #-- END check to see what to do based on filter type. --#
                                 
@@ -1065,10 +1086,12 @@ class NetworkDataRequest( ContextBase ):
 
         #-- END check to make sure spec passed in. --#
         
+        return q_OUT
+        
     #-- END method build_filter_spec_q() --#
 
 
-    def build_filter_spec_relation_trait_q( self, filter_spec_IN, filter_type_IN ):
+    def build_filter_spec_relation_trait_q( self, filter_spec_IN ):
         
         # return reference
         q_OUT = None
@@ -1111,8 +1134,7 @@ class NetworkDataRequest( ContextBase ):
                 if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
-                                                                filter_type_IN = filter_type_IN )
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
@@ -1217,7 +1239,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method build_filter_spec_relation_trait_q() --#
 
 
-    def build_filter_spec_relation_type_slug_q( self, filter_spec_IN, filter_type_IN ):
+    def build_filter_spec_relation_type_slug_q( self, filter_spec_IN ):
         
         # return reference
         q_OUT = None
@@ -1260,8 +1282,7 @@ class NetworkDataRequest( ContextBase ):
                 if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec_IN = filter_spec,
-                                                                filter_type_IN = filter_type_IN )
+                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
@@ -1392,19 +1413,11 @@ class NetworkDataRequest( ContextBase ):
                 
             #-- END initialize QuerySet --#
         
-            # ! ----> process the different types of filters.
+            # ! ----> process filters.
 
-            # loop over filter types.
-            filter_type_list = self.FILTER_TYPE_LIST
-            for filter_type in filter_type_list:
-            
-                # call filter_relations() with the selected filters and
-                #     current filter type.
-                qs_OUT = self.filter_relations( qs_IN = qs_OUT,
-                                                selection_filters_IN = selection_filters,
-                                                filter_type_IN = filter_type )
-            
-            #-- END loop over filter types. --#
+            # call filter_relations() with the selected filters.
+            qs_OUT = self.filter_relations( qs_IN = qs_OUT,
+                                            selection_filters_IN = selection_filters )            
             
         else:
 
@@ -1419,7 +1432,7 @@ class NetworkDataRequest( ContextBase ):
     #-- end method filter_relation_query_set() ---------------------------#
 
 
-    def filter_relations( self, qs_IN = None, selection_filters_IN = None, filter_type_IN = None ):
+    def filter_relations( self, qs_IN = None, selection_filters_IN = None ):
         
         '''
         Uses nested selection filters to it to build up an Entity_Relation
@@ -1443,10 +1456,7 @@ class NetworkDataRequest( ContextBase ):
         my_logger = None
         is_filter_type_valid = None
         selection_filters = None
-        filter_combine_type_property_name = None
-        filter_combine_type = None
-        filter_spec_list_property_name = None
-        filter_spec_list = None
+        filter_spec_dict = None
         filter_spec = None
         result_q = None
         
@@ -1458,10 +1468,15 @@ class NetworkDataRequest( ContextBase ):
         # got filters?
         if ( selection_filters is not None ):
         
-            # valid filter type?
-            if ( ( filter_type_IN is not None ) and ( filter_type_IN in self.FILTER_TYPE_LIST ) ):
+            # is there a filter_specification?
+            filter_spec_dict = selection_filters.get( self.PROP_NAME_FILTER_SPECIFICATION, None )
+            if ( filter_spec_dict is not None):
             
-                # valid filter type - set up QuerySet - QuerySet passed in?
+                # there is a filter_specification
+                filter_spec = FilterSpec()
+                filter_spec.set_filter_spec( filter_spec_dict )
+                
+                # initialize QuerySet - QuerySet passed in?
                 if ( qs_IN is not None ):
                 
                     # use QuerySet passed in.
@@ -1474,48 +1489,21 @@ class NetworkDataRequest( ContextBase ):
                     
                 #-- END initialize QuerySet --#
             
-                # get combine type...
-                filter_combine_type_property_name = "{}{}".format( filter_type_IN, self.SUFFIX_FILTER_COMBINE_TYPE )
-                filter_combine_type = selection_filters.get( filter_combine_type_property_name, FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_DEFAULT )
-    
-                # ...and filter specs based on type.
-                filter_spec_list_property_name = "{}{}".format( filter_type_IN, self.SUFFIX_FILTERS )
-                filter_spec_list = selection_filters.get( filter_spec_list_property_name )
+                # call method build_filter_spec_q()
+                result_q = self.build_filter_spec_q( filter_spec )
                 
-                # make sure combine type is valid.
-                if ( filter_combine_type in FilterSpec.FILTER_COMBINE_TYPE_VALUES ):
+                # if result_q is not None, filter.
+                if ( result_q is not None ):
                 
-                    # create filter_spec for list, with comparison type =
-                    #     combine type.
-                    filter_spec = FilterSpec()
-                    filter_spec.set_comparison_type( filter_combine_type )
-                    filter_spec.set_value_list( filter_spec_list )
-                    filter_spec.set_data_type( FilterSpec.PROP_VALUE_DATA_TYPE_FILTER )
-                    
-                    # call method build_filter_spec_q()
-                    result_q = self.build_filter_spec_q( filter_spec_IN = filter_spec,
-                                                         filter_type_IN = filter_type_IN )
+                    # got something.  Filter and return.
+                    qs_OUT = qs_OUT.filter( result_q )
                 
-                    # if result_q is not None, filter.
-                    if ( result_q is not None ):
-                    
-                        # got something.  Filter and return.
-                        qs_OUT = qs_OUT.filter( result_q )
-                    
-                    #-- END check to see if result_q has anything in it. --#
-                
-                else:
-                
-                    # ERROR - unknown combine type.
-                    status_message = "In {}(): ERROR - unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
-                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                    
-                #-- END check to make sure combine type is known and valid --#            
+                #-- END check to see if result_q has anything in it. --#
                 
             else:
     
-                # ERROR - invalid filter type.
-                status_message = "In {}(): ERROR - unknown filter type {}, nothing to do.  Valid types: {}".format( me, filter_type_IN, self.FILTER_TYPE_LIST )
+                # ERROR - no filter specification.
+                status_message = "In {}(): ERROR - no filter specification, nothing to do.  Should I return all?".format( me )
                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
             
             #-- END check to see if we have selection filters --#

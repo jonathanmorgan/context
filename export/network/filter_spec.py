@@ -80,6 +80,7 @@ class FilterSpec( ContextBase ):
     PROP_NAME_TYPE_LABEL = "type_label"
     PROP_NAME_DATA_TYPE = "data_type"
     PROP_NAME_COMPARISON_TYPE = "comparison_type"
+    PROP_NAME_FILTER_TYPE = "filter_type"
     PROP_NAME_VALUE = "value"
     PROP_NAME_VALUE_LIST = "value_list"
     PROP_NAME_VALUE_FROM = "value_from"
@@ -240,6 +241,19 @@ class FilterSpec( ContextBase ):
         return value_OUT
     
     #-- END method get_filter_spec_property() --#
+
+
+    def get_filter_type( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # retrieve the output_type value.
+        value_OUT = self.get_filter_spec_property( self.PROP_NAME_FILTER_TYPE )
+        
+        return value_OUT
+    
+    #-- END method get_filter_type() --#
 
 
     def get_name( self ):
@@ -426,6 +440,19 @@ class FilterSpec( ContextBase ):
         return value_OUT
     
     #-- END method set_filter_spec_property() --#
+
+
+    def set_filter_type( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # return it
+        value_OUT = self.set_filter_spec_property( self.PROP_NAME_FILTER_TYPE, value_IN )
+        
+        return value_OUT
+    
+    #-- END method set_filter_type() --#
 
 
     def set_name( self, value_IN ):
