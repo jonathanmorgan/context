@@ -47,6 +47,7 @@ from django.db.models import Q
 
 # python_utilities
 from python_utilities.booleans.boolean_helper import BooleanHelper
+from python_utilities.json.json_helper import JSONHelper
 from python_utilities.parameters.param_container import ParamContainer
 from python_utilities.status.status_container import StatusContainer
 
@@ -151,6 +152,12 @@ class FilterSpec( ContextBase ):
         
         # and store parsed JSON
         self.m_json = None
+        
+        # store children converted to FilterSpecs, if present.
+        self.m_child_filter_spec_list = []
+        
+        # store self converted to Q() instance (if not an aggregate).
+        self.m_my_q = None
                         
         # set logger name (for LoggingHelper parent class: (LoggingHelper --> BasicRateLimited --> ContextTextBase --> ArticleCoding).
         self.set_logger_name( self.LOGGER_NAME )
@@ -161,6 +168,63 @@ class FilterSpec( ContextBase ):
     #---------------------------------------------------------------------------
     # ! ==> instance methods
     #---------------------------------------------------------------------------
+
+
+    def add_to_child_filter_spec_list( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        filter_spec_list = None
+        
+        # get list
+        filter_spec_list = self.get_child_filter_spec_list()
+
+        # append value
+        filter_spec_list.append( value_IN )
+        
+        # return it
+        value_OUT = value_IN
+        
+        return value_OUT
+    
+    #-- END method add_to_child_filter_spec_list() --#
+
+
+    def get_child_filter_spec_list( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        filter_spec_list = None
+        
+        # see if already stored.
+        filter_spec_list = self.m_child_filter_spec_list
+        
+        # anything stored?
+        if ( filter_spec_list is None ):
+        
+            # no.  Create list, store it, and return it.
+            filter_spec_list = []
+            
+            # store it.
+            self.set_child_filter_spec_list( filter_spec_list )
+            
+            # return it.
+            value_OUT = self.get_child_filter_spec_list()
+            
+        else:
+        
+            # found something.  Return it.
+            value_OUT = filter_spec_list
+            
+        #-- END see if initialized --#
+        
+        return value_OUT
+    
+    #-- END method get_child_filter_spec_list() --#
 
 
     def get_comparison_type( self ):
@@ -254,6 +318,19 @@ class FilterSpec( ContextBase ):
         return value_OUT
     
     #-- END method get_filter_type() --#
+
+
+    def get_my_q( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # retrieve the value.
+        value_OUT = self.m_my_q
+        
+        return value_OUT
+        
+    #-- END method get_my_q() --#
 
 
     def get_name( self ):
@@ -378,6 +455,44 @@ class FilterSpec( ContextBase ):
     #-- END method get_value_to() --#
 
 
+    def output_filter_spec_as_json_string( self, sort_keys_IN = True, indent_IN = 4, separators_IN = ( ',', ': ' ) ):
+    
+        # return reference
+        value_OUT = None
+        
+        # declare variable
+        filter_spec_dict = None
+        
+        # get filter spec dictionary
+        filter_spec_dict = self.get_filter_spec()
+        
+        # use JSONHelper to render.
+        value_OUT = JSONHelper.pretty_print_json( filter_spec_dict,
+                                                  sort_keys_IN = sort_keys_IN,
+                                                  indent_IN = indent_IN,
+                                                  separators_IN = separators_IN )
+        
+        return value_OUT
+        
+    #-- END method output_filter_spec_as_json_string() --#
+
+
+    def set_child_filter_spec_list( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_child_filter_spec_list = value_IN
+        
+        # return it
+        value_OUT = self.get_child_filter_spec_list()
+        
+        return value_OUT
+    
+    #-- END method set_child_filter_spec_list() --#
+
+
     def set_comparison_type( self, value_IN ):
         
         # return reference
@@ -453,6 +568,22 @@ class FilterSpec( ContextBase ):
         return value_OUT
     
     #-- END method set_filter_type() --#
+
+
+    def set_my_q( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_my_q = value_IN
+        
+        # return it
+        value_OUT = self.get_my_q()
+        
+        return value_OUT
+        
+    #-- END method set_my_q() --#
 
 
     def set_name( self, value_IN ):

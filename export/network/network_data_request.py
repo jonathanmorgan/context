@@ -160,9 +160,9 @@ class NetworkDataRequest( ContextBase ):
     
     #--------------------------------------------------------------------------#
     # ! ----> filter spec - comparison types
-    RECURSIVE_COMPARISON_TYPE_LIST = []
-    RECURSIVE_COMPARISON_TYPE_LIST.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
-    RECURSIVE_COMPARISON_TYPE_LIST.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR )
+    AGGREGATE_COMPARISON_TYPE_LIST = []
+    AGGREGATE_COMPARISON_TYPE_LIST.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+    AGGREGATE_COMPARISON_TYPE_LIST.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR )
     
     
     #--------------------------------------------------------------------------#
@@ -197,6 +197,72 @@ class NetworkDataRequest( ContextBase ):
     ID_FILTER_COMBINE_TYPE_VALUES = FilterSpec.FILTER_COMBINE_TYPE_VALUES
 
 
+    #-----------------------------------------------------------------------------
+    # ! ==> class methods
+    #-----------------------------------------------------------------------------
+
+
+    @classmethod
+    def compact_entity_relation_queryset( cls, qs_IN ):
+    
+        '''
+        Accepts Emtity_Relation QuerySet.  Retrieves list of the IDs of the
+            matching records, then creates a new QuerySet with IDs in the list
+            of IDs from the QuerySet passed in.  Returns the new QuerySet.
+        '''
+        
+        # return reference
+        qs_OUT = None
+
+        # declare variables
+        me = "compact_entity_relation_queryset"
+        debug_flag = None
+        debug_flag_include_id_list = None
+        status_message = None
+        just_id_qs = None
+        id_set = None
+        id_list = None
+        
+        # init
+        #debug_flag = cls.DEBUG_FLAG
+        debug_flag = True
+        debug_flag_include_id_list = False
+        
+        # make sure we have a QuerySet passed in.
+        if ( qs_IN is not None ):
+        
+            # something passed in.  Try to get list of IDs.
+            just_id_qs = qs_IN.values_list( 'id', flat = True )
+            id_set = set( just_id_qs )
+            id_list = list( id_set )
+            
+            # now, make a new QuerySet filtered for id in id_list
+            qs_OUT = Entity_Relation.objects.all()
+            qs_OUT = qs_OUT.filter( id__in = id_list )
+            
+            if ( debug_flag == True ):
+            
+                status_message = "\n\n**** Compacted Entity_Relation QuerySet."
+                cls.output_debug( status_message, method_IN = me, do_print_IN = debug_flag )
+                status_message = "\n\n- Query:\n{}".format( qs_IN.query )
+                cls.output_debug( status_message, method_IN = me, do_print_IN = debug_flag )
+                status_message = "\n\n- ID list count: {}".format( len( id_list ) )
+                cls.output_debug( status_message, method_IN = me, do_print_IN = debug_flag )
+                
+                if ( debug_flag_include_id_list == True ):
+                    status_message = "\n\n- ID list:\n{}".format( id_list )
+                    cls.output_debug( status_message, method_IN = me, do_print_IN = debug_flag )
+                #-- END check to see if include ID list --#
+                
+            #-- END DEBUG
+
+        #-- END check to see if QuerySet passed in --#
+        
+        return qs_OUT
+        
+    #-- END class method compact_entity_relation_queryset() --#
+
+        
     #---------------------------------------------------------------------------
     # ! ==> overridden built-in methods
     #---------------------------------------------------------------------------
@@ -245,44 +311,49 @@ class NetworkDataRequest( ContextBase ):
     def build_filter_spec_aggregate_q( self, filter_spec_IN ):
         
         # return reference
-        q_OUT = None
-        
+        status_OUT = None
+
         # declare variables
         me = "build_filter_spec_aggregate_q"
         debug_flag = False
         status_message = None
+        status_code = None
         comparison_type = None
         filter_type = None
-        filter_spec_list = None
+        filter_spec_dict_list = None
         filter_combine_type = None
-        filter_q_list = None
         filter_spec_dict = None
         filter_spec = None
-        filter_q = None
-        collected_q = None
-        filter_q_count = None
-        filter_q_counter = None
+        result_status = None
+        result_status_is_error = None
         
-        # init debug_flag
+        # init
         debug_flag = self.DEBUG_FLAG
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
         
         # make sure we have filter spec
         if ( filter_spec_IN is not None ):
         
-            # get comparison type, make sure it is recursive type
+            # get comparison type, make sure it is aggregate type
             comparison_type = filter_spec_IN.get_comparison_type()
         
-            # figure out what to do based on type - recursive (AND or OR)?
-            if ( comparison_type not in self.RECURSIVE_COMPARISON_TYPE_LIST ):
+            if ( debug_flag == True ):
+                status_message = "In {}(): comparison type = {}".format( me, comparison_type )
+                self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.DEBUG )
+            #-- END DEBUG --#
+
+            # figure out what to do based on type - aggregate (AND or OR)?
+            if ( comparison_type not in self.AGGREGATE_COMPARISON_TYPE_LIST ):
             
-                # not recursive type - call standard build method.
-                q_OUT = self.build_filter_spec_q( filter_spec_IN = filter_spec )
+                # not aggregate type - call standard build method.
+                status_OUT = self.build_filter_spec_q( filter_spec_IN )
                 
             else:
             
                 # comparison type is AND or OR - nested list of filter specs OK?
-                filter_spec_list = filter_spec_IN.get_value_list()
-                if ( ( filter_spec_list is not None ) and ( len( filter_spec_list ) > 0 ) ):
+                filter_spec_dict_list = filter_spec_IN.get_value_list()
+                if ( ( filter_spec_dict_list is not None ) and ( len( filter_spec_dict_list ) > 0 ) ):
                 
                     # make sure we have a type
                     filter_combine_type = comparison_type
@@ -297,96 +368,48 @@ class NetworkDataRequest( ContextBase ):
                     if ( filter_combine_type in FilterSpec.FILTER_COMBINE_TYPE_VALUES ):
                                     
                         # loop over filters, build a Q() list.
-                        filter_q_list = []
-                        for filter_spec_dict in filter_spec_list:
+                        for filter_spec_dict in filter_spec_dict_list:
                         
+                            if ( debug_flag == True ):
+                                status_message = "In {}(): looping over nested spec JSON, current JSON: {}".format( me, filter_spec_dict )
+                                self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.DEBUG )
+                            #-- END DEBUG --#
+                
                             # load into FilterSpec instance.
                             filter_spec = FilterSpec()
                             filter_spec.set_filter_spec( filter_spec_dict )
                             
+                            # add FilterSpec to my list.
+                            filter_spec_IN.add_to_child_filter_spec_list( filter_spec )
+                            
                             # call the method to create a Q() filter based on type.
-                            filter_q = self.build_filter_spec_q( filter_spec )
+                            result_status = self.build_filter_spec_q( filter_spec )
+
+                            # errors?
+                            result_status_is_error = result_status.is_error()
+                            if ( result_status_is_error == True ):
                             
-                            # add to list?
-                            if ( filter_q is not None ):
+                                # set status to error, add a message, then nest
+                                #     the StatusContainer instance.
+                                status_message = "In {}(): ERROR - error returned by build_filter_spec_q() for filter_spec: {}; See nested StatusContainer for more details.".format( me, filter_spec )
+                                self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
+                                status_code = StatusContainer.STATUS_CODE_ERROR
+                                status_OUT.set_status_code( status_code )
+                                status_OUT.add_message( status_message )
+                                status_OUT.add_status_container( result_status )
                             
-                                # add to list.
-                                filter_q_list.append( filter_q )
-                                
-                            #-- END check to see if anything returned --#
-                            
+                            #-- END check to see if errors. --#
+
                         #-- END loop over filter specs. --#
-                        
-                        # now, based on the combine type, combine Qs and filter QuerySet
-                        #     with the result.
-                        collected_q = None
-                        
-                        # how many Qs?
-                        filter_q_count = len( filter_q_list )
-                        if ( filter_q_count == 1 ):
-        
-                            # just one thing.  Get it, store it in collected_q.
-                            collected_q = filter_q_list[ 0 ]
-                            
-                        elif ( filter_q_count > 1 ):
-                        
-                            # loop over list
-                            filter_q_counter = 0
-                            for filter_q in filter_q_list:
-                            
-                                # increment counter
-                                filter_q_counter += 1
-                                
-                                # what position in list?
-                                if ( filter_q_counter == 1 ):
-                                
-                                    # first - seed collected_q with first thing.
-                                    collected_q = filter_q
-                                    
-                                else:
-                                
-                                    # second+ - combine based on combine type.                        
-                                    if ( filter_combine_type == FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_AND ):
-                                    
-                                        # AND ( "&" ) the current Q to the collected.
-                                        collected_q = collected_q & filter_q
-                                    
-                                    elif ( filter_combine_type == FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_OR ):
-                                    
-                                        # OR ( "|" ) the Qs together.
-                                        collected_q = collected_q | filter_q
-                    
-                                    else:
-                                    
-                                        # ERROR - valid but unknown combine type...
-                                        status_message = "In {}(): ERROR (and strange - how did you get here with bad combine type?) - valid but unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
-                                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                                        
-                                    #-- END check of combine type. --#
-                                    
-                                #-- END check of index of current filter --#
-                            
-                            #-- END loop over filter Qs --#
-                            
-                        elif ( filter_q_count == 0 ):
-                        
-                            # WARNING - no Qs.
-                            status_message = "In {}(): WARNING - No Qs resulted from processing.  filters: {}".format( me, filter_spec_list )
-                            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
-                        
-                        else:
-                        
-                            # ERROR - unexpected value.
-                            status_message = "In {}(): ERROR - filter count not 0, 1, or > 1. filters: {}".format( me, filter_spec_list )
-                            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                        
-                        #-- END check of count of filter Qs. --#
-                                        
+                                                                
                     else:
                     
                         # ERROR - unknown combine type.
                         status_message = "In {}(): ERROR - unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
                         
                     #-- END check to make sure combine type is known and valid --#    
                         
@@ -395,36 +418,41 @@ class NetworkDataRequest( ContextBase ):
                     # ERROR - no filter list passed in.
                     status_message = "In {}(): ERROR - no filter list passed in ( {} ), nothing to do.".format( me, filter_spec_list )
                     self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    status_code = StatusContainer.STATUS_CODE_ERROR
+                    status_OUT.set_status_code( status_code )
+                    status_OUT.add_message( status_message )
                     
                 #-- END check to make there is a nested list of filters --#
                 
-            #-- END check to make sure the type is recursive (AND or OR) --#
+            #-- END check to make sure the type is aggregate (AND or OR) --#
             
         else:
         
             # ERROR - no filter spec passed in.
             status_message = "In {}(): ERROR - no filter spec passed in ( {} ), nothing to do.".format( me, filter_spec_IN )
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            status_code = StatusContainer.STATUS_CODE_ERROR
+            status_OUT.set_status_code( status_code )
+            status_OUT.add_message( status_message )
             
         #-- END check to make sure combine type is known and valid --#
         
-        # set return reference.
-        q_OUT = collected_q
-
-        return q_OUT
-
+        return status_OUT
+        
     #-- END method build_filter_spec_aggregate_q() --#
                     
 
     def build_filter_spec_entity_id_q( self, filter_spec_IN ):
         
         # return reference
-        q_OUT = None
+        status_OUT = None
         
         # declare variables
         me = "build_filter_spec_entity_id_q"
         debug_flag = None
         status_message = None
+        status_code = None
+        status_result = None
         filter_spec = None
         filter_comparison_type = None
         filter_name = None
@@ -438,11 +466,13 @@ class NetworkDataRequest( ContextBase ):
         filter_relation_roles_list = None
         is_ok = None
         entity_qs = None
-        current_q = None
+        my_q = None
         
         # init
         is_ok = True
         debug_flag = self.DEBUG_FLAG
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
         
         # got a filter spec passed in?
         if ( filter_spec_IN is not None ):
@@ -456,15 +486,15 @@ class NetworkDataRequest( ContextBase ):
             # valid type?
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
-                # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
+                # figure out what to do based on type - aggregate or not?
+                if ( filter_comparison_type in self.AGGREGATE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
+                    status_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
-                    # not recursive, retrieve values
+                    # not aggregate, retrieve values
                     filter_name = filter_spec.get_name()  # name of identifier
                     filter_type_id = filter_spec.get_type_id()
                     filter_type_label = filter_spec.get_type_label()
@@ -486,6 +516,9 @@ class NetworkDataRequest( ContextBase ):
                         # ERROR - required elements of spec missing.  could not filter.
                         status_message = "In {}(): ERROR - name is required type \"{}\", is missing from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
                     
                     #-- END check to see if name set. --#
                     
@@ -519,6 +552,9 @@ class NetworkDataRequest( ContextBase ):
                             # ERROR - invalid comparison type for this filter type.
                             status_message = "In {}(): ERROR - comparison type {} is not valid for filter type {} ( from filter spec: {} _.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                            status_code = StatusContainer.STATUS_CODE_ERROR
+                            status_OUT.set_status_code( status_code )
+                            status_OUT.add_message( status_message )
                             is_ok = False
                                                     
                         else:
@@ -526,6 +562,9 @@ class NetworkDataRequest( ContextBase ):
                             # ERROR - unknown comparison type.
                             status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                            status_code = StatusContainer.STATUS_CODE_ERROR
+                            status_OUT.set_status_code( status_code )
+                            status_OUT.add_message( status_message )
                             is_ok = False
                         
                         #-- END check to see what comparison type. --#
@@ -534,8 +573,17 @@ class NetworkDataRequest( ContextBase ):
                         if ( is_ok == True ):
                         
                             # ! ----> call method to then apply this to requested roles.
-                            q_OUT = self.build_filter_spec_entity_q_target_roles( entity_qs, filter_relation_roles_list )
+                            my_q = self.build_filter_spec_entity_q_target_roles( entity_qs, filter_relation_roles_list )
                             
+                            # and store in filter_spec.
+                            filter_spec.set_my_q( my_q )
+                            
+                        else:
+                        
+                            # no need for more error messages - status has been
+                            #     set above
+                            pass
+                        
                         #-- END check to see if everything OK after finding matching entities --#
                         
                     else:
@@ -543,16 +591,22 @@ class NetworkDataRequest( ContextBase ):
                         # ERROR - required elements of spec missing.  could not filter.
                         status_message = "In {}(): ERROR - required elements of filter spec missing for this type: {}, from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
                     
                     #-- END check to see if OK --#
                     
-                #-- END check to see if recursive type, or atomic. --#
+                #-- END check to see if aggregate type, or atomic. --#
                 
             else:
             
                 # ERROR - unknown comparison type.
                 status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                status_code = StatusContainer.STATUS_CODE_ERROR
+                status_OUT.set_status_code( status_code )
+                status_OUT.add_message( status_message )
             
             #-- END check to see if valid comparison type. --#   
             
@@ -561,10 +615,13 @@ class NetworkDataRequest( ContextBase ):
             # ERROR - no spec passed in.
             status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            status_code = StatusContainer.STATUS_CODE_ERROR
+            status_OUT.set_status_code( status_code )
+            status_OUT.add_message( status_message )
 
         #-- END check to make sure spec passed in. --#
         
-        return q_OUT
+        return status_OUT
         
     #-- END method build_filter_spec_entity_id_q() --#
 
@@ -701,12 +758,13 @@ class NetworkDataRequest( ContextBase ):
     def build_filter_spec_entity_trait_q( self, filter_spec_IN ):        
         
         # return reference
-        q_OUT = None
-        
+        status_OUT = None
+
         # declare variables
         me = "build_filter_spec_entity_trait_q"
         debug_flag = None
         status_message = None
+        status_code = None
         filter_spec = None
         filter_comparison_type = None
         filter_name = None
@@ -725,7 +783,9 @@ class NetworkDataRequest( ContextBase ):
         # init
         is_ok = True
         debug_flag = self.DEBUG_FLAG
-        
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+         
         # got a filter spec passed in?
         if ( filter_spec_IN is not None ):
 
@@ -738,15 +798,15 @@ class NetworkDataRequest( ContextBase ):
             # valid type?
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
-                # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
+                # figure out what to do based on type - aggregate or not?
+                if ( filter_comparison_type in self.AGGREGATE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
                     q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
-                    # not recursive, retrieve values
+                    # not aggregate, retrieve values
                     filter_name = filter_spec.get_name()  # name of identifier
                     filter_type_id = filter_spec.get_type_id()
                     filter_type_label = filter_spec.get_type_label()
@@ -766,9 +826,12 @@ class NetworkDataRequest( ContextBase ):
                         is_ok = False
                         
                         # ERROR - required elements of spec missing.  could not filter.
-                        status_message = "In {}(): ERROR - name is required type \"{}\", is missing from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
+                        status_message = "In {}(): ERROR - name is required for type \"{}\", is missing from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
-                    
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
+                                
                     #-- END check to see if name set. --#
                     
                     # OK to proceed?
@@ -807,6 +870,11 @@ class NetworkDataRequest( ContextBase ):
                             # ERROR - unknown comparison type.
                             status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                            status_code = StatusContainer.STATUS_CODE_ERROR
+                            status_OUT.set_status_code( status_code )
+                            status_OUT.add_message( status_message )
+
+                            # Not OK.
                             is_ok = False
                         
                         #-- END check to see what comparison type. --#
@@ -815,8 +883,17 @@ class NetworkDataRequest( ContextBase ):
                         if ( is_ok == True ):
                         
                             # ! ----> call method to then apply this to requested roles.
-                            q_OUT = self.build_filter_spec_entity_q_target_roles( entity_qs, filter_relation_roles_list )
+                            my_q = self.build_filter_spec_entity_q_target_roles( entity_qs, filter_relation_roles_list )
+                            
+                            # and store in filter_spec.
+                            filter_spec.set_my_q( my_q )                            
                                                         
+                        else:
+                        
+                            # no need for more error messages - status has been
+                            #     set above
+                            pass
+                        
                         #-- END check to see if everything OK after finding matching entities --#
                         
                     else:
@@ -824,16 +901,22 @@ class NetworkDataRequest( ContextBase ):
                         # ERROR - required elements of spec missing.  could not filter.
                         status_message = "In {}(): ERROR - required elements of filter spec missing for this type: {}, from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
-                    
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
+                                
                     #-- END check to see if OK --#
                     
-                #-- END check to see if recursive type, or atomic. --#
+                #-- END check to see if aggregate type, or atomic. --#
                 
             else:
             
                 # ERROR - unknown comparison type.
                 status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                status_code = StatusContainer.STATUS_CODE_ERROR
+                status_OUT.set_status_code( status_code )
+                status_OUT.add_message( status_message )
             
             #-- END check to see if valid comparison type. --#   
             
@@ -842,10 +925,13 @@ class NetworkDataRequest( ContextBase ):
             # ERROR - no spec passed in.
             status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            status_code = StatusContainer.STATUS_CODE_ERROR
+            status_OUT.set_status_code( status_code )
+            status_OUT.add_message( status_message )
 
         #-- END check to make sure spec passed in. --#
         
-        return q_OUT
+        return status_OUT
         
     #-- END method build_filter_spec_entity_trait_q() --#
 
@@ -853,12 +939,13 @@ class NetworkDataRequest( ContextBase ):
     def build_filter_spec_entity_type_slug_q( self, filter_spec_IN ):
 
         # return reference
-        q_OUT = None
+        status_OUT = None
         
         # declare variables
         me = "build_filter_spec_entity_type_slug_q"
         debug_flag = None
         status_message = None
+        status_code = None
         filter_spec = None
         filter_comparison_type = None
         filter_name = None
@@ -877,6 +964,8 @@ class NetworkDataRequest( ContextBase ):
         # init
         is_ok = True
         debug_flag = self.DEBUG_FLAG
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
         
         # got a filter spec passed in?
         if ( filter_spec_IN is not None ):
@@ -890,15 +979,15 @@ class NetworkDataRequest( ContextBase ):
             # valid type?
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
-                # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
+                # figure out what to do based on type - aggregate or not?
+                if ( filter_comparison_type in self.AGGREGATE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
                     q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
-                    # not recursive, retrieve values
+                    # not aggregate, retrieve values
                     filter_name = filter_spec.get_name()  # name of identifier
                     filter_type_id = filter_spec.get_type_id()
                     filter_type_label = filter_spec.get_type_label()
@@ -943,6 +1032,11 @@ class NetworkDataRequest( ContextBase ):
                             # ERROR - invalid comparison type for this filter type.
                             status_message = "In {}(): ERROR - comparison type {} is not valid for filter type {} ( from filter spec: {} _.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                            status_code = StatusContainer.STATUS_CODE_ERROR
+                            status_OUT.set_status_code( status_code )
+                            status_OUT.add_message( status_message )
+
+                            # Not OK.
                             is_ok = False
                                                     
                         else:
@@ -950,6 +1044,11 @@ class NetworkDataRequest( ContextBase ):
                             # ERROR - unknown comparison type.
                             status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                            status_code = StatusContainer.STATUS_CODE_ERROR
+                            status_OUT.set_status_code( status_code )
+                            status_OUT.add_message( status_message )
+                
+                            # Not OK.
                             is_ok = False
                         
                         #-- END check to see what comparison type. --#
@@ -958,8 +1057,17 @@ class NetworkDataRequest( ContextBase ):
                         if ( is_ok == True ):
                         
                             # ! ----> call method to then apply this to requested roles.
-                            q_OUT = self.build_filter_spec_entity_q_target_roles( entity_qs, filter_relation_roles_list )
+                            my_q = self.build_filter_spec_entity_q_target_roles( entity_qs, filter_relation_roles_list )
                             
+                            # and store in filter_spec.
+                            filter_spec.set_my_q( my_q )
+                            
+                        else:
+                        
+                            # no need for more error messages - status has been
+                            #     set above
+                            pass
+                        
                         #-- END check to see if everything OK after finding matching entities --#
                         
                     else:
@@ -967,16 +1075,22 @@ class NetworkDataRequest( ContextBase ):
                         # ERROR - required elements of spec missing.  could not filter.
                         status_message = "In {}(): ERROR - required elements of filter spec missing for this type: {}, from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
                     
                     #-- END check to see if OK --#
                     
-                #-- END check to see if recursive type, or atomic. --#
+                #-- END check to see if aggregate type, or atomic. --#
                 
             else:
             
                 # ERROR - unknown comparison type.
                 status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                status_code = StatusContainer.STATUS_CODE_ERROR
+                status_OUT.set_status_code( status_code )
+                status_OUT.add_message( status_message )
             
             #-- END check to see if valid comparison type. --#   
             
@@ -985,10 +1099,13 @@ class NetworkDataRequest( ContextBase ):
             # ERROR - no spec passed in.
             status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            status_code = StatusContainer.STATUS_CODE_ERROR
+            status_OUT.set_status_code( status_code )
+            status_OUT.add_message( status_message )
 
         #-- END check to make sure spec passed in. --#
         
-        return q_OUT
+        return status_OUT
         
     #-- END method build_filter_spec_entity_type_slug_q() --#
 
@@ -996,7 +1113,7 @@ class NetworkDataRequest( ContextBase ):
     def build_filter_spec_q( self, filter_spec_IN ):
         
         '''
-        Accepts filter spec, returns a Q that filters
+        Accepts filter spec, either creates a Q that filters
             appropriately to match the filters specified in the spec passed in.
             If the filter type is AND or OR, hands off processing to method
             build_filter_spec_aggregate_q(), which then recursively calls this
@@ -1006,50 +1123,57 @@ class NetworkDataRequest( ContextBase ):
         '''
         
         # return reference
-        q_OUT = None
+        status_OUT = None
         
         # declare variables
         me = "build_filter_spec_q"
         debug_flag = False
         status_message = None
+        status_code = None
         filter_spec = None
         filter_type = None
         comparison_type = None
         method_name = None
         method_pointer = None
+        result_status = None
+        result_status_is_error = None
         
         # init
-        debug_flag = self.DEBUG_FLAG       
+        debug_flag = self.DEBUG_FLAG
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
         
         # got a filter spec passed in?
         if ( filter_spec_IN is not None ):
 
             # make FilterSpec instance and load dictionary
             filter_spec = filter_spec_IN
+            
+            # clear out any existing child filter specs and my_q.
+            filter_spec.set_child_filter_spec_list( [] )
+            filter_spec.set_my_q( None )
 
             # retrieve comparison type
             comparison_type = filter_spec.get_comparison_type()
             
-            if ( debug_flag == True ):
-                print( "In {}(): comparison type = {}".format( me, comparison_type ) )
-            #-- END DEBUG --#
+            status_message = "\n\nIn {}(): comparison type = {}\n".format( me, comparison_type )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
 
             # valid type?
             if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
-                # figure out what to do based on type - recursive or not?
-                if ( comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
+                # figure out what to do based on type - aggregate or not?
+                if ( comparison_type in self.AGGREGATE_COMPARISON_TYPE_LIST ):
                 
-                    if ( debug_flag == True ):
-                        print( "----> In {}(): calling aggregate method.".format( me, comparison_type ) )
-                    #-- END DEBUG --#
+                    status_message = "----> In {}(): calling aggregate method.".format( me, comparison_type )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
         
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
+                    status_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
-                    # not recursive - call appropriate method based on filter
+                    # not aggregate - call appropriate method based on filter
                     #     type, then let it implement the different comparisons.
                     
                     # get filter type
@@ -1066,7 +1190,22 @@ class NetworkDataRequest( ContextBase ):
                     method_pointer = getattr( self, method_name )
                     
                     # call method, passing spec.
-                    q_OUT = method_pointer( filter_spec )
+                    result_status = method_pointer( filter_spec )
+                        
+                    # errors?
+                    result_status_is_error = result_status.is_error()
+                    if ( result_status_is_error == True ):
+                    
+                        # set status to error, add a message, then nest the
+                        #     StatusContainer instance.
+                        status_message = "In {}(): ERROR - errors creating Q() for filter spec {}; See nested StatusContainer for more details.".format( me, filter_spec )
+                        self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
+                        status_OUT.add_status_container( result_status )
+                    
+                    #-- END check to see if errors. --#
                 
                 #-- END check to see what to do based on filter type. --#
                                 
@@ -1075,7 +1214,10 @@ class NetworkDataRequest( ContextBase ):
                 # ERROR - unknown comparison type.
                 status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-            
+                status_code = StatusContainer.STATUS_CODE_ERROR
+                status_OUT.set_status_code( status_code )
+                status_OUT.add_message( status_message )
+                
             #-- END check to see if valid comparison type. --#   
             
         else:
@@ -1083,10 +1225,13 @@ class NetworkDataRequest( ContextBase ):
             # ERROR - no spec passed in.
             status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            status_code = StatusContainer.STATUS_CODE_ERROR
+            status_OUT.set_status_code( status_code )
+            status_OUT.add_message( status_message )
 
         #-- END check to make sure spec passed in. --#
         
-        return q_OUT
+        return status_OUT
         
     #-- END method build_filter_spec_q() --#
 
@@ -1094,12 +1239,13 @@ class NetworkDataRequest( ContextBase ):
     def build_filter_spec_relation_trait_q( self, filter_spec_IN ):
         
         # return reference
-        q_OUT = None
+        status_OUT = None
         
         # declare variables
         me = "build_filter_spec_relation_trait_q"
         debug_flag = None
         status_message = None
+        status_code = None
         filter_spec = None
         filter_comparison_type = None
         filter_name = None
@@ -1117,6 +1263,8 @@ class NetworkDataRequest( ContextBase ):
         # init
         is_ok = True
         debug_flag = self.DEBUG_FLAG
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
         
         # got a filter spec passed in?
         if ( filter_spec_IN is not None ):
@@ -1130,15 +1278,15 @@ class NetworkDataRequest( ContextBase ):
             # valid type?
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
-                # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
+                # figure out what to do based on type - aggregate or not?
+                if ( filter_comparison_type in self.AGGREGATE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
+                    status_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
-                    # not recursive, retrieve values
+                    # not aggregate, retrieve values
                     filter_name = filter_spec.get_name()  # name of identifier
                     filter_type_id = filter_spec.get_type_id()
                     filter_type_label = filter_spec.get_type_label()
@@ -1160,6 +1308,9 @@ class NetworkDataRequest( ContextBase ):
                         # ERROR - required elements of spec missing.  could not filter.
                         status_message = "In {}(): ERROR - name is required type \"{}\", is missing from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
                     
                     #-- END check to see if name set. --#
                     
@@ -1197,15 +1348,24 @@ class NetworkDataRequest( ContextBase ):
                             status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
                             is_ok = False
+                            status_code = StatusContainer.STATUS_CODE_ERROR
+                            status_OUT.set_status_code( status_code )
+                            status_OUT.add_message( status_message )
                         
                         #-- END check to see what comparison type. --#
                         
                         # everything still OK?
                         if ( is_ok == True ):
                         
-                            # OK!  Return current_q.
-                            q_OUT = current_q
+                            # OK!  Store current_q.
+                            filter_spec.set_my_q( current_q )
                                                         
+                        else:
+                        
+                            # no need for more error messages - status has been
+                            #     set above
+                            pass
+                        
                         #-- END check to see if everything OK after finding matching entities --#
                         
                     else:
@@ -1213,16 +1373,22 @@ class NetworkDataRequest( ContextBase ):
                         # ERROR - required elements of spec missing.  could not filter.
                         status_message = "In {}(): ERROR - required elements of filter spec missing for this type: {}, from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
-                    
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
+
                     #-- END check to see if OK --#
                     
-                #-- END check to see if recursive type, or atomic. --#
+                #-- END check to see if aggregate type, or atomic. --#
                 
             else:
             
                 # ERROR - unknown comparison type.
                 status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                status_code = StatusContainer.STATUS_CODE_ERROR
+                status_OUT.set_status_code( status_code )
+                status_OUT.add_message( status_message )
             
             #-- END check to see if valid comparison type. --#   
             
@@ -1231,10 +1397,13 @@ class NetworkDataRequest( ContextBase ):
             # ERROR - no spec passed in.
             status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            status_code = StatusContainer.STATUS_CODE_ERROR
+            status_OUT.set_status_code( status_code )
+            status_OUT.add_message( status_message )
 
         #-- END check to make sure spec passed in. --#
         
-        return q_OUT
+        return status_OUT
         
     #-- END method build_filter_spec_relation_trait_q() --#
 
@@ -1242,12 +1411,13 @@ class NetworkDataRequest( ContextBase ):
     def build_filter_spec_relation_type_slug_q( self, filter_spec_IN ):
         
         # return reference
-        q_OUT = None
+        status_OUT = None
         
         # declare variables
         me = "build_filter_spec_relation_type_slug_q"
         debug_flag = None
         status_message = None
+        status_code = None
         filter_spec = None
         filter_comparison_type = None
         filter_name = None
@@ -1265,6 +1435,8 @@ class NetworkDataRequest( ContextBase ):
         # init
         is_ok = True
         debug_flag = self.DEBUG_FLAG
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
         
         # got a filter spec passed in?
         if ( filter_spec_IN is not None ):
@@ -1278,15 +1450,15 @@ class NetworkDataRequest( ContextBase ):
             # valid type?
             if ( filter_comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
             
-                # figure out what to do based on type - recursive or not?
-                if ( filter_comparison_type in self.RECURSIVE_COMPARISON_TYPE_LIST ):
+                # figure out what to do based on type - aggregate or not?
+                if ( filter_comparison_type in self.AGGREGATE_COMPARISON_TYPE_LIST ):
                 
                     # call method to build aggregate Q from filter spec.
-                    q_OUT = self.build_filter_spec_aggregate_q( filter_spec )
+                    status_OUT = self.build_filter_spec_aggregate_q( filter_spec )
                     
                 else:
                 
-                    # not recursive, retrieve values
+                    # not aggregate, retrieve values
                     filter_name = filter_spec.get_name()  # name of identifier
                     filter_type_id = filter_spec.get_type_id()
                     filter_type_label = filter_spec.get_type_label()
@@ -1323,6 +1495,11 @@ class NetworkDataRequest( ContextBase ):
                             # ERROR - invalid comparison type for this filter type.
                             status_message = "In {}(): ERROR - comparison type {} is not valid for filter type {} ( from filter spec: {} ).  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                            status_code = StatusContainer.STATUS_CODE_ERROR
+                            status_OUT.set_status_code( status_code )
+                            status_OUT.add_message( status_message )
+
+                            # Not OK.
                             is_ok = False
                                                     
                         else:
@@ -1330,6 +1507,11 @@ class NetworkDataRequest( ContextBase ):
                             # ERROR - unknown comparison type.
                             status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                            status_code = StatusContainer.STATUS_CODE_ERROR
+                            status_OUT.set_status_code( status_code )
+                            status_OUT.add_message( status_message )
+
+                            # Not OK.
                             is_ok = False
                         
                         #-- END check to see what comparison type. --#
@@ -1337,9 +1519,15 @@ class NetworkDataRequest( ContextBase ):
                         # everything still OK?
                         if ( is_ok == True ):
                         
-                            # OK!  Return current_q.
-                            q_OUT = current_q
+                            # OK!  store in filter_spec.
+                            filter_spec.set_my_q( current_q )
                                                         
+                        else:
+                        
+                            # no need for more error messages - status has been
+                            #     set above
+                            pass
+                        
                         #-- END check to see if everything OK after finding matching entities --#
                         
                     else:
@@ -1347,17 +1535,23 @@ class NetworkDataRequest( ContextBase ):
                         # ERROR - required elements of spec missing.  could not filter.
                         status_message = "In {}(): ERROR - required elements of filter spec missing for this type: {}, from filter spec: {}.  Doing nothing.".format( me, filter_comparison_type, filter_spec )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )                        
+                        status_code = StatusContainer.STATUS_CODE_ERROR
+                        status_OUT.set_status_code( status_code )
+                        status_OUT.add_message( status_message )
                     
                     #-- END check to see if OK --#
                     
-                #-- END check to see if recursive type, or atomic. --#
+                #-- END check to see if aggregate type, or atomic. --#
                 
             else:
             
                 # ERROR - unknown comparison type.
                 status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, filter_comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-            
+                status_code = StatusContainer.STATUS_CODE_ERROR
+                status_OUT.set_status_code( status_code )
+                status_OUT.add_message( status_message )
+                
             #-- END check to see if valid comparison type. --#   
             
         else:
@@ -1365,10 +1559,13 @@ class NetworkDataRequest( ContextBase ):
             # ERROR - no spec passed in.
             status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            status_code = StatusContainer.STATUS_CODE_ERROR
+            status_OUT.set_status_code( status_code )
+            status_OUT.add_message( status_message )
 
         #-- END check to make sure spec passed in. --#
         
-        return q_OUT
+        return status_OUT
         
     #-- END method build_filter_spec_relation_type_slug_q() --#
 
@@ -1458,7 +1655,8 @@ class NetworkDataRequest( ContextBase ):
         selection_filters = None
         filter_spec_dict = None
         filter_spec = None
-        result_q = None
+        result_status = None
+        result_status_is_error = None
         
         # initialize.
         debug_flag = self.DEBUG_FLAG
@@ -1490,15 +1688,23 @@ class NetworkDataRequest( ContextBase ):
                 #-- END initialize QuerySet --#
             
                 # call method build_filter_spec_q()
-                result_q = self.build_filter_spec_q( filter_spec )
+                result_status = self.build_filter_spec_q( filter_spec )
+
+                # errors?
+                result_status_is_error = result_status.is_error()
+                if ( result_status_is_error == True ):
                 
-                # if result_q is not None, filter.
-                if ( result_q is not None ):
+                    # set status to error, add a message, then nest the
+                    #     StatusContainer instance.
+                    status_message = "In {}(): ERROR - errors creating Q() for filter spec {}; StatusContainer: {}".format( me, filter_spec, result_status )
+                    self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
                 
-                    # got something.  Filter and return.
-                    qs_OUT = qs_OUT.filter( result_q )
+                else:
                 
-                #-- END check to see if result_q has anything in it. --#
+                    # call the method to filter based on a filter_spec.
+                    qs_OUT = self.filter_relations_by_filter_spec( qs_OUT, filter_spec )
+                
+                #-- END check to see if errors. --#
                 
             else:
     
@@ -1519,6 +1725,248 @@ class NetworkDataRequest( ContextBase ):
         return qs_OUT
 
     #-- end method filter_relations() ---------------------------#
+
+
+    def filter_relations_by_filter_spec( self, qs_IN, filter_spec_IN, level_IN = 0, do_compact_queryset_IN = False ):
+        
+        '''
+        Accepts Entity_Relation QuerySet and filter spec.  Filters the QuerySet
+            as specified in the filter spec.  If the filter spec is an aggregate
+            type (AND or OR), deal appropriately with the type (more details
+            below).  Returns the filtered QuerySet that results.
+            
+            Aggregate type processing:
+            - AND - calls .filter() on each filter criteria in child filters.
+            - OR - uses "|" to OR the Q()s in children together.
+            
+            Note: This will work for a two-level deep set of filters.  Anything
+            past that and you probably want to chuck your data into a graph
+            store like neo4j.
+            
+        Preconditions: assumes that the method build_filter_spec_q() has been
+            called on the filter spec passed in.  If not, does not do anything.
+        '''
+        
+        # return reference
+        qs_OUT = None
+        
+        # declare variables
+        me = "filter_relations_by_filter_spec"
+        debug_flag = False
+        status_message = None
+        status_code = None
+        filter_spec = None
+        filter_type = None
+        comparison_type = None
+        method_name = None
+        method_pointer = None
+        result_status = None
+        result_status_is_error = None
+        filter_q = None
+        
+        # declare variables - processing an aggregate filter spec.
+        child_filter_spec_list = None
+        child_filter_spec = None
+        child_comparison_type = None
+        child_q = None
+        child_q_list = None
+        child_counter = None
+        has_child_aggregate = None
+        combined_q = None
+        
+        # compacting queryset
+        relation_id_list = None
+        temp_qs = None
+        
+        # init
+        debug_flag = self.DEBUG_FLAG
+        #debug_flag = True
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+
+        status_message = "\n\nIn {}():\n- filter = {}\n- level = {}".format( me, filter_spec_IN, level_IN )
+        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
+        
+        # got a filter spec passed in?
+        if ( filter_spec_IN is not None ):
+
+            status_message = "- filter dict:\{}".format( filter_spec_IN.output_filter_spec_as_json_string() )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
+    
+            # make FilterSpec instance and load dictionary
+            filter_spec = filter_spec_IN
+
+            # initialize QuerySet - QuerySet passed in?
+            if ( qs_IN is not None ):
+            
+                # use QuerySet passed in.
+                qs_OUT = qs_IN
+                
+            else:
+            
+                # start with all relations.
+                qs_OUT = Entity_Relation.objects.all()
+                
+            #-- END initialize QuerySet --#
+        
+            # retrieve comparison type
+            comparison_type = filter_spec.get_comparison_type()
+            
+            status_message = "- comparison type = {}".format( comparison_type )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
+
+            # valid type?
+            if ( comparison_type in FilterSpec.COMPARISON_TYPE_VALUES ):
+            
+                # figure out what to do based on type - aggregate or not?
+                if ( comparison_type in self.AGGREGATE_COMPARISON_TYPE_LIST ):
+                
+                    # ! ----> try to process child Q list
+                    child_filter_spec_list = filter_spec.get_child_filter_spec_list()
+                    child_q_list = []
+                    child_counter = 0
+
+                    status_message = "\n\n----> In {}(): aggregate ( {} ) filter_spec.  Looping over {} children ( {} ).".format( me, comparison_type, len( child_filter_spec_list ), child_filter_spec_list )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
+
+                    for child_filter_spec in child_filter_spec_list:
+                    
+                        # increment counter
+                        child_counter += 1
+                    
+                        # get comparison type
+                        child_comparison_type = child_filter_spec.get_comparison_type()
+                        
+                        status_message = "\n\n--------> In {}(): child item #{} - JSON:\n{}".format( me, child_counter, child_filter_spec.output_filter_spec_as_json_string() )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
+                        
+                        # figure out what to do based on type - aggregate (AND or OR)?
+                        if ( child_comparison_type not in self.AGGREGATE_COMPARISON_TYPE_LIST ):
+                        
+                            # get Q
+                            child_q = child_filter_spec.get_my_q()
+                        
+                            # add to list.
+                            child_q_list.append( child_q )
+                                                    
+                        else:
+                        
+                            # child aggregate type.
+                            status_message = "In {}(): Child is an aggregate filter type ( {} ).  Making recursive call to filter_relations_by_filter_spec() ( filter spec: {} ).  ( level: {} ). ".format( me, child_comparison_type, child_filter_spec, level_IN )
+                            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
+
+                            # call me and let me deal with it (this is likely broken).
+                            qs_OUT = self.filter_relations_by_filter_spec( qs_OUT, child_filter_spec, level_IN = level_IN + 1 )
+                            
+                            # compact?
+                            if ( do_compact_queryset_IN == True ):
+                            
+                                # yes, compact.
+                                qs_OUT = self.compact_entity_relation_queryset( qs_OUT )
+                            
+                            #-- END check to see if we compact QuerySet --#
+                                                    
+                        #-- END check to see if child FilterSpec is also an aggregate. --#
+                        
+                    #-- END loop over child filter specs. --#
+                    
+                    # ! ----> is combined_q empty?
+                    if ( ( child_q_list is not None ) and ( len ( child_q_list ) > 0 ) ):
+                    
+                        # we have Qs - what comparison type?
+                        if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND ):
+                        
+                            # AND - loop over list, filter on each.
+                            for child_q in child_q_list:
+                            
+                                # filter on the Q() instance
+                                qs_OUT = qs_OUT.filter( child_q )
+                                
+                            #-- END loop over child Q() instances. --#
+
+                        elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR ):
+                            
+                            # OR - loop over list, create combined Q() with |
+                            combined_q = None
+                            for child_q in child_q_list:
+                            
+                                # is this the first Q()?
+                                if ( combined_q is None ):
+                                
+                                    # first in list.  set combined_q to child_q.
+                                    combined_q = child_q
+                                    
+                                else:
+                                
+                                    # append with |
+                                    combined_q = combined_q | child_q
+                                    
+                                #-- END check to see if combined_q is None --#
+                                
+                            #-- END loop over child Q() instances. --#
+                        
+                            # filter on the combined Q()
+                            qs_OUT = qs_OUT.filter( combined_q )
+
+                            # compact?
+                            if ( do_compact_queryset_IN == True ):
+                            
+                                # yes, compact.
+                                qs_OUT = self.compact_entity_relation_queryset( qs_OUT )
+                            
+                            #-- END check to see if we compact QuerySet --#
+                                                    
+                        else:
+                        
+                            # ERROR.
+                            status_message = "In {}(): ERROR - In aggregate part of method, comparison_type is not AND or OR ( {} ).  Doing nothing.".format( me, comparison_type )
+                            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                        
+                        #-- END check to see if AND or OR --#
+
+                    #-- END check to see if combined_q --#
+                    
+                else:
+                
+                    status_message = "\n\n----> In {}(): basic filter_spec".format( me )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
+        
+                    # not aggregate - retrieve the Q for the FilterSpec, use it
+                    #     to filter.
+                    filter_q = filter_spec.get_my_q()
+                    
+                    # use it to filter relations.
+                    qs_OUT = qs_OUT.filter( filter_q )
+
+                    # compact?
+                    if ( do_compact_queryset_IN == True ):
+                    
+                        # yes, compact.
+                        qs_OUT = self.compact_entity_relation_queryset( qs_OUT )
+                    
+                    #-- END check to see if we compact QuerySet --#
+
+                #-- END check to see if aggregate or not.
+                                
+            else:
+            
+                # ERROR - unknown comparison type.
+                status_message = "In {}(): ERROR - unknown valid comparison type: {}, from filter spec: {}.  Doing nothing.  Valid types: {}".format( me, comparison_type, filter_spec, FilterSpec.COMPARISON_TYPE_VALUES )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                
+            #-- END check to see if valid comparison type. --#   
+            
+        else:
+        
+            # ERROR - no spec passed in.
+            status_message = "In {}(): ERROR - no filter spec passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+
+        #-- END check to make sure spec passed in. --#
+        
+        return qs_OUT
+        
+    #-- END method filter_relations_by_filter_spec() --#
 
 
     def get_entity_selection( self ):

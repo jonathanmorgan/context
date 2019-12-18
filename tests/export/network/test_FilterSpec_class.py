@@ -54,6 +54,7 @@ class FilterSpecTest( django.test.TestCase ):
     TEST_SET_FILTER_SPEC_PROPERTY_NAME = "test_set_filter_spec_property_name"
     TEST_SET_FILTER_SPEC_PROPERTY = "test_set_filter_spec_property"
     TEST_SET_FILTER_TYPE = "test_set_filter_type"
+    TEST_SET_MY_Q = "test_set_my_q"
     TEST_SET_NAME = "test_set_name"
     TEST_SET_RELATION_ROLES_LIST = [ FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM, FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO ]
     TEST_SET_TYPE_ID = "test_set_type_id"
@@ -122,6 +123,121 @@ class FilterSpecTest( django.test.TestCase ):
     #----------------------------------------------------------------------------
     # ! ==> instance methods - tests
     #----------------------------------------------------------------------------
+
+
+    def test_child_filter_set_list( self ):
+
+        # declare variables
+        me = "test_child_filter_set_list"
+        debug_flag = None
+        test_instance = None
+        test_method = None
+        original_value = None
+        new_value = None
+        test_value = None
+        should_be = None
+        error_string = None
+        test_list = None
+        test_list_count = None
+        test_filter_spec = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # create a test instance    
+        test_instance = FilterSpec()
+        
+        # Test:
+        # - get original value and store (should be empty list)
+        # - set new value (new list, with something in it)
+        # - get value.
+        # - assertEquals( get value, new value )
+        # - assertNotEqual( get value, original value )
+        
+        # get
+        test_list = test_instance.get_child_filter_spec_list()
+        original_value = test_list
+        
+        # list should not be none...
+        test_value = test_list
+        error_string = "Retrieving initial child filter spec list for filter spec {}, returned None".format( test_instance )
+        self.assertIsNotNone( test_value, msg = error_string )
+
+        # ...should have length 0.
+        test_value = len( test_list )
+        should_be = 0
+        error_string = "new list length = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # add an item
+        test_filter_spec = FilterSpec()
+        test_instance.add_to_child_filter_spec_list( test_filter_spec )
+
+        # previously retrieved list should now have length 1
+        test_value = len( test_list )
+        should_be = 1
+        error_string = "new list length = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # add an item
+        test_filter_spec = FilterSpec()
+        test_instance.add_to_child_filter_spec_list( test_filter_spec )
+
+        # previously retrieved list should now have length 2
+        test_value = len( test_list )
+        should_be = 2
+        error_string = "new list length = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # get
+        test_list = test_instance.get_child_filter_spec_list()
+        
+        # should have length 2
+        test_value = len( test_list )
+        should_be = 2
+        error_string = "new list length = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # should be equal to original_list
+        test_value = test_list
+        should_be = original_value
+        error_string = "list retrieved from instance = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # make totally new list.
+        new_list = []
+        new_list.append( FilterSpec() )
+        new_list.append( FilterSpec() )
+        new_list.append( FilterSpec() )
+        
+        # set list in instance.
+        test_instance.set_child_filter_spec_list( new_list )
+        
+        # get list
+        test_list = test_instance.get_child_filter_spec_list()
+        
+        # should not be equal to original list
+        test_value = test_list
+        should_not_be = original_value
+        error_string = "new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # should be equal to new_list
+        test_value = test_list
+        should_be = new_list
+        error_string = "list retrieved from instance = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # should have length 3
+        test_value = len( test_list )
+        should_be = 3
+        error_string = "new list length = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+    #-- END test method test_child_filter_set_list() --#
 
 
     def test_getters_and_setters( self ):
@@ -318,6 +434,40 @@ class FilterSpecTest( django.test.TestCase ):
         new_value = "{}{}".format( self.TEST_SET_FILTER_TYPE, self.TEST_AGAIN )
         test_instance.set_filter_type( new_value )
         test_value = test_instance.get_filter_type()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! --------> set_my_q()
+        test_method = "set_my_q"
+        original_value = test_instance.get_my_q()
+        new_value = self.TEST_SET_MY_Q
+        test_instance.set_my_q( new_value )
+        test_value = test_instance.get_my_q()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # set it again.
+        original_value = test_instance.get_my_q()
+        new_value = "{}{}".format( self.TEST_SET_MY_Q, self.TEST_AGAIN )
+        test_instance.set_my_q( new_value )
+        test_value = test_instance.get_my_q()
 
         # new should equal test
         should_be = new_value

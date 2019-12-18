@@ -122,7 +122,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         TestHelper.standardSetUp( self, fixture_list_IN = TestHelper.FIXTURE_LIST_DATA )
         
         # debug flag
-        NetworkDataRequest.DEBUG_FLAG = True
+        #NetworkDataRequest.DEBUG_FLAG = True
 
     #-- END function setUp() --#
         
@@ -199,7 +199,8 @@ class NetworkDataRequestTest( django.test.TestCase ):
     def validate_filter_spec( self,
                               test_instance_IN,
                               filter_spec_IN,
-                              result_count_IN ):
+                              result_count_IN,
+                              do_compact_queryset_IN = False ):
         
         # declare variables
         me = "validate_filter_spec"
@@ -207,13 +208,13 @@ class NetworkDataRequestTest( django.test.TestCase ):
         test_filter_spec = None
         result_count = None
         relation_qs = None
-        comparison_type = None
-        method_name = None
-        method_pointer = None
+        filter_comparison_type = None
         test_q = None
         test_value = None
         should_be = None
         error_string = None
+        result_status = None
+        result_status_is_error = None
         test_qs = None
         test_count = None
         
@@ -224,17 +225,22 @@ class NetworkDataRequestTest( django.test.TestCase ):
         relation_qs = Entity_Relation.objects.all()
         
         # call the appropriate build method.
-        test_q = test_instance.build_filter_spec_q( test_filter_spec )
+        result_status = test_instance.build_filter_spec_q( test_filter_spec )
         
-        # test_q should not be None
-        test_value = test_q
-        error_string = "Retrieving Q() for filter spec {}, returned None".format( test_filter_spec )
-        self.assertIsNotNone( test_value, msg = error_string )
+        # assert no error
+        result_status_is_error = result_status.is_error()
+        test_value = result_status_is_error
+        should_be = False
+        error_string = "Processing filter spec {}, got error status ( {}, should be {} ) from build_filter_spec_q(): {}.".format( test_filter_spec, test_value, should_be, result_status )
+        self.assertEqual( test_value, should_be, msg = error_string )        
         
-        # use it to filter relations.
-        test_qs = relation_qs.filter( test_q )
+        # let filter_relations_by_filter_spec() figure out what to do based on
+        #     type - aggregate or not...
+        test_qs = test_instance.filter_relations_by_filter_spec( relation_qs,
+                                                                 test_filter_spec,
+                                                                 do_compact_queryset_IN = do_compact_queryset_IN )
         test_count = test_qs.count()
-
+    
         # should be value passed in.
         test_value = test_count
         should_be = result_count
@@ -493,10 +499,13 @@ class NetworkDataRequestTest( django.test.TestCase ):
         test_filter_spec = None
         test_filter_type = None
         test_role_list = None
-        test_qs = None
-        test_count = None
         test_value_list = None
+        test_filter_json_dict = None
         nested_test_filter_list = None
+        simple_1_filter_spec = None
+        complex_1_filter_spec = None
+        test_q_list = None
+        test_filter_spec_json_string = None
         
         # init debug
         debug_flag = self.DEBUG
@@ -512,9 +521,11 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # ! ----> simple - 1 level - entity type slug
         #----------------------------------------------------------------------#
         
+        print( "\n\n------------------------------\nsimple - 1 level - entity type slug\n------------------------------" )
         test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TYPE_SLUG
         test_filter_list = []
         
+        #----------------------------------------------------------------------#
         # --------> filter 1 - FROM entity type slug = "person"
         test_filter_spec = FilterSpec()
         test_filter_spec.set_filter_type( test_filter_type )
@@ -531,8 +542,10 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
        
         # add to list
-        test_filter_list.append( test_filter_spec )
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
 
+        #----------------------------------------------------------------------#
         # --------> filter 2 - TO entity type slug = "person"
         test_filter_spec = FilterSpec()
         test_filter_spec.set_filter_type( test_filter_type )
@@ -549,8 +562,10 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
        
         # add to list
-        test_filter_list.append( test_filter_spec )
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
 
+        #----------------------------------------------------------------------#
         # --------> filter 3 - THROUGH entity type slug = "article"
         test_filter_spec = FilterSpec()
         test_filter_spec.set_filter_type( test_filter_type )
@@ -567,8 +582,9 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
        
         # add to list
-        test_filter_list.append( test_filter_spec )
-        
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+
         # ! --------> AND
         
         test_filter_spec = FilterSpec()
@@ -580,7 +596,8 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # validate
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
-        # and, add to nested test list.
+        # and, store for later.
+        simple_1_filter_spec = test_filter_spec
         nested_test_filter_list.append( test_filter_spec )
 
         # ! --------> OR
@@ -598,9 +615,12 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # ! ----> more complex - 1 level - relation_trait
         #----------------------------------------------------------------------#
         
+        print( "\n\n------------------------------\nmore complex - 1 level - relation_trait\n------------------------------" )
         test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TRAIT
         test_filter_list = []
+        test_q_list = []
         
+        #----------------------------------------------------------------------#
         # --------> filter 1 - pub_date in range 2009-12-01 to 2009-12-31
         test_filter_spec = FilterSpec()
         test_filter_spec.set_filter_type( test_filter_type )
@@ -614,10 +634,12 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # add to list
-        test_filter_list.append( test_filter_spec )
+        test_q_list.append( test_filter_spec.get_my_q() )
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
 
+        #----------------------------------------------------------------------#
         # --------> filter 2 - coder user in "automated"
-
         test_filter_spec = FilterSpec()
         test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "sourcenet-coder-User-username" )
@@ -631,10 +653,12 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # add to list
-        test_filter_list.append( test_filter_spec )
+        test_q_list.append( test_filter_spec.get_my_q() )
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
 
+        #----------------------------------------------------------------------#
         # --------> filter 3 - coder type in "OpenCalais_REST_API_v2"
-
         test_filter_spec = FilterSpec()
         test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_name( "coder_type" )
@@ -648,7 +672,25 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
         # add to list
-        test_filter_list.append( test_filter_spec )
+        test_q_list.append( test_filter_spec.get_my_q() )
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        # ! --------> base test
+        
+        test_qs = Entity_Relation.objects.all()
+        for current_q in test_q_list:
+        
+            test_qs = test_qs.filter( current_q )
+            
+        #-- END loop over Q instances --#
+        test_count = test_qs.count()
+
+        # should be value passed in.
+        test_value = test_count
+        should_be = 1433
+        error_string = "Processing complex single-level filter spec by hand, found {} relations, should_be: {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )        
 
         # ! --------> AND
         
@@ -656,14 +698,106 @@ class NetworkDataRequestTest( django.test.TestCase ):
         test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
         test_filter_spec.set_value_list( test_filter_list )
-        should_be = 0
+        should_be = 1433
         
         # validate
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
         
-        # and, add to nested test list.
+        # and, store for later.
+        complex_1_filter_spec = test_filter_spec
         nested_test_filter_list.append( test_filter_spec )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> 2 level - relation type slug, relation trait, entity type slug, entity trait
+        #----------------------------------------------------------------------#
+        
+        print( "\n\n------------------------------\n2 level - relation type slug, relation trait, entity type slug, entity trait\n------------------------------" )
+        test_filter_list = []
+        
+        #----------------------------------------------------------------------#
+        # --------> filter 1 - relation_type_slug in "mentioned", "quoted", "shared_byline"
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TYPE_SLUG
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "mentioned" )
+        test_value_list.append( "quoted" )
+        test_value_list.append( "shared_byline" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 437
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        #----------------------------------------------------------------------#
+        # --------> filter 2 - simple_1_filter_spec
+        
+        # validate
+        test_filter_spec = simple_1_filter_spec
+        should_be = 2320
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
 
+        #----------------------------------------------------------------------#
+        # --------> filter 3 - complex_1_filter_spec
+        
+        # validate
+        test_filter_spec = complex_1_filter_spec
+        should_be = 1433
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        #----------------------------------------------------------------------#
+        # --------> filter 4 - entity trait "sourcenet-Newspaper-ID" IN 1
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TRAIT
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "sourcenet-Newspaper-ID" )
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_filter_spec.set_value_list( [ 1 ] )
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 945
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        # ! --------> AND
+        
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_AND
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+        test_filter_spec.set_value_list( test_filter_list )
+        should_be = 112
+        
+        # print the JSON
+        test_filter_spec_json_string = test_filter_spec.output_filter_spec_as_json_string()
+        print( "\n\n2-level filter spec test - JSON:\n{}".format( test_filter_spec_json_string ) )
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+        #self.validate_filter_spec( test_instance, test_filter_spec, should_be, do_compact_queryset_IN = False )
+        #self.validate_filter_spec( test_instance, test_filter_spec, should_be, do_compact_queryset_IN = True )
+        
     #-- END test method build_filter_spec_aggregate_q() --#
 
 
@@ -673,7 +807,6 @@ class NetworkDataRequestTest( django.test.TestCase ):
         me = "test_build_filter_spec_entity_id_q"
         debug_flag = None
         test_instance = None
-        test_q = None
         test_value = None
         relation_qs = None
         should_be = None
@@ -1366,7 +1499,6 @@ class NetworkDataRequestTest( django.test.TestCase ):
         me = "test_build_filter_spec_entity_trait_q"
         debug_flag = None
         test_instance = None
-        test_q = None
         test_value = None
         relation_qs = None
         should_be = None
@@ -1795,7 +1927,6 @@ class NetworkDataRequestTest( django.test.TestCase ):
         me = "test_build_filter_spec_entity_type_slug_q"
         debug_flag = None
         test_instance = None
-        test_q = None
         test_value = None
         relation_qs = None
         should_be = None
@@ -2122,7 +2253,6 @@ class NetworkDataRequestTest( django.test.TestCase ):
         debug_flag = None
         test_filter_type = None
         test_instance = None
-        test_q = None
         test_value = None
         relation_qs = None
         should_be = None
@@ -2327,7 +2457,6 @@ class NetworkDataRequestTest( django.test.TestCase ):
         me = "test_build_filter_spec_relation_trait_q"
         debug_flag = None
         test_instance = None
-        test_q = None
         test_value = None
         relation_qs = None
         should_be = None
@@ -2464,7 +2593,6 @@ class NetworkDataRequestTest( django.test.TestCase ):
         me = "test_build_filter_spec_relation_type_slug_q"
         debug_flag = None
         test_instance = None
-        test_q = None
         test_value = None
         relation_qs = None
         should_be = None
