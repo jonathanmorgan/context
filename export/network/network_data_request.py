@@ -137,8 +137,8 @@ class NetworkDataRequest( ContextBase ):
     FILTER_TYPE_ENTITY_TYPE_SLUG = "entity_type_slug"
     FILTER_TYPE_ENTITY_TRAIT = "entity_trait"
     FILTER_TYPE_ENTITY_ID = "entity_id"
-    FILTER_TYPE_AND = FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_AND
-    FILTER_TYPE_OR = FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_OR
+    FILTER_TYPE_AND = ContextBase.STRING_AND
+    FILTER_TYPE_OR = ContextBase.STRING_OR
     FILTER_TYPE_LIST = []
     FILTER_TYPE_LIST.append( FILTER_TYPE_RELATION_TYPE_SLUG )
     FILTER_TYPE_LIST.append( FILTER_TYPE_RELATION_TRAIT )
@@ -162,6 +162,8 @@ class NetworkDataRequest( ContextBase ):
     # ! ----> filter spec - comparison types
     AGGREGATE_COMPARISON_TYPE_LIST = []
     AGGREGATE_COMPARISON_TYPE_LIST.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+    AGGREGATE_COMPARISON_TYPE_LIST.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND_FILTER )
+    AGGREGATE_COMPARISON_TYPE_LIST.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND_AMPERSAND )
     AGGREGATE_COMPARISON_TYPE_LIST.append( FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR )
     
     
@@ -178,23 +180,8 @@ class NetworkDataRequest( ContextBase ):
     #--------------------------------------------------------------------------#
     # ! ----> filter criteria - traits
     
-    # trait_filter_combine_type values
-    PROP_VALUE_TRAIT_FILTER_COMBINE_TYPE_AND = ContextBase.STRING_AND
-    PROP_VALUE_TRAIT_FILTER_COMBINE_TYPE_OR = ContextBase.STRING_OR
-    PROP_VALUE_TRAIT_FILTER_COMBINE_TYPE_DEFAULT = PROP_VALUE_TRAIT_FILTER_COMBINE_TYPE_AND
-    TRAIT_FILTER_COMBINE_TYPE_VALUES = FilterSpec.FILTER_COMBINE_TYPE_VALUES
-
     # reserved trait values
     TRAIT_VALUE_EMPTY = ContextBase.STRING_EMPTY
-
-    #--------------------------------------------------------------------------#
-    # ! ----> filter criteria - entity identifiers
-
-    # id_filter_combine_type values
-    PROP_VALUE_ID_FILTER_COMBINE_TYPE_AND = ContextBase.STRING_AND
-    PROP_VALUE_ID_FILTER_COMBINE_TYPE_OR = ContextBase.STRING_OR
-    PROP_VALUE_ID_FILTER_COMBINE_TYPE_DEFAULT = PROP_VALUE_ID_FILTER_COMBINE_TYPE_AND
-    ID_FILTER_COMBINE_TYPE_VALUES = FilterSpec.FILTER_COMBINE_TYPE_VALUES
 
 
     #-----------------------------------------------------------------------------
@@ -321,7 +308,6 @@ class NetworkDataRequest( ContextBase ):
         comparison_type = None
         filter_type = None
         filter_spec_dict_list = None
-        filter_combine_type = None
         filter_spec_dict = None
         filter_spec = None
         result_status = None
@@ -354,65 +340,42 @@ class NetworkDataRequest( ContextBase ):
                 # comparison type is AND or OR - nested list of filter specs OK?
                 filter_spec_dict_list = filter_spec_IN.get_value_list()
                 if ( ( filter_spec_dict_list is not None ) and ( len( filter_spec_dict_list ) > 0 ) ):
-                
-                    # make sure we have a type
-                    filter_combine_type = comparison_type
-                    if ( ( filter_combine_type is None ) or ( filter_combine_type != "" ) ):
+                                        
+                    # loop over filters, build a Q() list.
+                    for filter_spec_dict in filter_spec_dict_list:
                     
-                        # use default.
-                        filter_combine_type = FilterSpec.PROP_VALUE_FILTER_COMBINE_TYPE_DEFAULT
+                        if ( debug_flag == True ):
+                            status_message = "In {}(): looping over nested spec JSON, current JSON: {}".format( me, filter_spec_dict )
+                            self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.DEBUG )
+                        #-- END DEBUG --#
+            
+                        # load into FilterSpec instance.
+                        filter_spec = FilterSpec()
+                        filter_spec.set_filter_spec( filter_spec_dict )
                         
-                    #-- END check to see if combine type passed in. --#
+                        # add FilterSpec to my list.
+                        filter_spec_IN.add_to_child_filter_spec_list( filter_spec )
                         
-                    # make sure combine type is valid.
-                    if ( filter_combine_type in FilterSpec.FILTER_COMBINE_TYPE_VALUES ):
-                                    
-                        # loop over filters, build a Q() list.
-                        for filter_spec_dict in filter_spec_dict_list:
-                        
-                            if ( debug_flag == True ):
-                                status_message = "In {}(): looping over nested spec JSON, current JSON: {}".format( me, filter_spec_dict )
-                                self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.DEBUG )
-                            #-- END DEBUG --#
-                
-                            # load into FilterSpec instance.
-                            filter_spec = FilterSpec()
-                            filter_spec.set_filter_spec( filter_spec_dict )
-                            
-                            # add FilterSpec to my list.
-                            filter_spec_IN.add_to_child_filter_spec_list( filter_spec )
-                            
-                            # call the method to create a Q() filter based on type.
-                            result_status = self.build_filter_spec_q( filter_spec )
+                        # call the method to create a Q() filter based on type.
+                        result_status = self.build_filter_spec_q( filter_spec )
 
-                            # errors?
-                            result_status_is_error = result_status.is_error()
-                            if ( result_status_is_error == True ):
-                            
-                                # set status to error, add a message, then nest
-                                #     the StatusContainer instance.
-                                status_message = "In {}(): ERROR - error returned by build_filter_spec_q() for filter_spec: {}; See nested StatusContainer for more details.".format( me, filter_spec )
-                                self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
-                                status_code = StatusContainer.STATUS_CODE_ERROR
-                                status_OUT.set_status_code( status_code )
-                                status_OUT.add_message( status_message )
-                                status_OUT.add_status_container( result_status )
-                            
-                            #-- END check to see if errors. --#
+                        # errors?
+                        result_status_is_error = result_status.is_error()
+                        if ( result_status_is_error == True ):
+                        
+                            # set status to error, add a message, then nest
+                            #     the StatusContainer instance.
+                            status_message = "In {}(): ERROR - error returned by build_filter_spec_q() for filter_spec: {}; See nested StatusContainer for more details.".format( me, filter_spec )
+                            self.output_message( status_message, do_print_IN = self.DEBUG_FLAG, log_level_code_IN = logging.ERROR )
+                            status_code = StatusContainer.STATUS_CODE_ERROR
+                            status_OUT.set_status_code( status_code )
+                            status_OUT.add_message( status_message )
+                            status_OUT.add_status_container( result_status )
+                        
+                        #-- END check to see if errors. --#
 
-                        #-- END loop over filter specs. --#
-                                                                
-                    else:
-                    
-                        # ERROR - unknown combine type.
-                        status_message = "In {}(): ERROR - unknown combine type {}, nothing to do.  Valid types: {}".format( me, filter_combine_type, FilterSpec.FILTER_COMBINE_TYPE_VALUES )
-                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                        status_code = StatusContainer.STATUS_CODE_ERROR
-                        status_OUT.set_status_code( status_code )
-                        status_OUT.add_message( status_message )
-                        
-                    #-- END check to make sure combine type is known and valid --#    
-                        
+                    #-- END loop over filter specs. --#
+                                                            
                 else:
                 
                     # ERROR - no filter list passed in.
@@ -1837,7 +1800,7 @@ class NetworkDataRequest( ContextBase ):
                         # get comparison type
                         child_comparison_type = child_filter_spec.get_comparison_type()
                         
-                        status_message = "\n\n--------> In {}(): child item #{} - JSON:\n{}".format( me, child_counter, child_filter_spec.output_filter_spec_as_json_string() )
+                        status_message = "\n\n--------> In {}(): child item #{} - comparison type = {}; JSON:\n{}".format( me, child_counter, child_comparison_type, child_filter_spec.to_json_string() )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
                         
                         # figure out what to do based on type - aggregate (AND or OR)?
@@ -1845,17 +1808,64 @@ class NetworkDataRequest( ContextBase ):
                         
                             # get Q
                             child_q = child_filter_spec.get_my_q()
+
+                            # process based on comparison type.
+                            if ( ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+                                or ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND_FILTER ) ):
                         
-                            # add to list.
-                            child_q_list.append( child_q )
+                                # AND or AND_filter, so filter the query with
+                                #     each Q(), as we go.
+                                qs_OUT = qs_OUT.filter( child_q )
+                                
+                            elif ( ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR )
+                                or ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND_AMPERSAND ) ):
+                            
+                                # OR or AND_ampersand - add to list to combine
+                                #     later.
+                                child_q_list.append( child_q )
+                                
+                            else:
+                            
+                                # unknown comparison type.  Just filter?
+                                qs_OUT = qs_OUT.filter( child_q )
+                                
+                                # child aggregate type.
+                                status_message = "In {}(): Unknown but valid comparison type: ( {}, valid types: {} ).  adding it via .filter(), since I don't know what bitwise operator to use on it ( filter spec: {} ).  ( level: {} ). ".format( me, comparison_type, FilterSpec.COMPARISON_TYPE_VALUES, child_filter_spec, level_IN )
+                                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
+
+                            #-- END check to see how we process Q() based on comparison type. --#
                                                     
                         else:
                         
                             # child aggregate type.
-                            status_message = "In {}(): Child is an aggregate filter type ( {} ).  Making recursive call to filter_relations_by_filter_spec() ( filter spec: {} ).  ( level: {} ). ".format( me, child_comparison_type, child_filter_spec, level_IN )
+                            status_message = "In {}(): Child is an aggregate comparison type ( {} ).  Parent comparison type: {}  Making recursive call to filter_relations_by_filter_spec() ( filter spec: {} ).  ( level: {} ). ".format( me, child_comparison_type, comparison_type, child_filter_spec, level_IN )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
 
-                            # call me and let me deal with it (this is likely broken).
+                            # is comparison type one of those that shouldn't
+                            #     have nested aggregate comparison type?
+                            if ( ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR )
+                                or ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND_AMPERSAND ) ):
+                                
+                                # oh dear, it is.  Apologize for this not being
+                                #     a full-featured database.
+                                status_message = "ERROR (probably) - In {}(): Having a child aggregate comparison type ( {} ) inside OR or AND_ampersand comparison types ( current type: {} ) is not supported because of django's & operator for Q() objects not behaving the same as using filter() to AND a Q().  For now, this results in the nested aggregate filter being AND-ed to the QuerySet, not combined with the other filters.  This might work sometimes, and it will probably not out-and-out error, but it won't return correct results.  For 100% reliable execution, you'll need to write custom Python or SQL to filter the relations table like this, or migrate your data store to a graph database.  Sorry.  ( filter spec: {} ).  ( level: {} ). ".format( me, child_comparison_type, comparison_type, child_filter_spec, level_IN )
+                                self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+                                
+                            #-- END check to see if unsupported child comparison type. --#
+
+                            # call me and let me deal with it.  Notes:
+                            # - For AND and AND_filter, this is fine - it is
+                            #     just another thing added on via filter().
+                            # - For OR, this means that we have an out-of-stream
+                            #     thing that is being AND-ed.  This most likely
+                            #     effectively breaks the OR for at least some
+                            #     cases.
+                            # - For AND_ampersand, it is all AND-ed, but this
+                            #     one is filter()-ed separately, rather than
+                            #     bundled up in a single Q().  Probably trouble.
+                            # 
+                            # So, the take-away here is: If you use OR or
+                            #     AND_ampersand, don't AND or OR inside.
                             qs_OUT = self.filter_relations_by_filter_spec( qs_OUT, child_filter_spec, level_IN = level_IN + 1 )
                             
                             # compact?
@@ -1874,9 +1884,11 @@ class NetworkDataRequest( ContextBase ):
                     if ( ( child_q_list is not None ) and ( len ( child_q_list ) > 0 ) ):
                     
                         # we have Qs - what comparison type?
-                        if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND ):
+                        if ( ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+                            or ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND_FILTER ) ):
                         
-                            # AND - loop over list, filter on each.
+                            # AND - loop over list, filter on each.  BUT, you
+                            #     should never get here.
                             for child_q in child_q_list:
                             
                                 # filter on the Q() instance
@@ -1884,7 +1896,8 @@ class NetworkDataRequest( ContextBase ):
                                 
                             #-- END loop over child Q() instances. --#
 
-                        elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR ):
+                        elif ( ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR )
+                            or ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND_AMPERSAND ) ):
                             
                             # OR - loop over list, create combined Q() with |
                             combined_q = None
@@ -1898,8 +1911,24 @@ class NetworkDataRequest( ContextBase ):
                                     
                                 else:
                                 
-                                    # append with |
-                                    combined_q = combined_q | child_q
+                                    # append with...
+                                    if ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR ):
+                                    
+                                        # ...| (OR)
+                                        combined_q = combined_q | child_q
+                                        
+                                    elif ( comparison_type == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND_AMPERSAND ):
+                                    
+                                        # ...& (AND)
+                                        combined_q = combined_q & child_q
+                                    
+                                    else:
+                                    
+                                        # impossible.
+                                        status_message = "ERROR (impossible) - In {}(): comparison_type \"{}\" is neither OR nor AND_ampersand, but it had to be one of those two to get here. ( filter spec: {} ).  ( level: {} ). ".format( me, comparison_type, child_filter_spec, level_IN )
+                                        self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
+                                        
+                                    #-- END check to see how to append. --#
                                     
                                 #-- END check to see if combined_q is None --#
                                 
@@ -1919,7 +1948,7 @@ class NetworkDataRequest( ContextBase ):
                         else:
                         
                             # ERROR.
-                            status_message = "In {}(): ERROR - In aggregate part of method, comparison_type is not AND or OR ( {} ).  Doing nothing.".format( me, comparison_type )
+                            status_message = "In {}(): ERROR - In aggregate part of method, comparison_type is not a known aggregate type ( {}; known types: {} ).  Doing nothing.".format( me, comparison_type, self.AGGREGATE_COMPARISON_TYPE_LIST )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
                         
                         #-- END check to see if AND or OR --#

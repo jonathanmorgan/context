@@ -88,14 +88,6 @@ class FilterSpec( ContextBase ):
     PROP_NAME_VALUE_TO = "value_to"
     PROP_NAME_RELATION_ROLES_LIST = "relation_roles_list"
 
-    # filter_combine_type values
-    PROP_VALUE_FILTER_COMBINE_TYPE_AND = ContextBase.STRING_AND
-    PROP_VALUE_FILTER_COMBINE_TYPE_OR = ContextBase.STRING_OR
-    PROP_VALUE_FILTER_COMBINE_TYPE_DEFAULT = PROP_VALUE_FILTER_COMBINE_TYPE_AND
-    FILTER_COMBINE_TYPE_VALUES = []
-    FILTER_COMBINE_TYPE_VALUES.append( PROP_VALUE_FILTER_COMBINE_TYPE_AND )
-    FILTER_COMBINE_TYPE_VALUES.append( PROP_VALUE_FILTER_COMBINE_TYPE_OR )
-
     # reserved trait values
     VALUE_EMPTY = ContextBase.STRING_EMPTY
     
@@ -114,6 +106,8 @@ class FilterSpec( ContextBase ):
     PROP_VALUE_COMPARISON_TYPE_EXCLUDES = ContextBase.COMPARISON_TYPE_EXCLUDES
     PROP_VALUE_COMPARISON_TYPE_IN_RANGE = ContextBase.COMPARISON_TYPE_IN_RANGE
     PROP_VALUE_COMPARISON_TYPE_AND = ContextBase.COMPARISON_TYPE_AND
+    PROP_VALUE_COMPARISON_TYPE_AND_FILTER = ContextBase.COMPARISON_TYPE_AND_FILTER
+    PROP_VALUE_COMPARISON_TYPE_AND_AMPERSAND = ContextBase.COMPARISON_TYPE_AND_AMPERSAND
     PROP_VALUE_COMPARISON_TYPE_OR = ContextBase.COMPARISON_TYPE_OR
     PROP_VALUE_COMPARISON_TYPE_DEFAULT = PROP_VALUE_COMPARISON_TYPE_INCLUDES
     COMPARISON_TYPE_VALUES = ContextBase.COMPARISON_TYPE_VALUES
@@ -128,6 +122,11 @@ class FilterSpec( ContextBase ):
 
     # reserved trait values
     TRAIT_VALUE_EMPTY = ContextBase.STRING_EMPTY
+    
+    # ! ----> JSON output defaults
+    JSON_OUTPUT_DEFAULT_DO_SORT_KEYS = True
+    JSON_OUTPUT_DEFAULT_INDENT_SIZE = 4
+    JSON_OUTPUT_DEFAULT_SEPARATORS = ( ',', ': ' )
 
 
     #---------------------------------------------------------------------------
@@ -455,7 +454,10 @@ class FilterSpec( ContextBase ):
     #-- END method get_value_to() --#
 
 
-    def output_filter_spec_as_json_string( self, sort_keys_IN = True, indent_IN = 4, separators_IN = ( ',', ': ' ) ):
+    def output_filter_spec_as_json_string( self,
+                                           sort_keys_IN = JSON_OUTPUT_DEFAULT_DO_SORT_KEYS,
+                                           indent_IN = JSON_OUTPUT_DEFAULT_INDENT_SIZE,
+                                           separators_IN = JSON_OUTPUT_DEFAULT_SEPARATORS ):
     
         # return reference
         value_OUT = None
@@ -688,6 +690,24 @@ class FilterSpec( ContextBase ):
         return value_OUT
     
     #-- END method set_value_to() --#
+
+
+    def to_json_string( self,
+                        sort_keys_IN = JSON_OUTPUT_DEFAULT_DO_SORT_KEYS,
+                        indent_IN = JSON_OUTPUT_DEFAULT_INDENT_SIZE,
+                        separators_IN = JSON_OUTPUT_DEFAULT_SEPARATORS ):
+    
+        # return reference
+        value_OUT = None
+        
+        # call output method.
+        value_OUT = self.output_filter_spec_as_json_string( sort_keys_IN = sort_keys_IN,
+                                                            indent_IN = indent_IN,
+                                                            separators_IN = separators_IN )
+        
+        return value_OUT
+        
+    #-- END method to_json_string() --#
 
 
 #-- END class FilterSpec --#
