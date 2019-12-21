@@ -130,6 +130,591 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #----------------------------------------------------------------------------
 
 
+    def create_2_level_aggregate( self, test_instance_IN = None ):
+        
+        # return reference
+        filter_OUT = None
+        
+        # declare variables
+        me = "create_2_level_aggregate"
+        test_instance = None
+        test_filter_type = None
+        test_filter_list = None
+        test_filter_spec = None
+        test_filter_json_dict = None
+        test_value_list = None
+        test_role_list = None
+        should_be = None
+        test_q_list = None
+        current_q = None
+        test_qs = None
+        test_count = None
+        
+        # do we have a test instance?
+        if ( test_instance_IN is not None ):
+        
+            # yes - test as we go.
+            test_instance = test_instance_IN
+            
+        #-- END check to see if test instance. --#
+        
+        print( "\n\n------------------------------\n2 level - relation type slug, relation trait, entity type slug, entity trait\n------------------------------" )
+        test_filter_list = []
+        
+        #----------------------------------------------------------------------#
+        # ! ----> filter 1 - relation_type_slug in "mentioned", "quoted", "shared_byline"
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TYPE_SLUG
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "mentioned" )
+        test_value_list.append( "quoted" )
+        test_value_list.append( "shared_byline" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 437
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> filter 2 - entity type slug
+        
+        # validate
+        test_filter_spec = self.create_simple_1_level_aggregate( test_instance_IN = test_instance )
+        should_be = 2320
+
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+
+        #----------------------------------------------------------------------#
+        # ! ----> filter 3 - relation traits
+                
+        # validate
+        test_filter_spec = self.create_complex_1_level_aggregate( test_instance_IN = test_instance )
+        should_be = 1433
+
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> filter 4 - entity trait "sourcenet-Newspaper-ID" IN 1
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TRAIT
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "sourcenet-Newspaper-ID" )
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_filter_spec.set_value_list( [ 1 ] )
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 945
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        # ! --------> AND
+        
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_AND
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+        test_filter_spec.set_value_list( test_filter_list )
+        should_be = 112
+        
+        # print the JSON
+        test_filter_spec_json_string = test_filter_spec.output_filter_spec_as_json_string()
+        print( "\n\n2-level filter spec test - JSON:\n{}".format( test_filter_spec_json_string ) )
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            #self.validate_filter_spec( test_instance, test_filter_spec, should_be, do_compact_queryset_IN = False )
+            #self.validate_filter_spec( test_instance, test_filter_spec, should_be, do_compact_queryset_IN = True )
+            
+        #-- END check to see if we validate --#
+       
+        filter_OUT = test_filter_spec
+        
+        return filter_OUT
+        
+    #-- END method create_2_level_aggregate() --#
+
+
+    def create_2_level_aggregate_test( self, test_instance_IN = None ):
+        
+        # return reference
+        filter_OUT = None
+        
+        # declare variables
+        me = "create_2_level_aggregate_test"
+        test_instance = None
+        test_filter_type = None
+        test_filter_list = None
+        test_filter_spec = None
+        test_filter_json_dict = None
+        test_value_list = None
+        test_role_list = None
+        should_be = None
+        test_q_list = None
+        current_q = None
+        test_qs = None
+        test_count = None
+        
+        # do we have a test instance?
+        if ( test_instance_IN is not None ):
+        
+            # yes - test as we go.
+            test_instance = test_instance_IN
+            
+        #-- END check to see if test instance. --#
+        
+        print( "\n\n------------------------------\n2 level - relation type slug, relation trait, entity type slug, entity trait\n------------------------------" )
+        test_filter_list = []
+        
+        #----------------------------------------------------------------------#
+        # ! ----> filter 1 - relation_type_slug in "mentioned", "quoted", "shared_byline"
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TYPE_SLUG
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "mentioned" )
+        test_value_list.append( "quoted" )
+        test_value_list.append( "shared_byline" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 437
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> filter 2 - relation traits
+        
+        # validate
+        test_filter_spec = self.create_complex_1_level_aggregate( test_instance_IN = test_instance )
+        should_be = 1433
+
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> filter 3 - entity type slug        
+
+        # validate
+        test_filter_spec = self.create_simple_1_level_aggregate( test_instance_IN = test_instance )
+        should_be = 2320
+
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+
+        #----------------------------------------------------------------------#
+        # ! ----> filter 4 - entity trait "sourcenet-Newspaper-ID" IN 1
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TRAIT
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_name( "sourcenet-Newspaper-ID" )
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_filter_spec.set_value_list( [ 1 ] )
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 945
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+        
+        # ! --------> AND
+        
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_AND
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+        test_filter_spec.set_value_list( test_filter_list )
+        should_be = 112
+        
+        # print the JSON
+        test_filter_spec_json_string = test_filter_spec.output_filter_spec_as_json_string()
+        print( "\n\n2-level filter spec test - JSON:\n{}".format( test_filter_spec_json_string ) )
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            #self.validate_filter_spec( test_instance, test_filter_spec, should_be, do_compact_queryset_IN = False )
+            #self.validate_filter_spec( test_instance, test_filter_spec, should_be, do_compact_queryset_IN = True )
+            
+        #-- END check to see if we validate --#
+       
+        filter_OUT = test_filter_spec
+        
+        return filter_OUT
+        
+    #-- END method create_2_level_aggregate_test() --#
+
+
+    def create_complex_1_level_aggregate( self,
+                                          test_instance_IN = None ):
+        
+        # return reference
+        filter_OUT = None
+        
+        # declare variables
+        me = "create_complex_1_level_aggregate"
+        test_instance = None
+        test_filter_type = None
+        test_filter_list = None
+        test_filter_spec = None
+        test_filter_json_dict = None
+        test_value_list = None
+        test_role_list = None
+        should_be = None
+        test_q_list = None
+        current_q = None
+        test_qs = None
+        test_count = None
+        
+        # do we have a test instance?
+        if ( test_instance_IN is not None ):
+        
+            # yes - test as we go.
+            test_instance = test_instance_IN
+            
+        #-- END check to see if test instance. --#
+        
+        print( "\n\n------------------------------\nmore complex - 1 level - relation_trait\n------------------------------" )
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TRAIT
+        test_filter_list = []
+        test_q_list = []
+        
+        #----------------------------------------------------------------------#
+        # ! ----> filter 1 - pub_date in range 2009-12-01 to 2009-12-31
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_name( "pub_date" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE )
+        test_filter_spec.set_value_from( "2009-12-01" )
+        test_filter_spec.set_value_to( "2009-12-31" )
+        should_be = 1703
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_q_list.append( test_filter_spec.get_my_q() )
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+
+        #----------------------------------------------------------------------#
+        # ! ----> filter 2 - coder user in "automated"
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_name( "sourcenet-coder-User-username" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "automated" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 2739
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_q_list.append( test_filter_spec.get_my_q() )
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+
+        #----------------------------------------------------------------------#
+        # ! ----> filter 3 - coder type in "OpenCalais_REST_API_v2"
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_name( "coder_type" )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
+        test_value_list = []
+        test_value_list.append( "OpenCalais_REST_API_v2" )
+        test_filter_spec.set_value_list( test_value_list )
+        should_be = 2739
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_q_list.append( test_filter_spec.get_my_q() )
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+
+        # ! ----> base test
+        
+        test_qs = Entity_Relation.objects.all()
+        for current_q in test_q_list:
+        
+            test_qs = test_qs.filter( current_q )
+            
+        #-- END loop over Q instances --#
+        test_count = test_qs.count()
+        
+        # sanity check
+        test_value = test_count
+        should_be = 1433
+        error_string = "Processing complex single-level filter spec by hand, found {} relations, should_be: {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )        
+        
+        # ! ----> aggregate        
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+        test_filter_spec.set_value_list( test_filter_list )
+        should_be = 1433
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+        
+        filter_OUT = test_filter_spec
+        
+        return filter_OUT
+
+    #-- END method create_complex_1_level_aggregate() --#
+
+
+    def create_simple_1_level_aggregate( self,
+                                         comparison_type_IN = FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND,
+                                         test_instance_IN = None ):
+        
+        # return reference
+        filter_OUT = None
+        
+        # declare variables
+        me = "create_simple_1_level_aggregate"
+        test_instance = None
+        test_filter_type = None
+        test_filter_list = None
+        test_filter_spec = None
+        test_filter_json_dict = None
+        test_role_list = None
+        should_be = None
+        
+        # do we have a test instance?
+        if ( test_instance_IN is not None ):
+        
+            # yes - test as we go.
+            test_instance = test_instance_IN
+            
+        #-- END check to see if test instance. --#
+        
+        print( "\n\n------------------------------\nsimple - 1 level - entity type slug\n------------------------------" )
+        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TYPE_SLUG
+        test_filter_list = []
+        
+        #----------------------------------------------------------------------#
+        # ! ----> filter 1 - FROM entity type slug = "person"
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        test_filter_spec.set_value( "person" )
+        test_role_list = []
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 2320
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+
+        #----------------------------------------------------------------------#
+        # ! ----> filter 2 - TO entity type slug = "person"
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        test_filter_spec.set_value( "person" )
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 3169
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+
+        #----------------------------------------------------------------------#
+        # ! ----> filter 3 - THROUGH entity type slug = "article"
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
+        test_filter_spec.set_value( "article" )
+        test_role_list = []
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
+        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
+        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
+        test_filter_spec.set_relation_roles_list( test_role_list )
+        should_be = 2743
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            # validate
+            self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+            
+        #-- END check to see if we validate --#
+       
+        # add to list
+        test_filter_json_dict = test_filter_spec.get_filter_spec()
+        test_filter_list.append( test_filter_json_dict )
+
+        test_filter_spec = FilterSpec()
+        test_filter_spec.set_filter_type( test_filter_type )
+        test_filter_spec.set_comparison_type( comparison_type_IN )
+        test_filter_spec.set_value_list( test_filter_list )
+        
+        # validate?
+        if ( test_instance is not None ):
+        
+            if ( ( comparison_type_IN == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
+                or ( comparison_type_IN == FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND_FILTER ) ):
+
+                # AND
+                should_be = 2320
+
+                # validate
+                self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+                    
+            elif ( comparison_type_IN == FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR ):
+                
+                # OR
+                should_be = 3169
+
+                # validate
+                self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+                
+            #-- END check to see if known comparison type --#
+            
+        #-- END check to see if we are testing. --#
+        
+        filter_OUT = test_filter_spec
+        
+        return filter_OUT
+    
+    #-- END method create_simple_1_level_aggregate() --#
+    
+
     def validate_entity_selection( self, test_instance_IN ):        
 
         # declare variables
@@ -222,6 +807,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.assertEqual( test_value, should_be, msg = error_string )        
     
     #-- END method validate_filter_spec() --#
+
 
     def validate_instance_basic( self, test_instance_IN ):        
 
@@ -495,76 +1081,11 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # ! ----> simple - 1 level - entity type slug
         #----------------------------------------------------------------------#
         
-        print( "\n\n------------------------------\nsimple - 1 level - entity type slug\n------------------------------" )
-        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TYPE_SLUG
-        test_filter_list = []
-        
-        #----------------------------------------------------------------------#
-        # --------> filter 1 - FROM entity type slug = "person"
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
-        test_filter_spec.set_value( "person" )
-        test_role_list = []
-        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
-        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
-        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
-        test_filter_spec.set_relation_roles_list( test_role_list )
-        should_be = 2320
-        
-        # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-       
-        # add to list
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
-
-        #----------------------------------------------------------------------#
-        # --------> filter 2 - TO entity type slug = "person"
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
-        test_filter_spec.set_value( "person" )
-        test_role_list = []
-        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
-        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
-        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
-        test_filter_spec.set_relation_roles_list( test_role_list )
-        should_be = 3169
-        
-        # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-       
-        # add to list
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
-
-        #----------------------------------------------------------------------#
-        # --------> filter 3 - THROUGH entity type slug = "article"
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_EQUALS )
-        test_filter_spec.set_value( "article" )
-        test_role_list = []
-        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
-        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
-        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
-        test_filter_spec.set_relation_roles_list( test_role_list )
-        should_be = 2743
-        
-        # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-       
-        # add to list
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
-
         # ! --------> AND
-        
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
-        test_filter_spec.set_value_list( test_filter_list )
+
+        # create simple aggregate
+        test_filter_spec = self.create_simple_1_level_aggregate( comparison_type_IN = FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND,
+                                                                 test_instance_IN = test_instance )
         should_be = 2320
         
         # validate
@@ -576,6 +1097,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
 
         # ! --------> OR
 
+        test_filter_list = test_filter_spec.get_value_list()
         test_filter_spec = FilterSpec()
         test_filter_spec.set_filter_type( test_filter_type )
         test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR )
@@ -589,89 +1111,11 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # ! ----> more complex - 1 level - relation_trait
         #----------------------------------------------------------------------#
         
-        print( "\n\n------------------------------\nmore complex - 1 level - relation_trait\n------------------------------" )
-        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TRAIT
-        test_filter_list = []
-        test_q_list = []
+        # create more complex aggregate
+        test_filter_spec = self.create_complex_1_level_aggregate( test_instance )
         
-        #----------------------------------------------------------------------#
-        # --------> filter 1 - pub_date in range 2009-12-01 to 2009-12-31
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_name( "pub_date" )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_IN_RANGE )
-        test_filter_spec.set_value_from( "2009-12-01" )
-        test_filter_spec.set_value_to( "2009-12-31" )
-        should_be = 1703
-        
-        # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-        
-        # add to list
-        test_q_list.append( test_filter_spec.get_my_q() )
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
-
-        #----------------------------------------------------------------------#
-        # --------> filter 2 - coder user in "automated"
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_name( "sourcenet-coder-User-username" )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
-        test_value_list = []
-        test_value_list.append( "automated" )
-        test_filter_spec.set_value_list( test_value_list )
-        should_be = 2739
-        
-        # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-        
-        # add to list
-        test_q_list.append( test_filter_spec.get_my_q() )
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
-
-        #----------------------------------------------------------------------#
-        # --------> filter 3 - coder type in "OpenCalais_REST_API_v2"
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_name( "coder_type" )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
-        test_value_list = []
-        test_value_list.append( "OpenCalais_REST_API_v2" )
-        test_filter_spec.set_value_list( test_value_list )
-        should_be = 2739
-        
-        # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-        
-        # add to list
-        test_q_list.append( test_filter_spec.get_my_q() )
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
-        
-        # ! --------> base test
-        
-        test_qs = Entity_Relation.objects.all()
-        for current_q in test_q_list:
-        
-            test_qs = test_qs.filter( current_q )
-            
-        #-- END loop over Q instances --#
-        test_count = test_qs.count()
-
-        # should be value passed in.
-        test_value = test_count
-        should_be = 1433
-        error_string = "Processing complex single-level filter spec by hand, found {} relations, should_be: {}.".format( test_value, should_be )
-        self.assertEqual( test_value, should_be, msg = error_string )        
-
         # ! --------> AND
         
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
-        test_filter_spec.set_value_list( test_filter_list )
         should_be = 1433
         
         # validate
@@ -685,87 +1129,19 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # ! ----> 2 level - relation type slug, relation trait, entity type slug, entity trait
         #----------------------------------------------------------------------#
         
-        print( "\n\n------------------------------\n2 level - relation type slug, relation trait, entity type slug, entity trait\n------------------------------" )
-        test_filter_list = []
-        
-        #----------------------------------------------------------------------#
-        # --------> filter 1 - relation_type_slug in "mentioned", "quoted", "shared_byline"
-        test_filter_type = NetworkDataRequest.FILTER_TYPE_RELATION_TYPE_SLUG
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
-        test_value_list = []
-        test_value_list.append( "mentioned" )
-        test_value_list.append( "quoted" )
-        test_value_list.append( "shared_byline" )
-        test_filter_spec.set_value_list( test_value_list )
-        should_be = 437
-        
-        # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-        
-        # add to list
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
-        
-        #----------------------------------------------------------------------#
-        # --------> filter 2 - simple_1_filter_spec
-        
-        # validate
-        test_filter_spec = simple_1_filter_spec
-        should_be = 2320
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-        
-        # add to list
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
+        # create test_filter_spec
+        test_filter_spec = self.create_2_level_aggregate_test( test_instance )
 
-        #----------------------------------------------------------------------#
-        # --------> filter 3 - complex_1_filter_spec
-        
-        # validate
-        test_filter_spec = complex_1_filter_spec
-        should_be = 1433
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-        
-        # add to list
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
-        
-        #----------------------------------------------------------------------#
-        # --------> filter 4 - entity trait "sourcenet-Newspaper-ID" IN 1
-        test_filter_type = NetworkDataRequest.FILTER_TYPE_ENTITY_TRAIT
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_name( "sourcenet-Newspaper-ID" )
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_INCLUDES )
-        test_filter_spec.set_value_list( [ 1 ] )
-        test_role_list = []
-        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_FROM )
-        #test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_TO )
-        test_role_list.append( FilterSpec.PROP_VALUE_RELATION_ROLES_LIST_THROUGH )
-        test_filter_spec.set_relation_roles_list( test_role_list )
-        should_be = 945
-        
-        # validate
-        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
-        
-        # add to list
-        test_filter_json_dict = test_filter_spec.get_filter_spec()
-        test_filter_list.append( test_filter_json_dict )
-        
-        # ! --------> AND
-        
-        test_filter_type = NetworkDataRequest.FILTER_TYPE_AND
-        test_filter_spec = FilterSpec()
-        test_filter_spec.set_filter_type( test_filter_type )
-        test_filter_spec.set_comparison_type( FilterSpec.PROP_VALUE_COMPARISON_TYPE_AND )
-        test_filter_spec.set_value_list( test_filter_list )
+        # test
         should_be = 112
         
         # print the JSON
-        test_filter_spec_json_string = test_filter_spec.output_filter_spec_as_json_string()
-        print( "\n\n2-level filter spec test - JSON:\n{}".format( test_filter_spec_json_string ) )
+        if ( debug_flag == True ):
+
+            test_filter_spec_json_string = test_filter_spec.output_filter_spec_as_json_string()
+            print( "\n\n2-level filter spec test - JSON:\n{}".format( test_filter_spec_json_string ) )
+            
+        #-- END DEBUG --#
         
         # validate
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
@@ -2415,13 +2791,31 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
         #----------------------------------------------------------------------#
-        # ! TODO ----> AND
+        # ! ----> AND
         #----------------------------------------------------------------------#
         
+        # create test_filter_spec
+        test_filter_spec = self.create_2_level_aggregate( test_instance )
+
+        # test
+        should_be = 112
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
         #----------------------------------------------------------------------#
-        # ! TODO ----> OR
+        # ! ----> OR
         #----------------------------------------------------------------------#
         
+        # create simple aggregate
+        test_filter_spec = self.create_simple_1_level_aggregate( comparison_type_IN = FilterSpec.PROP_VALUE_COMPARISON_TYPE_OR,
+                                                                 test_instance_IN = test_instance )
+        # test
+        should_be = 3169
+        
+        # validate
+        self.validate_filter_spec( test_instance, test_filter_spec, should_be )
+
     #-- END test method test_build_filter_spec_q() --#
 
 
@@ -2671,6 +3065,44 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
     #-- END test method test_build_filter_spec_relation_type_slug_q() --#
+
+
+    def test_filter_relation_query_set( self ):
+
+        # declare variables
+        me = "test_filter_relation_query_set"
+        debug_flag = None
+        test_instance = None
+        test_qs = None
+        test_value = None
+        should_be = None
+        error_string = None
+
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # ! ----> test basic instance.
+        test_instance = TestHelper.load_basic()
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_qs = test_instance.filter_relation_query_set()
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 112
+        error_string = "BASIC - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+    #-- END test method test_filter_relation_query_set()
 
 
     def test_get_selection_filters( self ):

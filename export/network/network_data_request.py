@@ -1555,7 +1555,7 @@ class NetworkDataRequest( ContextBase ):
         debug_flag = self.DEBUG_FLAG
 
         # get selection_filters
-        slection_filters = self.get_selection_filters( use_entity_selection_IN )
+        selection_filters = self.get_selection_filters( use_entity_selection_IN )
         
         # got filters?
         if ( selection_filters is not None ):
@@ -1744,16 +1744,14 @@ class NetworkDataRequest( ContextBase ):
         # init
         debug_flag = self.DEBUG_FLAG
         #debug_flag = True
-        status_OUT = StatusContainer()
-        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
 
-        status_message = "\n\nIn {}():\n- filter = {}\n- level = {}".format( me, filter_spec_IN, level_IN )
+        status_message = "\n\n[{}] In {}():\n- filter = {}\n- level = {}".format( level_IN, me, filter_spec_IN, level_IN )
         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
         
         # got a filter spec passed in?
         if ( filter_spec_IN is not None ):
 
-            status_message = "- filter dict:\{}".format( filter_spec_IN.output_filter_spec_as_json_string() )
+            status_message = "- filter dict:\n{}".format( filter_spec_IN.to_json_string() )
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
     
             # make FilterSpec instance and load dictionary
@@ -1789,7 +1787,7 @@ class NetworkDataRequest( ContextBase ):
                     child_q_list = []
                     child_counter = 0
 
-                    status_message = "\n\n----> In {}(): aggregate ( {} ) filter_spec.  Looping over {} children ( {} ).".format( me, comparison_type, len( child_filter_spec_list ), child_filter_spec_list )
+                    status_message = "\n\n[{}] ----> In {}(): aggregate ( {} ) filter_spec.  Looping over {} children ( {} ).".format( level_IN, me, comparison_type, len( child_filter_spec_list ), child_filter_spec_list )
                     self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
 
                     for child_filter_spec in child_filter_spec_list:
@@ -1800,7 +1798,7 @@ class NetworkDataRequest( ContextBase ):
                         # get comparison type
                         child_comparison_type = child_filter_spec.get_comparison_type()
                         
-                        status_message = "\n\n--------> In {}(): child item #{} - comparison type = {}; JSON:\n{}".format( me, child_counter, child_comparison_type, child_filter_spec.to_json_string() )
+                        status_message = "\n\n[{}] --------> In {}(): child item #{} - comparison type = {}; JSON:\n{}".format( level_IN, me, child_counter, child_comparison_type, child_filter_spec.to_json_string() )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
                         
                         # figure out what to do based on type - aggregate (AND or OR)?
@@ -1957,7 +1955,7 @@ class NetworkDataRequest( ContextBase ):
                     
                 else:
                 
-                    status_message = "\n\n----> In {}(): basic filter_spec".format( me )
+                    status_message = "\n\n[{}] ----> In {}(): basic filter_spec".format( level_IN, me )
                     self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
         
                     # not aggregate - retrieve the Q for the FilterSpec, use it

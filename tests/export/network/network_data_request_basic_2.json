@@ -1,0 +1,108 @@
+{
+    "output_specification": {
+        "output_type": "file",
+        "output_file_path": "./NetworkDataRequest_test_output.txt",
+        "output_format": "TSV_matrix",
+        "output_structure": "both_trait_columns",
+        "output_include_column_headers": true
+    },
+    "relation_selection": {
+        "filter_specification": {
+            "comparison_type": "AND",
+            "filter_type": "AND",
+            "value_list": [
+                {
+                    "comparison_type": "includes",
+                    "filter_type": "relation_type_slug",
+                    "relation_roles_list": [
+                        "ALL"
+                    ],
+                    "value_list": [
+                        "mentioned",
+                        "quoted",
+                        "shared_byline"
+                    ]
+                },
+                {
+                    "comparison_type": "AND",
+                    "filter_type": "entity_type_slug",
+                    "value_list": [
+                        {
+                            "comparison_type": "equals",
+                            "filter_type": "entity_type_slug",
+                            "relation_roles_list": [
+                                "FROM"
+                            ],
+                            "value": "person"
+                        },
+                        {
+                            "comparison_type": "equals",
+                            "filter_type": "entity_type_slug",
+                            "relation_roles_list": [
+                                "TO"
+                            ],
+                            "value": "person"
+                        },
+                        {
+                            "comparison_type": "equals",
+                            "filter_type": "entity_type_slug",
+                            "relation_roles_list": [
+                                "THROUGH"
+                            ],
+                            "value": "article"
+                        }
+                    ]
+                },
+                {
+                    "comparison_type": "AND",
+                    "filter_type": "relation_trait",
+                    "value_list": [
+                        {
+                            "comparison_type": "in_range",
+                            "filter_type": "relation_trait",
+                            "name": "pub_date",
+                            "relation_roles_list": [
+                                "ALL"
+                            ],
+                            "value_from": "2009-12-01",
+                            "value_to": "2009-12-31"
+                        },
+                        {
+                            "comparison_type": "includes",
+                            "filter_type": "relation_trait",
+                            "name": "sourcenet-coder-User-username",
+                            "relation_roles_list": [
+                                "ALL"
+                            ],
+                            "value_list": [
+                                "automated"
+                            ]
+                        },
+                        {
+                            "comparison_type": "includes",
+                            "filter_type": "relation_trait",
+                            "name": "coder_type",
+                            "relation_roles_list": [
+                                "ALL"
+                            ],
+                            "value_list": [
+                                "OpenCalais_REST_API_v2"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comparison_type": "includes",
+                    "filter_type": "entity_trait",
+                    "name": "sourcenet-Newspaper-ID",
+                    "relation_roles_list": [
+                        "THROUGH"
+                    ],
+                    "value_list": [
+                        1
+                    ]
+                }
+            ]
+        }
+    }
+}
