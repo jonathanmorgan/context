@@ -14,7 +14,7 @@
                 {
                     "filter_type": "relation_type_slug",
                     "comparison_type": "includes",
-                    "value_list": [ "mentioned", "qouted", "shared_byline" ]
+                    "value_list": [ "mentioned", "quoted", "shared_byline" ]
                 },
                 {
                     "filter_type": "relation_trait",
@@ -87,7 +87,7 @@
                 {
                     "filter_type": "relation_type_slug",
                     "comparison_type": "includes",
-                    "value_list": [ "mentioned", "qouted", "shared_byline" ]
+                    "value_list": [ "mentioned", "quoted", "shared_byline" ]
                 },
                 {
                     "filter_type": "relation_trait",
