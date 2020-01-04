@@ -41,19 +41,22 @@ from python_utilities.parameters.param_container import ParamContainer
 # Import the classes for our context_text application
 #from context_text.models import Article
 #from context_text.models import Article_Author
-from context_text.models import Article_Subject
+#from context_text.models import Article_Subject
 #from context_text.models import Person
 #from context_text.models import Topic
 
-# Import context_text shared classes.
-from context_text.shared.context_text_base import ContextTextBase
+# export classes
+from context.export.network.network_data_request import NetworkDataRequest
+
+# Import context shared classes.
+from context.shared.context_base import ContextBase
 
 
 #===============================================================================
 # classes (in alphabetical order by name)
 #===============================================================================
 
-class NetworkDataOutput( ContextTextBase ):
+class NetworkDataOutput( ContextBase ):
 
     
     #---------------------------------------------------------------------------
@@ -84,11 +87,11 @@ class NetworkDataOutput( ContextTextBase ):
     ]
 
     # Network data output types
-    NETWORK_DATA_OUTPUT_TYPE_NETWORK = "network"
-    NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES = "attributes"
-    NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS = "net_and_attr_cols"
-    NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS = "net_and_attr_rows"
-    NETWORK_DATA_OUTPUT_TYPE_DEFAULT = NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS
+    NETWORK_DATA_OUTPUT_TYPE_NETWORK = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_JUST_TIES
+    NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_JUST_TRAITS
+    NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_COLUMNS
+    NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_ROWS
+    NETWORK_DATA_OUTPUT_TYPE_DEFAULT = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_DEFAULT
     
     NETWORK_DATA_OUTPUT_TYPE_CHOICES_LIST = [
         ( NETWORK_DATA_OUTPUT_TYPE_NETWORK, "Just Network" ),
@@ -154,10 +157,8 @@ class NetworkDataOutput( ContextTextBase ):
     # parameter constants
     PARAM_OUTPUT_TYPE = 'output_type'
     PARAM_NETWORK_DOWNLOAD_AS_FILE = 'network_download_as_file'
-    PARAM_NETWORK_LABEL = 'network_label'
     PARAM_NETWORK_DATA_OUTPUT_TYPE = 'network_data_output_type'   # type of data you want to output - either just the network, just node attributes, or network with attributes in same table, either with attributes as additional rows or additional columns.
     PARAM_NETWORK_INCLUDE_HEADERS = 'network_include_headers'
-    PARAM_NETWORK_INCLUDE_RENDER_DETAILS = 'network_include_render_details'
     PARAM_SOURCE_CAPACITY_INCLUDE_LIST = Article_Subject.PARAM_SOURCE_CAPACITY_INCLUDE_LIST
     PARAM_SOURCE_CAPACITY_EXCLUDE_LIST = Article_Subject.PARAM_SOURCE_CAPACITY_EXCLUDE_LIST
     PARAM_SOURCE_CONTACT_TYPE_INCLUDE_LIST = Article_Subject.PARAM_SOURCE_CONTACT_TYPE_INCLUDE_LIST
@@ -189,9 +190,7 @@ class NetworkDataOutput( ContextTextBase ):
         self.output_type = NetworkDataOutput.NETWORK_DATA_FORMAT_DEFAULT
         self.data_format = NetworkDataOutput.NETWORK_DATA_FORMAT_DEFAULT
         self.data_output_type = NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_DEFAULT
-        self.include_render_details = False
-        self.person_dictionary = {}
-        self.network_label = '' # heading to put in first line of network data.
+        self.entity_dictionary = {}
         self.relation_map = {}
         self.include_row_and_column_headers = False
         
@@ -204,16 +203,16 @@ class NetworkDataOutput( ContextTextBase ):
         self.person_type_dict = {}
 
         # variable to hold master person list.
-        self.master_person_list = []
+        self.master_entity_list = []
 
         # internal debug string
         self.debug = "NetworkDataOutput debug:\n\n"
 
-        # inclusion parameter holder
-        self.inclusion_params = {}
+        # store the current request
+        self.m_network_data_request = None
 
-        # set logger name (for LoggingHelper parent class: (LoggingHelper --> BasicRateLimited --> ContextTextBase --> ArticleCoding).
-        self.set_logger_name( "context_text.export.network_data_output" )
+        # set logger name (for LoggingHelper parent class: (LoggingHelper --> BasicRateLimited --> ContextBase).
+        self.set_logger_name( "context.export.network.network_data_output" )
         
     #-- END method __init__() --#
 
@@ -486,7 +485,7 @@ class NetworkDataOutput( ContextTextBase ):
         both_count = 0
 
         # get master list
-        master_list = self.get_master_person_list()
+        master_list = self.get_master_entity_list()
 
         # got something?
         if ( master_list ):
@@ -565,7 +564,7 @@ class NetworkDataOutput( ContextTextBase ):
         output_person_id = -1
 
         # get master list
-        person_list = self.get_master_person_list()
+        person_list = self.get_master_entity_list()
 
         # got it?
         if ( person_list ):
@@ -621,7 +620,7 @@ class NetworkDataOutput( ContextTextBase ):
         current_person_type_id = -1
 
         # get master list
-        person_list = self.get_master_person_list()
+        person_list = self.get_master_entity_list()
 
         # got it?
         if ( person_list ):
@@ -781,16 +780,16 @@ class NetworkDataOutput( ContextTextBase ):
     #-- END method do_output_network() --#
 
 
-    def generate_master_person_list( self, is_sorted_IN = True ):
+    def generate_master_entity_list( self, is_sorted_IN = True ):
 
         """
-            Method: generate_master_person_list()
+            Method: generate_master_entity_list()
 
-            Purpose: Uses nested person_dict and map of person IDs to person
+            Purpose: Uses nested entity_dict and map of person IDs to person
                types to make a big list of all the people we need to include
                in the network we output.
 
-            Preconditions: person_dictionary must be initialized and populated.
+            Preconditions: entity_dictionary must be initialized and populated.
 
             Returns:
             - List - reference to the generated master person list.
@@ -800,12 +799,12 @@ class NetworkDataOutput( ContextTextBase ):
         list_OUT = []
 
         # declare variables
-        me = "generate_master_person_list"
+        me = "generate_master_entity_list"
         my_logger = None
         debug_string = ""
-        person_dict = None
-        person_ids_list = None
-        current_person_id = None
+        entity_dict = None
+        entity_ids_list = None
+        current_entity_id = None
         person_id_to_type_dict = None
         merged_person_id_list = None
 
@@ -813,36 +812,19 @@ class NetworkDataOutput( ContextTextBase ):
         my_logger = self.get_logger()
 
         # retrieve the person dictionary
-        person_dict = self.person_dictionary
+        entity_dict = self.entity_dictionary
 
-        my_logger.debug( "In " + me + ": len( person_dict ) = " + str( len( person_dict ) ) )
+        my_logger.debug( "In " + me + ": len( entity_dict ) = " + str( len( entity_dict ) ) )
 
-        # grab list of keys from person_dictionary.
-        person_ids_list = person_dict.keys()
-
-        # ABSOLUTELY BROKEN FIRST ATTEMPT FROM 2010, FOR POSTERITY:
-        #
-        #person_ids_count = len( person_ids_list )
-        # ==> person_ids_count = 738
-        #merge_values_list[ 0 : person_ids_count - 1 ] = NetworkDataOutput.PERSON_TYPE_UNKNOWN
-        # ==> len( merge_values_list ) = 7
-        #zipped_tuples_list = zip( person_ids_list, merge_values_list )
-        # ==> len( zipped_tuples_list ) = 7
-        #merged_person_types = dict( zipped_tuples_list )
-        # ==> len( merged_person_types ) = 7
-        #merged_person_types.update( self.person_type_dict )
-        # ==> len( merged_person_types ) = 314
-        #
-        # Resulted in person dictionary count dropping from 738 to 7, then
-        #    increasing up to the number of people referenced by the selected
-        #    articles, as stored in self.person_type_dict.
+        # grab list of keys from entity_dictionary.
+        entity_ids_list = entity_dict.keys()
 
         # make a dictionary that maps persons from person dictionary to type...
         person_id_to_type_dict = {}
-        for current_person_id in person_ids_list:
+        for current_entity_id in entity_ids_list:
         
             # to start, add all persons to dictionary with type of "unknown".
-            person_id_to_type_dict[ current_person_id ] = NetworkDataOutput.PERSON_TYPE_UNKNOWN
+            person_id_to_type_dict[ current_entity_id ] = NetworkDataOutput.PERSON_TYPE_UNKNOWN
             
         #-- END loop over IDs from dictionary. --#
 
@@ -868,27 +850,27 @@ class NetworkDataOutput( ContextTextBase ):
         #-- END check to see if we want the list sorted. --#
 
         # save this as the master person list.
-        self.master_person_list = merged_person_id_list
+        self.master_entity_list = merged_person_id_list
 
-        list_OUT = self.master_person_list
+        list_OUT = self.master_entity_list
         
-        my_logger.debug( "In " + me + ": len( self.master_person_list ) = " + str( len( self.master_person_list ) ) )
+        my_logger.debug( "In " + me + ": len( self.master_entity_list ) = " + str( len( self.master_entity_list ) ) )
 
         return list_OUT
 
-    #-- END method generate_master_person_list() --#
+    #-- END method generate_master_entity_list() --#
 
 
-    def get_master_person_list( self, is_sorted_IN = True ):
+    def get_master_entity_list( self, is_sorted_IN = True ):
 
         """
-            Method: get_master_person_list()
+            Method: get_master_entity_list()
 
             Purpose: Checks if list is set and has something in it.  If yes,
                returns list nested in instance.  If no, calls the generate
                method and returns the result.
 
-            Preconditions: person_dictionary must be initialized and populated.
+            Preconditions: entity_dictionary must be initialized and populated.
 
             Returns:
             - List - reference to the generated master person list.
@@ -901,7 +883,7 @@ class NetworkDataOutput( ContextTextBase ):
         is_ok = True
 
         # retrieve master person list
-        list_OUT = self.master_person_list
+        list_OUT = self.master_entity_list
 
         if ( list_OUT ):
 
@@ -923,14 +905,27 @@ class NetworkDataOutput( ContextTextBase ):
         if ( is_ok == False ):
 
             # not OK.  Try generating list.
-            list_OUT = self.generate_master_person_list( is_sorted_IN )
+            list_OUT = self.generate_master_entity_list( is_sorted_IN )
 
         #-- END check if list is OK. --#
         
         return list_OUT
 
-    #-- END method get_master_person_list() --#
+    #-- END method get_master_entity_list() --#
 
+
+    def get_network_data_request( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_network_data_request
+                
+        return value_OUT
+    
+    #-- END method get_network_data_request() --#
+    
 
     def get_person_label( self, person_id_IN ):
 
@@ -1140,69 +1135,24 @@ class NetworkDataOutput( ContextTextBase ):
     #-- END method get_relations_for_person() --#
 
 
-    def initialize_from_params( self, param_container_IN ):
+    def initialize_from_request( self, network_data_request_IN ):
 
         # declare variables
         output_type_IN = ''
         data_output_type_IN = ''
-        include_render_details_IN = ''
-        network_label_IN = ''
-        source_capacity_include_list_IN = None
-        source_capacity_exclude_list_IN = None
-        source_contact_type_include_list_IN = None
 
         # retrieve info.
-        output_type_IN = param_container_IN.get_param_as_str( NetworkDataOutput.PARAM_OUTPUT_TYPE, NetworkDataOutput.NETWORK_DATA_FORMAT_DEFAULT )
-        data_output_type_IN = param_container_IN.get_param_as_str( NetworkDataOutput.PARAM_NETWORK_DATA_OUTPUT_TYPE, NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_DEFAULT )
-        include_render_details_IN = param_container_IN.get_param_as_str( NetworkDataOutput.PARAM_NETWORK_INCLUDE_RENDER_DETAILS, NetworkDataOutput.CHOICE_NO )
-        network_label_IN = param_container_IN.get_param_as_str( NetworkDataOutput.PARAM_NETWORK_LABEL, '' )
-        source_capacity_include_list_IN = param_container_IN.get_param_as_list( NetworkDataOutput.PARAM_SOURCE_CAPACITY_INCLUDE_LIST )
-        source_capacity_exclude_list_IN = param_container_IN.get_param_as_list( NetworkDataOutput.PARAM_SOURCE_CAPACITY_EXCLUDE_LIST )
-        source_contact_type_include_list_IN = param_container_IN.get_param_as_list( NetworkDataOutput.PARAM_SOURCE_CONTACT_TYPE_INCLUDE_LIST )
+        output_type_IN = network_data_request_IN.get_output_type()
+        data_output_type_IN = network_data_request_IN.get_output_structure()
 
         # store
         self.set_output_type( output_type_IN )
         self.data_output_type = data_output_type_IN
-        self.network_label = network_label_IN
-
-        # convert include_render_details_IN to boolean
-        if ( include_render_details_IN == NetworkDataOutput.CHOICE_YES ):
         
-            # yes - True
-            self.include_render_details = True
+        # and store the request, as well, for reference.
+        self.set_network_data_request( network_data_request_IN )
 
-        else:
-        
-            # not yes, so False.
-            self.include_render_details = False
-        
-        #-- END check to see whether we include render details --#
-        
-        # got source contact type include list?
-        if ( ( source_contact_type_include_list_IN is not None ) and ( len( source_contact_type_include_list_IN ) > 0 ) ):
-        
-            # store in internal inclusion parameters
-            self.inclusion_params[ NetworkDataOutput.PARAM_SOURCE_CONTACT_TYPE_INCLUDE_LIST ] = source_contact_type_include_list_IN
-        
-        #-- END check to see if source contact type list --#
-
-        # got include list?
-        if ( source_capacity_include_list_IN ):
-
-            # store in internal inclusion parameters
-            self.inclusion_params[ NetworkDataOutput.PARAM_SOURCE_CAPACITY_INCLUDE_LIST ] = source_capacity_include_list_IN
-
-        #-- END check to see if anything in list. --#
-
-        # got exclude list?
-        if ( source_capacity_exclude_list_IN ):
-
-            # store in internal inclusion parameters
-            self.inclusion_params[ NetworkDataOutput.PARAM_SOURCE_CAPACITY_EXCLUDE_LIST ] = source_capacity_exclude_list_IN
-
-        #-- END check to see if anything in list. --#
-
-    #-- END method initialize_from_params() --#
+    #-- END method initialize_from_request() --#
 
 
     def is_source_connected( self, source_IN ):
@@ -1282,7 +1232,7 @@ class NetworkDataOutput( ContextTextBase ):
         #multiple_authors = False
         author_map = None
         current_author = None
-        current_person_id = -1
+        current_entity_id = -1
         author_id_list = None
         remaining_author_id_list = None
         remaining_person_id = -1
@@ -1504,20 +1454,19 @@ class NetworkDataOutput( ContextTextBase ):
     def render( self ):
 
         """
-            Assumes query set of articles has been placed in this instance.
-               Uses the query set to output delimited data in the format specified in
-               the output_type instance variable.  If one line per article, has
-               sets of columns for as many authors and sources as are present in
-               the articles with the most authors and sources, respectively.
+            Assumes query set of Entity_Relation instances has been placed in
+                this instance.  Uses the query set to output delimited data in
+                the format specified in the output_type instance variable.
 
-            Preconditions: assumes that we have a query set of articles stored
-               in the instance.  If not, does nothing, returns empty string.
+            Preconditions: assumes that we have a query set of Entity_Relations
+                stored in the instance.  If not, does nothing, returns empty
+                string.
 
             Postconditions: returns the delimited network data, each column separated by two spaces, in a string.
 
             Parameters - all inputs are stored in instance variables:
             - self.query_set - Query set of articles for which we want to create network data.
-            - self.person_dictionary - QuerySet of people we want included in our network (can include people not mentioned in an article, in case we want to include all people from two different time periods, for example).
+            - self.entity_dictionary - QuerySet of Entities we want included in our network (can include people not mentioned in a relation, in case we want to include all entities from two different time periods, for example).
             - self.inclusion_params
 
             Returns:
@@ -1531,11 +1480,11 @@ class NetworkDataOutput( ContextTextBase ):
         me = "render"
         my_logger = None
         debug_string = ""
-        article_data_query_set = None
-        person_dict = None
+        entity_relation_query_set = None
+        entity_dict = None
         network_dict = {}
-        article_data_counter = 0
-        current_article_data = None
+        entity_relation_counter = 0
+        current_entity_relation = None
         article_author_count = -1
         author_qs = None
         source_qs = None
@@ -1544,25 +1493,25 @@ class NetworkDataOutput( ContextTextBase ):
         my_logger = self.get_logger()
 
         # start by grabbing person dict, query set.
-        article_data_query_set = self.query_set
-        person_dict = self.person_dictionary
+        entity_relation_query_set = self.query_set
+        entity_dict = self.entity_dictionary
 
         # make sure each of these has something in it.
-        if ( ( article_data_query_set ) and ( person_dict ) ):
+        if ( ( entity_relation_query_set ) and ( entity_dict ) ):
 
             #--------------------------------------------------------------------
             # create ties
             #--------------------------------------------------------------------
             
-            # loop over the article data for each article to be processed.
-            for current_article_data in article_data_query_set:
+            # loop over the Entity_Relations.
+            for current_entity_relation in entity_relation_query_set:
 
-                article_data_counter += 1
+                entity_relation_counter += 1
 
                 if ( self.DEBUG_FLAG == True ):
 
                     # output message about connectedness of source.
-                    debug_string = "In " + me + ": +++ Current article data = " + str( current_article_data.id ) + " +++"
+                    debug_string = "In " + me + ": +++ Current Entity_Relation = " + str( current_entity_relation.id ) + " +++"
                     
                     # add to debug string?
                     self.debug += "\n\n" + debug_string + "\n\n"
@@ -1572,14 +1521,14 @@ class NetworkDataOutput( ContextTextBase ):
                 #-- END DEBUG --#
 
                 # first, see how many authors this article has.
-                article_author_count = current_article_data.article_author_set.count()
+                article_author_count = current_entity_relation.article_author_set.count()
 
                 # if no authors, move on.
                 if ( article_author_count > 0 ):
 
                     # get authors
-                    author_qs = current_article_data.article_author_set.all()
-                    source_qs = current_article_data.get_quoted_article_sources_qs()
+                    author_qs = current_entity_relation.article_author_set.all()
+                    source_qs = current_entity_relation.get_quoted_article_sources_qs()
 
                     # call method to loop over authors and tie them to other
                     #    authors (if present) and eligible sources.
@@ -1591,7 +1540,7 @@ class NetworkDataOutput( ContextTextBase ):
                     if ( self.DEBUG_FLAG == True ):
 
                         # output message about connectedness of source.
-                        debug_string = "In " + me + ": Relation Map after article " + str( article_data_counter ) + ":\n" + str( self.relation_map )
+                        debug_string = "In " + me + ": Relation Map after article " + str( entity_relation_counter ) + ":\n" + str( self.relation_map )
                         
                         # add to debug string?
                         self.debug += "\n\n" + debug_string + "\n\n"
@@ -1610,16 +1559,17 @@ class NetworkDataOutput( ContextTextBase ):
             
             # now that all relations are mapped, need to build our master person
             #    list, so we can loop to build out the network.  All people who
-            #    need to be included should be in the person_dictionary passed
+            #    need to be included should be in the entity_dictionary passed
             #    in.  To be sure, we can make a copy that places source type
             #    of unknown as value for all, then update with the
             #    people_to_type map, so we make sure all sources that were
             #    included in the network are in the dict.
-            self.generate_master_person_list()
+            # ! TODO - generate_master_entity_list
+            self.generate_master_entity_list()
 
             if ( self.DEBUG_FLAG == True ):
-                self.debug += "\n\nPerson Dictionary:\n" + str( self.person_dictionary ) + "\n\n"
-                self.debug += "\n\nMaster person list:\n" + str( self.master_person_list ) + "\n\n"
+                self.debug += "\n\nPerson Dictionary:\n" + str( self.entity_dictionary ) + "\n\n"
+                self.debug += "\n\nMaster person list:\n" + str( self.master_entity_list ) + "\n\n"
                 self.debug += "\n\nParam list:\n" + str( self.inclusion_params ) + "\n\n"
             #-- END DEBUG --#
 
@@ -1627,6 +1577,7 @@ class NetworkDataOutput( ContextTextBase ):
             # render network data based on people and ties.
             #--------------------------------------------------------------------
             
+            # ! TODO - render_network_data()
             network_data_OUT += self.render_network_data()
             
         #-- END check to make sure we have the data we need. --#
@@ -1650,6 +1601,29 @@ class NetworkDataOutput( ContextTextBase ):
 
     #-- END abstract method render_network_data() --#
     
+
+    def set_entity_dictionary( self, value_IN ):
+
+        """
+            Method: set_entity_dictionary()
+
+            Purpose: accepts a dictionary, with person ID as key, values...
+               undetermined at this time, stores it in the instance.
+
+            Params:
+            - value_IN - Python dictionary with person IDs as keys.
+        """
+
+        # got a value?
+        if ( value_IN ):
+
+            # store value
+            self.entity_dictionary = value_IN
+
+        #-- END check to see if we have a value --#
+
+    #-- END method set_entity_dictionary() --#
+
 
     def set_output_type( self, value_IN ):
 
@@ -1698,27 +1672,20 @@ class NetworkDataOutput( ContextTextBase ):
     #-- END method set_query_set() --#
 
 
-    def set_person_dictionary( self, value_IN ):
-
-        """
-            Method: set_person_dictionary()
-
-            Purpose: accepts a dictionary, with person ID as key, values...
-               undetermined at this time, stores it in the instance.
-
-            Params:
-            - value_IN - Python dictionary with person IDs as keys.
-        """
-
-        # got a value?
-        if ( value_IN ):
-
-            # store value
-            self.person_dictionary = value_IN
-
-        #-- END check to see if we have a value --#
-
-    #-- END method set_person_dictionary() --#
+    def set_network_data_request( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_network_data_request = value_IN
+        
+        # return it
+        value_OUT = self.get_network_data_request()
+        
+        return value_OUT
+    
+    #-- END method set_network_data_request() --#
 
 
     def update_person_type( self, person_id_IN, value_IN ):

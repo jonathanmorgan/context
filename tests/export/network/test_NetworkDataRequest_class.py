@@ -3084,6 +3084,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # print test header
         TestHelper.print_test_header( self.CLASS_NAME, me )
         
+        #----------------------------------------------------------------------#
         # ! ----> test basic instance.
         test_instance = TestHelper.load_basic()
                 
@@ -3093,7 +3094,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # QuerySet should not be None
         test_value = test_qs
-        error_string = "Retrieving QuerySet filtered based on nested spec, returned None"
+        error_string = "Retrieving QuerySet filtered based on nested basic spec, returned None"
         self.assertIsNotNone( test_value, msg = error_string )
         
         # and should match count...
@@ -3102,7 +3103,220 @@ class NetworkDataRequestTest( django.test.TestCase ):
         error_string = "BASIC - got {}, should = {}.".format( test_value, should_be )
         self.assertEqual( test_value, should_be, msg = error_string )
         
+        #----------------------------------------------------------------------#
+        # ! ----> test basic 2 instance.
+        test_instance = TestHelper.load_basic_2()
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_qs = test_instance.filter_relation_query_set()
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested basic 2 spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 112
+        error_string = "BASIC 2 - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test entity select instance - use_entity_selection_IN = default (False)
+        test_instance = TestHelper.load_with_entity_selection()
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_qs = test_instance.filter_relation_query_set()
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested with entity selection spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 112
+        error_string = "with_entity_selection - default - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test entity select instance - use_entity_selection_IN = False
+        test_instance = TestHelper.load_with_entity_selection()
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_qs = test_instance.filter_relation_query_set( use_entity_selection_IN = False )
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested with entity selection spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 112
+        error_string = "with_entity_selection - False - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test entity select instance - use_entity_selection_IN = True
+        test_instance = TestHelper.load_with_entity_selection()
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_qs = test_instance.filter_relation_query_set( use_entity_selection_IN = True )
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested with entity selection spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 248
+        error_string = "with_entity_selection - True - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # ! TODO - test with a QuerySet passed in.
+        
     #-- END test method test_filter_relation_query_set()
+
+
+    def test_filter_relations( self ):
+
+        # declare variables
+        me = "test_filter_relations"
+        debug_flag = None
+        test_instance = None
+        test_filters = None
+        test_qs = None
+        test_value = None
+        should_be = None
+        error_string = None
+
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+
+        # load basic for first few tests.
+        test_instance = TestHelper.load_basic()
+
+        #----------------------------------------------------------------------#
+        # ! ----> no filter spec.
+        test_filters = None
+        test_qs = test_instance.filter_relations( selection_filters_IN = test_filters )
+
+        # QuerySet should be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on no filter spec, should be None, instead got: {}".format( test_qs )
+        self.assertIsNone( test_value, msg = error_string )
+                
+        #----------------------------------------------------------------------#
+        # ! ----> test basic relation filters.
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_filters = test_instance.get_selection_filters( use_entity_selection_IN = True )
+        test_qs = test_instance.filter_relations( selection_filters_IN = test_filters )
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested basic relation spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 112
+        error_string = "BASIC - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test basic 2 instance.
+        test_instance = TestHelper.load_basic_2()
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_filters = test_instance.get_selection_filters( use_entity_selection_IN = True )
+        test_qs = test_instance.filter_relations( selection_filters_IN = test_filters )
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested basic 2 spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 112
+        error_string = "BASIC 2 - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test entity select instance - use_entity_selection_IN = default (False)
+        test_instance = TestHelper.load_with_entity_selection()
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_filters = test_instance.get_selection_filters()
+        test_qs = test_instance.filter_relations( selection_filters_IN = test_filters )
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested with entity selection spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 112
+        error_string = "with_entity_selection - default - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test entity select instance - use_entity_selection_IN = False
+        test_instance = TestHelper.load_with_entity_selection()
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_filters = test_instance.get_selection_filters( use_entity_selection_IN = False )
+        test_qs = test_instance.filter_relations( selection_filters_IN = test_filters )
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested with entity selection spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 112
+        error_string = "with_entity_selection - False - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test entity select instance - use_entity_selection_IN = True
+        test_instance = TestHelper.load_with_entity_selection()
+                
+        # call the method - no QS passed in, so makes its own, and doesn't use
+        #     entity_selection.
+        test_filters = test_instance.get_selection_filters( use_entity_selection_IN = True )
+        test_qs = test_instance.filter_relations( selection_filters_IN = test_filters )
+        
+        # QuerySet should not be None
+        test_value = test_qs
+        error_string = "Retrieving QuerySet filtered based on nested with entity selection spec, returned None"
+        self.assertIsNotNone( test_value, msg = error_string )
+        
+        # and should match count...
+        test_value = test_qs.count()
+        should_be = 248
+        error_string = "with_entity_selection - True - got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # ! TODO - test with a QuerySet passed in.
+        
+    #-- END test method test_filter_relations()
 
 
     def test_get_selection_filters( self ):
@@ -3124,6 +3338,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # print test header
         TestHelper.print_test_header( self.CLASS_NAME, me )
         
+        #----------------------------------------------------------------------#
         # ! ----> test one without entity selection
         
         # load "with_entity_selection" to use as test instance.
@@ -3169,6 +3384,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         error_string = "BASIC - get_selection_filters(): got {}, should = {}.".format( test_value, should_be )
         self.assertEqual( test_value, should_be, msg = error_string )
 
+        #----------------------------------------------------------------------#
         # ! ----> test one with entity selection
         
         # load "with_entity_selection" to use as test instance.

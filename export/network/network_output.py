@@ -70,9 +70,9 @@ from context.models import Entity_Relation
 from context.export.network.filter_spec import FilterSpec
 #from context.export.network.csv_article_output import CsvArticleOutput
 #from context.export.network.network_data_output import NetworkDataOutput
-#from context.export.network.ndo_simple_matrix import NDO_SimpleMatrix
-#from context.export.network.ndo_csv_matrix import NDO_CSVMatrix
-#from context.export.network.ndo_tab_delimited_matrix import NDO_TabDelimitedMatrix
+from context.export.network.ndo_simple_matrix import NDO_SimpleMatrix
+from context.export.network.ndo_csv_matrix import NDO_CSVMatrix
+from context.export.network.ndo_tab_delimited_matrix import NDO_TabDelimitedMatrix
 
 # Import context_text shared classes.
 from context.shared.context_base import ContextBase
@@ -91,7 +91,7 @@ class NetworkOutput( ContextBase ):
 
 
     DEBUG_FLAG = True
-    LOGGER_NAME = "context.export.network.network_data_request.NetworkDataRequest"
+    LOGGER_NAME = "context.export.network.network_data_request.NetworkOutput"
     ME = LOGGER_NAME
 
     #---------------------------------------------------------------------------
@@ -118,6 +118,9 @@ class NetworkOutput( ContextBase ):
         # place to store NetworkDataRequest
         self.m_network_data_request = None
         
+        # entity relation query set, for populating network ties.
+        self.m_relation_query_set = None
+        
         # set logger name (for LoggingHelper parent class: (LoggingHelper --> BasicRateLimited --> ContextTextBase --> ArticleCoding).
         self.set_logger_name( "context.export.network.network_output" )
         
@@ -129,50 +132,57 @@ class NetworkOutput( ContextBase ):
     #---------------------------------------------------------------------------
 
 
-    def add_entity_to_dict( self, person_qs_IN, dictionary_IN, store_person_IN = False ):
+    def add_entities_to_dict( self, relation_qs_IN, dictionary_IN, include_through_IN = False, store_entity_IN = False ):
 
         """
-            Accepts a dictionary, a list of Article_Person instances, and a flag
-                that indicates if model instances should be stored in the
-                dictionary. Adds the people in the Article_Person query set to
-                the dictionary, making the Person ID the key and either None or
-                the Person model instance the value, depending on the value in
-                the store_person_IN flag.
+            Accepts a dictionary, a list of Entity_Relation instances, and flags
+                that indicate if we want THROUGH in addition to FROM and TO; and
+                if Entity model instances should be stored in the dictionary.
+                Adds the entities from the FROM and TO of the relations in the Entity_Relation query set passed in to the
+                dictionary, making the Entity ID the key and either None or the
+                Entity instance the value, depending on the value in the
+                store_entity_IN flag.  If include_through_IN == True, also adds
+                Entities stored in relations as THROUGH to the map.
 
-            Preconditions: request must have contained required parameters, and
-                so contained at least a start and end date and a publication.
-                Should we have a flag that says to use the same criteria as the
-                selection criteria?
+            Preconditions: request must have contained at least a valid filter
+                specification, else this will likely be a list of all relations
+                (or we won't even get to calling this method).
 
-            Postconditions: uses a lot of memory if you choose a large date
-                range. Returns the same dictionary passed in, but with the
-                people in store_person_IN added.
+            Postconditions: uses a lot of memory if you choose a broad set of
+                filter criteria. Returns the same dictionary passed in, but with
+                the entities in relation_qs_IN added, and optionally adds the
+                associated entities, if store_entity_IN == True.
 
             Parameters:
             - self - self instance variable.
+            - relation_qs_IN - django query set object that contains the relations we
+                want to add to our dictionary.
             - dictionary_IN - dictionary we want to add people to.  Returned
                 with people added.
-            - person_qs_IN - django query set object that contains the people we
-                want to add to our dictionary.
-            - store_person_IN - boolean, if False, doesn't load Person model
-                instances while building the dictionary.  If True, loads Person
-                models and stores them in the dictionary.
+            - include_through_IN - boolean, defaults to False - If True,
+                includes the entity in relation_through in the dictionary along
+                with the FROM and TO.  If False, ignores THROUGH.
+            - store_entity_IN - boolean, if False, doesn't load Entity model
+                instances into dictionary while building the dictionary.  If
+                True, loads Entity model instances and stores them in the
+                dictionary as the value associated with each Entity's ID.
 
             Returns:
-            - Dictionary - dictionary that contains all the people in the query
-                set of Article_Person implementors passed in, either mapped to
-                None or to Person model instances, depending on the
-                load_person_IN flag value.
+            - Dictionary - dictionary updated to include all entities from the
+                FROM, TO, and optionally THROUGH references in the
+                Entity_Relation QuerySet passed in, either mapped to None or to
+                EntityPerson model instances, depending on the store_entity_IN
+                flag value.
         """
 
         # return reference
         person_dict_OUT = {}
 
         # declare variables
-        me = "add_entity_to_dict"
+        me = "add_entities_to_dict"
         current_relation = None
-        current_person = None
-        current_person_id = ''
+        current_entity = None
+        current_entity_id = None
         current_value = None
 
         # set the output dictionary
@@ -184,63 +194,149 @@ class NetworkOutput( ContextBase ):
         #-- END check to see if dictionary passed in --#
 
         # loop over the articles
-        for current_relation in person_qs_IN:
+        for current_relation in relation_qs_IN:
+
+            # ! ----> FROM
 
             # add author's person ID to list.  If no person ID, don't add (what
             #    to do about anonymous sources?).
-            current_person = current_relation.person
+            current_entity = current_relation.relation_from
+            
+            # add to dictionary
+            person_dict_OUT = self.add_entity_to_dict( current_entity, person_dict_OUT, store_entity_IN = store_entity_IN )
 
-            # see if there is a person
-            if ( current_person is not None ):
+            # ! ----> TO
 
-                # are we also loading the person?
-                current_person_id = current_person.id
+            # add author's person ID to list.  If no person ID, don't add (what
+            #    to do about anonymous sources?).
+            current_entity = current_relation.relation_to
+            
+            # add to dictionary
+            person_dict_OUT = self.add_entity_to_dict( current_entity, person_dict_OUT, store_entity_IN = store_entity_IN )
 
-                if ( store_person_IN == True ):
+            # ! ----> THROUGH?
 
-                    # yes, use Person model as value.
-                    current_value = current_person
+            if ( include_through_IN == True ):
 
-                else:
-
-                    # no, use None as value.
-                    current_value = None
-
-                #-- END conditional to check if we are storing actual model instances --#
-
-                # store the person in the output dict.
-                person_dict_OUT[ current_person_id ] = current_value
-
-            #-- END check to see if there is a person (in comparison to an anonymous source, for instance, or the author just being the newspaper) --#
-
+                # add author's person ID to list.  If no person ID, don't add (what
+                #    to do about anonymous sources?).
+                current_entity = current_relation.relation_through
+                
+                # add to dictionary
+                person_dict_OUT = self.add_entity_to_dict( current_entity, person_dict_OUT, store_entity_IN = store_entity_IN )
+                
+            #-- END check to see if we include THROUGH --#
+    
         #-- END loop over people --#
+
+        return person_dict_OUT
+
+    #-- END function add_entities_to_dict() --#
+
+
+    def add_entity_to_dict( self, entity_IN, dictionary_IN, store_entity_IN = False ):
+
+        """
+            Accepts a dictionary, an Entity instance, and a flag that indicates
+                if Entity model instances should be stored in the
+                dictionary. Retrieves the Entity's ID and if it is not already
+                in the dictionary, adds it, making the Entity ID the key and
+                either None or the Entity instance the value, depending on the
+                value in the store_entity_IN flag.
+
+            Postconditions: Returns the same dictionary passed in, but with
+                the Entity passed in added, and optionally adds the associated
+                Entity instance, if store_entity_IN == True.
+
+            Parameters:
+            - self - self instance variable.
+            - entity_IN - django Entity instance to be added to dictionary
+                passed in.
+            - dictionary_IN - dictionary we want to add entity to.  Returned
+                with entity added.
+            - store_entity_IN - boolean, defaults to False - if False, doesn't
+                load Entity model instances into dictionary while building the
+                dictionary.  If True, loads Entity model instances and stores
+                them in the dictionary as the value associated with each
+                Entity's ID.
+
+            Returns:
+            - Dictionary - dictionary updated to include the Entity passed in,
+                either mapped to None or to EntityPerson model instances,
+                depending on the store_entity_IN flag value.
+        """
+
+        # return reference
+        person_dict_OUT = {}
+
+        # declare variables
+        me = "add_entity_to_dict"
+        current_relation = None
+        current_entity = None
+        current_entity_id = None
+        current_value = None
+
+        # set the output dictionary
+        if ( dictionary_IN ):
+
+            # yes, store in output parameter
+            person_dict_OUT = dictionary_IN
+
+        #-- END check to see if dictionary passed in --#
+
+        current_entity = entity_IN
+
+        # see if there is an entity
+        if ( current_entity is not None ):
+
+            # are we also loading the Entity?
+            current_entity_id = current_entity.id
+
+            if ( store_entity_IN == True ):
+
+                # yes, use Entity model as value.
+                current_value = current_entity
+
+            else:
+
+                # no, use None as value.
+                current_value = None
+
+            #-- END conditional to check if we are storing actual model instances --#
+
+            # store the Entity in the output dict.
+            person_dict_OUT[ current_entity_id ] = current_value
+
+        #-- END check to see if there is an entity --#
 
         return person_dict_OUT
 
     #-- END function add_entity_to_dict() --#
 
 
-    def create_entity_dict( self, load_instance_IN = False ):
+    def create_entity_dict( self, include_through_IN = False, load_instance_IN = False ):
 
         """
             Accepts flag that dictates whether we load the actual Entity
-               record or not.  Uses nested request to retrieve all matching
-               relations, then builds a dictionary of all the IDs of FROM and TO
-               Entities in those relations, mapped either to None or to their
-               Entity instance.
+                record or not.  Uses nested request to retrieve all matching
+                relations, then builds a dictionary of all the IDs of FROM and
+                TO Entities in those relations, mapped either to None or to
+                their Entity instance.
 
             Preconditions: request must have contained required parameters, and
-               so contained at least a start and end date and a publication.
-               Should we have a flag that says to use the same criteria as the
-               selection criteria?
+                so contained at least a start and end date and a publication.
+                Should we have a flag that says to use the same criteria as the
+                selection criteria?
 
             Postconditions: uses a lot of memory if you choose a large date
-               range.
+                range.
 
             Parameters:
             - load_instance_IN - boolean, if False, doesn't load Entity model
-               instances while building the dictionary.  If True, loads Entity
-               models and stores them in the dictionary.
+                instances while building the dictionary.  If True, loads Entity
+                models and stores them in the dictionary.
+            - include_through_IN - boolean, if False does not include Entities
+                referenced in relation_through, if True does include them.
 
             Returns:
             - Dictionary - dictionary that maps entity IDs to Entity model
@@ -277,21 +373,82 @@ class NetworkOutput( ContextBase ):
             
             my_logger.debug( "In {}(): relation_query_set.count() = {}".filter( me, relation_query_set.count() ) )
 
-            # loop over the entities
-            for current_relation in relation_query_set:
+            # add entities from relation QuerySet to dict.
+            dict_OUT = self.add_entities_to_dict( relation_query_set,
+                                                  dict_OUT,
+                                                  include_through_IN = include_through_IN,
+                                                  store_entity_IN = load_instance_IN )
             
-                # add FROM and TO entities to entity dictionary.
-                pass
-            
-            #-- END loop over articles --#
-
         #-- END check to make sure we have a request --#
         
-        my_logger.debug( "In " + me + ": len( dict_OUT ) = " + str( len( dict_OUT ) ) )
+        my_logger.debug( "In {}(): len( dict_OUT ) = {}".format( me, len( dict_OUT ) ) )
 
         return dict_OUT
 
     #-- END function create_entity_dict() --#
+
+
+    def get_relation_query_set( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_relation_query_set
+                
+        return value_OUT
+    
+    #-- END method get_relation_query_set() --#
+    
+
+    def get_NDO_instance( self ):
+
+        '''
+        Assumes there is an output type property specified in the POST parameters
+           passed in as part of the current request.  Retrieves this output type,
+           creates a NetworkDataOutput implementer instance to match the type,
+           then returns the instance.  If no type or unknown type, returns None.
+        '''
+        
+        # return reference
+        NDO_instance_OUT = None
+
+        # declare variables
+        output_type_IN = ""
+
+        # get output type.
+        output_type_IN = self.get_param_as_str( self.PARAM_OUTPUT_TYPE )
+        
+        # make instance for output type.
+        if ( output_type_IN == self.NETWORK_OUTPUT_TYPE_SIMPLE_MATRIX ):
+        
+            # simple matrix.
+            NDO_instance_OUT = NDO_SimpleMatrix()
+        
+        elif ( output_type_IN == self.NETWORK_OUTPUT_TYPE_CSV_MATRIX ):
+        
+            # CSV matrix.
+            NDO_instance_OUT = NDO_CSVMatrix()
+        
+        elif ( output_type_IN == self.NETWORK_OUTPUT_TYPE_TAB_DELIMITED_MATRIX ):
+        
+            # Tab-delimited matrix.
+            NDO_instance_OUT = NDO_TabDelimitedMatrix()
+        
+        else:
+        
+            # no output type, or unknown.  Make simple output matrix.
+            NDO_instance_OUT = NDO_SimpleMatrix()
+        
+        #-- END check to see what type we have. --#
+        
+        # set mime type and file extension from instance
+        self.mime_type = NDO_instance_OUT.mime_type
+        self.file_extension = NDO_instance_OUT.file_extension
+
+        return NDO_instance_OUT
+
+    #-- END get_NDO_instance() --#
 
 
     def get_network_data_request( self ):
@@ -307,15 +464,17 @@ class NetworkOutput( ContextBase ):
     #-- END method get_network_data_request() --#
     
 
-    def render_network_data( self, network_data_request_IN = None ):
+    def render_network_data( self, network_data_request_IN = None, relation_qs_IN = None ):
 
         """
-            Accepts optional NetworkDataRequest instance.  If None passed in,
-                tries to retrieve request stored in this instance.  If no
-                request, does nothing, returns None.  If request found, sets up
-                output to match the request; creates network data; renders it to
-                the spec in the request, and returns whatever the render type
-                returns from its render method. 
+            Accepts optional Entity_Relation QuerySet and NetworkDataRequest
+                instance.  If None passed in for Entity_Relation QuerySet, just
+                filters based on request.  If no request passed in, tries to
+                retrieve request stored in this instance.  If no request, does
+                nothing, returns None.  If request found, sets up output to
+                match the request; creates network data; renders it to the spec
+                in the request, and returns whatever the render type returns
+                from its render method. 
 
             Preconditions: assumes that we have a NetworkDataRequest populated,
                 either in the instance variable m_network_data_request in this
@@ -341,6 +500,7 @@ class NetworkOutput( ContextBase ):
         network_data_outputter = None
         entity_dictionary = None
         my_params = None
+        relation_qs = None
 
         # init
         debug_flag = False
@@ -353,6 +513,13 @@ class NetworkOutput( ContextBase ):
             
         #-- END check to see if request passed in.
         
+        # do we have a relation QuerySet passed in?
+        if ( relation_qs_IN is not None ):
+        
+            relation_qs = relation_qs_IN
+            
+        #-- END check to see if QS passed in --#
+        
         # got a request?
         network_data_request = self.get_network_data_request()
         if ( network_data_request is not None ):
@@ -364,19 +531,22 @@ class NetworkOutput( ContextBase ):
             # create the entity_dictionary
             entity_dictionary = self.create_entity_dict()
 
+            # create and store the tie Entity_Relation QuerySet
+            relation_qs = network_data_request.filter_relation_query_set( qs_IN = relation_qs,
+                                                                          use_entity_selection_IN = False )
+
             # create instance of NetworkDataOutput.
-            #network_data_outputter = self.get_NDO_instance()
+            network_data_outputter = self.get_NDO_instance()
 
             # initialize it.
-            #network_data_outputter.set_query_set( query_set_IN )
-            #network_data_outputter.set_person_dictionary( person_dictionary )
+            network_data_outputter.set_query_set( relation_qs )
+            network_data_outputter.set_entity_dictionary( entity_dictionary )
 
-            # initialize NetworkDataOutput instance from params.
-            #my_params = self.get_param_container()
-            #network_data_outputter.initialize_from_params( my_params )
+            # initialize NetworkDataOutput instance from request.
+            network_data_outputter.initialize_from_request( network_data_request )
 
             # render and return the result.
-            #network_OUT = network_data_outputter.render()
+            network_OUT = network_data_outputter.render()
 
             # add some debug?
             if ( debug_flag == True ):
@@ -386,11 +556,33 @@ class NetworkOutput( ContextBase ):
 
             #-- END check to see if we have debug to output. --#
 
+        else:
+        
+            # ! TODO - add error
+            # no request spec, so can't process.
+            pass
+        
         #-- END check to make sure we have a query set. --#
 
         return network_OUT
 
     #-- END render_network_data() --#
+
+
+    def set_relation_query_set( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_relation_query_set = value_IN
+        
+        # return it
+        value_OUT = self.get_relation_query_set()
+        
+        return value_OUT
+    
+    #-- END method set_relation_query_set() --#
 
 
     def set_network_data_request( self, value_IN ):

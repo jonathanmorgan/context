@@ -1083,6 +1083,10 @@ class NetworkDataRequest( ContextBase ):
             method for each item in the list being ANDed or ORed together.  If
             not an aggregating type, passes processing off to a type-specific
             processing method to be correctly handled for the particular type.
+        Postconditions: Stores the resulting Q in the filter spec instance passed
+            in, returns a status instance.  If the filter spec passed in is an
+            aggregating type (AND, OR, etc.), also creates child filter spec
+            instances and and stores Qs in them.
         '''
         
         # return reference
@@ -1690,7 +1694,7 @@ class NetworkDataRequest( ContextBase ):
     #-- end method filter_relations() ---------------------------#
 
 
-    def filter_relations_by_filter_spec( self, qs_IN, filter_spec_IN, level_IN = 0, do_compact_queryset_IN = False ):
+    def filter_relations_by_filter_spec( self, qs_IN, filter_spec_IN, do_compact_queryset_IN = False, recursion_stack_IN = [] ):
         
         '''
         Accepts Entity_Relation QuerySet and filter spec.  Filters the QuerySet
@@ -1712,6 +1716,9 @@ class NetworkDataRequest( ContextBase ):
         
         # return reference
         qs_OUT = None
+        
+        # declare variables - input
+        level_IN = None
         
         # declare variables
         me = "filter_relations_by_filter_spec"
@@ -1736,6 +1743,7 @@ class NetworkDataRequest( ContextBase ):
         child_counter = None
         has_child_aggregate = None
         combined_q = None
+        child_stack = None
         
         # compacting queryset
         relation_id_list = None
@@ -1744,8 +1752,9 @@ class NetworkDataRequest( ContextBase ):
         # init
         debug_flag = self.DEBUG_FLAG
         #debug_flag = True
+        level_IN = len( recursion_stack_IN )
 
-        status_message = "\n\n[{}] In {}():\n- filter = {}\n- level = {}".format( level_IN, me, filter_spec_IN, level_IN )
+        status_message = "\n\n[{}] In {}():\n- filter = {}\n- level = {}\n- recursion stack: {}".format( level_IN, me, filter_spec_IN, level_IN, recursion_stack_IN )
         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
         
         # got a filter spec passed in?
@@ -1828,7 +1837,7 @@ class NetworkDataRequest( ContextBase ):
                                 qs_OUT = qs_OUT.filter( child_q )
                                 
                                 # child aggregate type.
-                                status_message = "In {}(): Unknown but valid comparison type: ( {}, valid types: {} ).  adding it via .filter(), since I don't know what bitwise operator to use on it ( filter spec: {} ).  ( level: {} ). ".format( me, comparison_type, FilterSpec.COMPARISON_TYPE_VALUES, child_filter_spec, level_IN )
+                                status_message = "In {}(): Unknown but valid comparison type: ( {}, valid types: {} ).  adding it via .filter(), since I don't know what bitwise operator to use on it ( filter spec: {} ).  ( level: {}; recursion stack: {} ). ".format( me, comparison_type, FilterSpec.COMPARISON_TYPE_VALUES, child_filter_spec, level_IN, recursion_stack_IN )
                                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
 
                             #-- END check to see how we process Q() based on comparison type. --#
@@ -1836,7 +1845,7 @@ class NetworkDataRequest( ContextBase ):
                         else:
                         
                             # child aggregate type.
-                            status_message = "In {}(): Child is an aggregate comparison type ( {} ).  Parent comparison type: {}  Making recursive call to filter_relations_by_filter_spec() ( filter spec: {} ).  ( level: {} ). ".format( me, child_comparison_type, comparison_type, child_filter_spec, level_IN )
+                            status_message = "In {}(): Child is an aggregate comparison type ( {} ).  Parent comparison type: {}  Making recursive call to filter_relations_by_filter_spec() ( filter spec: {} ).  ( level: {}; recursion stack: {} ). ".format( me, child_comparison_type, comparison_type, child_filter_spec, level_IN, recursion_stack_IN )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )
 
                             # is comparison type one of those that shouldn't
@@ -1846,7 +1855,7 @@ class NetworkDataRequest( ContextBase ):
                                 
                                 # oh dear, it is.  Apologize for this not being
                                 #     a full-featured database.
-                                status_message = "ERROR (probably) - In {}(): Having a child aggregate comparison type ( {} ) inside OR or AND_ampersand comparison types ( current type: {} ) is not supported because of django's & operator for Q() objects not behaving the same as using filter() to AND a Q().  For now, this results in the nested aggregate filter being AND-ed to the QuerySet, not combined with the other filters.  This might work sometimes, and it will probably not out-and-out error, but it won't return correct results.  For 100% reliable execution, you'll need to write custom Python or SQL to filter the relations table like this, or migrate your data store to a graph database.  Sorry.  ( filter spec: {} ).  ( level: {} ). ".format( me, child_comparison_type, comparison_type, child_filter_spec, level_IN )
+                                status_message = "ERROR (probably) - In {}(): Having a child aggregate comparison type ( {} ) inside OR or AND_ampersand comparison types ( current type: {} ) is not supported because of django's & operator for Q() objects not behaving the same as using filter() to AND a Q().  For now, this results in the nested aggregate filter being AND-ed to the QuerySet, not combined with the other filters.  This might work sometimes, and it will probably not out-and-out error, but it won't return correct results.  For 100% reliable execution, you'll need to write custom Python or SQL to filter the relations table like this, or migrate your data store to a graph database.  Sorry.  ( filter spec: {} ).  ( level: {}; recursion stack: {} ). ".format( me, child_comparison_type, comparison_type, child_filter_spec, level_IN, recursion_stack_IN )
                                 self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
                                 
                             #-- END check to see if unsupported child comparison type. --#
@@ -1864,7 +1873,18 @@ class NetworkDataRequest( ContextBase ):
                             # 
                             # So, the take-away here is: If you use OR or
                             #     AND_ampersand, don't AND or OR inside.
-                            qs_OUT = self.filter_relations_by_filter_spec( qs_OUT, child_filter_spec, level_IN = level_IN + 1 )
+                            
+                            # add the comparison type to the recursion command
+                            #     stack.
+                            child_stack = list( recursion_stack_IN )
+                            child_stack.append( child_comparison_type )
+                            
+                            # call the method.
+                            qs_OUT = self.filter_relations_by_filter_spec( qs_OUT, child_filter_spec, recursion_stack_IN = child_stack )
+                            
+                            # no need to pop on exit - the copy of
+                            #     recursion_stack_IN in method context is as it
+                            #     should be.
                             
                             # compact?
                             if ( do_compact_queryset_IN == True ):
@@ -1923,7 +1943,7 @@ class NetworkDataRequest( ContextBase ):
                                     else:
                                     
                                         # impossible.
-                                        status_message = "ERROR (impossible) - In {}(): comparison_type \"{}\" is neither OR nor AND_ampersand, but it had to be one of those two to get here. ( filter spec: {} ).  ( level: {} ). ".format( me, comparison_type, child_filter_spec, level_IN )
+                                        status_message = "ERROR (impossible) - In {}(): comparison_type \"{}\" is neither OR nor AND_ampersand, but it had to be one of those two to get here. ( filter spec: {} ).  ( level: {}; recursion stack: {} ). ".format( me, comparison_type, child_filter_spec, level_IN, recursion_stack_IN )
                                         self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.ERROR )
                                         
                                     #-- END check to see how to append. --#
@@ -2227,7 +2247,9 @@ class NetworkDataRequest( ContextBase ):
         
         '''
         Uses nested selection filters to it to build up an Entity_Relation
-            QuerySet that filters as requested.
+            QuerySet that filters as requested.  If use_entity_selection_IN is
+            True, but no entity selection present, will just return relation
+            selection.
         '''
 
         # return reference
