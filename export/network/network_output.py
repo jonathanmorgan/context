@@ -91,7 +91,7 @@ class NetworkOutput( ContextBase ):
 
 
     DEBUG_FLAG = True
-    LOGGER_NAME = "context.export.network.network_data_request.NetworkOutput"
+    LOGGER_NAME = "context.export.network.network_output.NetworkOutput"
     ME = LOGGER_NAME
 
     #---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ class NetworkOutput( ContextBase ):
         self.m_relation_query_set = None
         
         # set logger name (for LoggingHelper parent class: (LoggingHelper --> BasicRateLimited --> ContextTextBase --> ArticleCoding).
-        self.set_logger_name( "context.export.network.network_output" )
+        self.set_logger_name( self.LOGGER_NAME )
         
     #-- END method __init__() --#
 
@@ -171,12 +171,12 @@ class NetworkOutput( ContextBase ):
             - Dictionary - dictionary updated to include all entities from the
                 FROM, TO, and optionally THROUGH references in the
                 Entity_Relation QuerySet passed in, either mapped to None or to
-                EntityPerson model instances, depending on the store_entity_IN
+                Entity model instances, depending on the store_entity_IN
                 flag value.
         """
 
         # return reference
-        person_dict_OUT = {}
+        entity_dict_OUT = {}
 
         # declare variables
         me = "add_entities_to_dict"
@@ -189,7 +189,7 @@ class NetworkOutput( ContextBase ):
         if ( dictionary_IN ):
 
             # yes, store in output parameter
-            person_dict_OUT = dictionary_IN
+            entity_dict_OUT = dictionary_IN
 
         #-- END check to see if dictionary passed in --#
 
@@ -198,38 +198,35 @@ class NetworkOutput( ContextBase ):
 
             # ! ----> FROM
 
-            # add author's person ID to list.  If no person ID, don't add (what
-            #    to do about anonymous sources?).
+            # add FROM Entity ID to list.  If no Entity ID, don't add.
             current_entity = current_relation.relation_from
             
             # add to dictionary
-            person_dict_OUT = self.add_entity_to_dict( current_entity, person_dict_OUT, store_entity_IN = store_entity_IN )
+            entity_dict_OUT = self.add_entity_to_dict( current_entity, entity_dict_OUT, store_entity_IN = store_entity_IN )
 
             # ! ----> TO
 
-            # add author's person ID to list.  If no person ID, don't add (what
-            #    to do about anonymous sources?).
+            # add TO Entity ID to list.  If no Entity ID, don't add.
             current_entity = current_relation.relation_to
             
             # add to dictionary
-            person_dict_OUT = self.add_entity_to_dict( current_entity, person_dict_OUT, store_entity_IN = store_entity_IN )
+            entity_dict_OUT = self.add_entity_to_dict( current_entity, entity_dict_OUT, store_entity_IN = store_entity_IN )
 
             # ! ----> THROUGH?
 
             if ( include_through_IN == True ):
 
-                # add author's person ID to list.  If no person ID, don't add (what
-                #    to do about anonymous sources?).
+                # add THROUGH Entity ID to list.  If no Entity ID, don't add.
                 current_entity = current_relation.relation_through
                 
                 # add to dictionary
-                person_dict_OUT = self.add_entity_to_dict( current_entity, person_dict_OUT, store_entity_IN = store_entity_IN )
+                entity_dict_OUT = self.add_entity_to_dict( current_entity, entity_dict_OUT, store_entity_IN = store_entity_IN )
                 
             #-- END check to see if we include THROUGH --#
     
-        #-- END loop over people --#
+        #-- END loop over Entities --#
 
-        return person_dict_OUT
+        return entity_dict_OUT
 
     #-- END function add_entities_to_dict() --#
 
@@ -262,12 +259,12 @@ class NetworkOutput( ContextBase ):
 
             Returns:
             - Dictionary - dictionary updated to include the Entity passed in,
-                either mapped to None or to EntityPerson model instances,
+                either mapped to None or to Entity model instances,
                 depending on the store_entity_IN flag value.
         """
 
         # return reference
-        person_dict_OUT = {}
+        entity_dict_OUT = {}
 
         # declare variables
         me = "add_entity_to_dict"
@@ -280,7 +277,7 @@ class NetworkOutput( ContextBase ):
         if ( dictionary_IN ):
 
             # yes, store in output parameter
-            person_dict_OUT = dictionary_IN
+            entity_dict_OUT = dictionary_IN
 
         #-- END check to see if dictionary passed in --#
 
@@ -305,11 +302,11 @@ class NetworkOutput( ContextBase ):
             #-- END conditional to check if we are storing actual model instances --#
 
             # store the Entity in the output dict.
-            person_dict_OUT[ current_entity_id ] = current_value
+            entity_dict_OUT[ current_entity_id ] = current_value
 
         #-- END check to see if there is an entity --#
 
-        return person_dict_OUT
+        return entity_dict_OUT
 
     #-- END function add_entity_to_dict() --#
 
