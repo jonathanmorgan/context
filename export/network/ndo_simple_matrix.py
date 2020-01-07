@@ -26,15 +26,8 @@ if __name__ == "__main__":
 #from django.db.models import Count # for aggregating counts of authors, sources.
 #from django.db.models import Max   # for getting max value of author, source counts.
 
-# Import the classes for our context_text application
-#from context_text.models import Article
-#from context_text.models import Article_Author
-from context_text.models import Article_Subject
-#from context_text.models import Person
-#from context_text.models import Topic
-
 # parent abstract class.
-from context_text.export.network_data_output import NetworkDataOutput
+from context.export.network.network_data_output import NetworkDataOutput
 
 #===============================================================================
 # classes (in alphabetical order by name)
@@ -97,16 +90,15 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         """
             Method: create_label_string()
 
-            Purpose: retrieves the master person list from the instance, uses it
-               to output a list of the person IDS and their source types, one to
+            Purpose: retrieves the master entity list from the instance, uses it
+               to output a list of the entity IDS and their source types, one to
                a line, that could be pasted into a column next to the attributes
                or data to make it more readily understandable for someone
-               eye-balling it.  Each person's label consists of:
-               "<person_counter>__<person_id>__<person_type>"
+               eye-balling it.  Each entity's label consists of:
+               "<entity_counter>__<entity_id>"
                WHERE:
-               - <person_counter> is the simple integer count of people in list, incremented as each person is added.
-               - <person_id> is the ID of the person's Person record in the system.
-               - <person_type> is the string person type of the person, then a hyphen, then the person type ID of that type.
+               - <entity_counter> is the simple integer count of entities in list, incremented as each entity is added.
+               - <entity_id> is the ID of the entity's Entity record in the system.
 
             Returns:
             - string representation of labels for each row in network and attributes.
@@ -118,49 +110,31 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         # declare variables
         master_list = None
         my_label = ''
-        current_person_id = -1
-        person_count = -1
+        current_entity_id = -1
+        entity_count = -1
         current_type = ''
         current_type_id = -1
         current_label = ""
         current_value = ''
         delimiter = delimiter_IN
-        unknown_count = 0
-        author_count = 0
-        source_count = 0
-        both_count = 0
 
         # get master list
-        master_list = self.get_master_person_list()
+        master_list = self.get_master_entity_list()
 
         # got something?
         if ( master_list ):
 
-            # loop over sorted person list, building label line for each person.
-            person_count = 0
-            for current_person_id in sorted( master_list ):
+            # loop over sorted entity list, building label line for each entity.
+            entity_count = 0
+            for current_entity_id in sorted( master_list ):
 
-                person_count += 1
+                entity_count += 1
                 
-                # get current person type and type ID
-                current_type = self.get_person_type( current_person_id )
-                current_type_id = self.get_person_type_id( current_person_id )
-
-                # increment count
-                if ( current_type == NetworkDataOutput.PERSON_TYPE_UNKNOWN ):
-                    unknown_count += 1
-                elif ( current_type == NetworkDataOutput.PERSON_TYPE_AUTHOR ):
-                    author_count += 1
-                elif ( current_type == NetworkDataOutput.PERSON_TYPE_SOURCE ):
-                    source_count += 1
-                elif ( current_type == NetworkDataOutput.PERSON_TYPE_BOTH ):
-                    both_count += 1
-
                 # get label
-                current_label = self.get_person_label( current_person_id )
+                current_label = self.get_entity_label( current_entity_id )
 
-                # append the person's row to the output string.
-                current_value = str( person_count ) + "__" + current_label
+                # append the entity's row to the output string.
+                current_value = str( entity_count ) + "__" + current_label
 
                 # do we want quotes?
                 if ( quote_character_IN != '' ):
@@ -173,12 +147,9 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
                 # append to output
                 string_OUT += current_value + delimiter
 
-            #-- END loop over persons.
+            #-- END loop over entities.
 
-            # append counts
-            string_OUT += "\n\ntotals: unknown=" + str( unknown_count ) + "; author=" + str( author_count ) + "; source=" + str( source_count ) + "; both=" + str( both_count ) + "\n\n"
-
-        #-- END check to make sure we have a person list. --#
+        #-- END check to make sure we have a entity list. --#
 
         return string_OUT
 
@@ -190,9 +161,9 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         """
             Method: create_network_string()
 
-            Purpose: retrieves the master person list from the instance, uses it
-               to output a square matrix where rows and columns are people, by
-               person ID, and the value at the intersection between two people
+            Purpose: retrieves the master entity list from the instance, uses it
+               to output a square matrix where rows and columns are entities, by
+               entity ID, and the value at the intersection between two entities
                is the number of time they were linked in articles during the
                time period that the network was drawn from.
 
@@ -206,51 +177,41 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         # declare variables
         master_list = None
         my_label = ''
-        current_person_id = -1
+        current_entity_id = -1
         end_of_line = self.OUTPUT_END_OF_LINE
 
         # get master list
-        master_list = self.get_master_person_list()
+        master_list = self.get_master_entity_list()
 
         # got something?
         if ( master_list ):
 
-            # got one.  Do we have a label to append?
-            my_label = self.network_label
+            # loop over sorted entity list, calling method to output network
+            #    row for each entity.
+            for current_entity_id in sorted( master_list ):
 
-            if ( my_label != '' ):
+                # append the entity's row to the output string.
+                network_string_OUT += self.create_entity_row_string( current_entity_id ) + end_of_line
 
-                # we have a label.  Add it as the first line of the output.
-                network_string_OUT += my_label + end_of_line
+            #-- END loop over entities. --#
 
-            #-- END check for label. --#
-
-            # loop over sorted person list, calling method to output network
-            #    row for each person.
-            for current_person_id in sorted( master_list ):
-
-                # append the person's row to the output string.
-                network_string_OUT += self.create_person_row_string( current_person_id ) + end_of_line
-
-            #-- END loop over persons.
-
-        #-- END check to make sure we have a person list. --#
+        #-- END check to make sure we have a entity list. --#
 
         return network_string_OUT
 
     #-- END method create_network_string --#
 
 
-    def create_person_row_string( self, person_id_IN ):
+    def create_entity_row_string( self, entity_id_IN ):
 
         """
-            Method: create_person_row_string()
+            Method: create_entity_row_string()
 
-            Purpose: retrieves the master person list from the instance, uses it
-               to output a square matrix where rows and columns are people, by
-               person ID, and the value at the intersection between two people
-               is the number of time they were linked in articles during the
-               time period that the network was drawn from.
+            Purpose: retrieves the master entity list from the instance, uses it
+                to output a square matrix where rows and columns are entities,
+                by entity ID, and the value at the intersection between two
+                entities is the number of time they were linked in the selected
+                Entity_Relation instances the network was drawn from.
 
             Returns:
             - string representation of network.
@@ -261,28 +222,28 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
 
         # declare variables
         master_list = None
-        current_person_relations = None
+        current_entity_relations = None
         current_other_id = -1
         current_other_count = -1
         delimiter = self.column_separator
 
-        # get person ID?
-        if ( person_id_IN ):
+        # get entity ID?
+        if ( entity_id_IN ):
 
             # get master list
-            master_list = self.get_master_person_list()
+            master_list = self.get_master_entity_list()
 
-            # get relations for this person.
-            current_person_relations = self.get_relations_for_person( person_id_IN )
+            # get relations for this entity.
+            current_entity_relations = self.get_relations_for_entity( entity_id_IN )
 
-            # loop over master list, checking for relations with each person.
+            # loop over master list, checking for relations with each entity.
             for current_other_id in sorted( master_list ):
 
                 # try to retrieve relation count from relations
-                if current_other_id in current_person_relations:
+                if current_other_id in current_entity_relations:
 
                     # they are related.  Get count.
-                    current_other_count = current_person_relations[ current_other_id ]
+                    current_other_count = current_entity_relations[ current_other_id ]
 
                 else:
 
@@ -291,87 +252,76 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
 
                 #-- END check to see if related.
 
-                # output the count for the current person.
+                # output the count for the current entity.
                 string_OUT += delimiter + str( current_other_count )
 
             #-- END loop over master list --#
 
-        #-- END check to make sure we have a person --#
+        #-- END check to make sure we have a entity --#
 
         return string_OUT
 
-    #-- END method create_person_row_string --#
+    #-- END method create_entity_row_string --#
 
 
-    def create_person_type_attribute_string( self ):
+    def create_entity_relation_types_attribute_string( self ):
 
         '''
-            Method: create_person_type_attribute_string()
+            Method: create_entity_relation_types_attribute_string()
 
-            Purpose: Create a string list of person type IDs for the people in
-               master list, for use in assigning person type attributes to the
-               corresponding people/nodes.
+            Purpose: pulls in all relation types, then outputs a list of counts
+                per entity-->type-->role of times the entity had the role for
+                a particular relation type.  Will result in many lists, 3 for
+                each relation type (FROM, TO, THROUGH).  For use in assigning
+                entity type attributes to the corresponding nodes.
 
-            Preconditions: Master person list must be present.
+            Preconditions: Master entity list must be present.
 
             Params: none
 
             Returns:
-            - string_OUT - list of person IDs, in sorted master person list order, one to a line.
+            - string_OUT - lists of roles for each relation type, with a count of number of times each entity was in that role for that relation type, in sorted master entity list order.
         '''
 
         # return reference
         string_OUT = ""
 
         # declare variables
-        person_type_id_list = None
+        #person_type_id_list = None
 
         # get person type ID list
-        person_type_id_list = self.create_person_type_id_list( True )
+        #person_type_id_list = self.create_person_type_id_list( True )
 
         # got it?
-        if ( person_type_id_list ):
+        #if ( person_type_id_list ):
 
             # output the name of this attribute
-            string_OUT += "person_type\n"
+        #    string_OUT += "person_type\n"
 
             # join the list into a string, separated by newlines.
-            string_OUT += "\n".join( person_type_id_list )
+        #    string_OUT += "\n".join( person_type_id_list )
             
             # add a newline to the end.
-            string_OUT += "\n"
+        #    string_OUT += "\n"
             
         #-- END check to make sure we have list.
 
         return string_OUT
 
-    #-- END method create_person_type_attribute_string --#
+    #-- END method create_entity_relation_types_attribute_string --#
 
 
     def render_network_data( self ):
 
         """
-            Assumes render method has already created network data by calling
-               process_author_relations() and updated source person types by
-               calling update_source_person_types().  Outputs a simple text
-               matrix of ties.  For a given cell in the matrix, the value is an
-               integer: 0 if no tie, 1 or greater if tie.  Each column value is
-               separated by two spaces.
-               Uses the query set to output delimited data in the format specified in
-               the output_type instance variable.  If one line per article, has
-               sets of columns for as many authors and sources as are present in
-               the articles with the most authors and sources, respectively.
-
-            Preconditions: assumes that we have a query set of articles stored
-               in the instance.  If not, does nothing, returns empty string.
+            Assumes render method has already created network data and entity
+                relation types details.  Outputs a simple text
+                matrix of ties.  For a given cell in the matrix, the value is an
+                integer: 0 if no tie, 1 or greater if tie.  Each column value is
+                separated by two spaces.
 
             Postconditions: returns the delimited network data, each column separated by two spaces, in a string.
-
-            Parameters - all inputs are stored in instance variables:
-            - self.query_set - Query set of articles for which we want to create network data.
-            - self.person_dictionary - QuerySet of people we want included in our network (can include people not mentioned in an article, in case we want to include all people from two different time periods, for example).
-            - self.inclusion_params
-
+            
             Returns:
             - String - delimited output (two spaces separate each column value in a row) for the network described by the articles selected based on the parameters passed in.
         """
@@ -381,17 +331,19 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
 
         # declare variables
         data_output_type = ""
+        master_entity_list = None
 
         #--------------------------------------------------------------------
-        # render network data based on people and ties.
+        # render network data.
         #--------------------------------------------------------------------
         
         # get data output type
         my_data_output_type = self.data_output_type
         
         # then, need to output.  For each network, output the network, then also
-        #    output an attribute file that says, for all people whether each
-        #    person was a reporter or a source.
+        #     output an attribute file that says, for all entities and relation
+        #     types, whether each entity was in any role (FROM, TO, THROUGH) for
+        #     each of the relation types.
         
         # include network?
         if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NETWORK )
@@ -399,7 +351,8 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
             or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS ) ):
 
             # output the N of the network.
-            network_data_OUT += "\nN = " + str( len( self.master_person_list ) ) + "\n"
+            master_entity_list = self.get_master_entity_list()
+            network_data_OUT += "\nN = {}\n".format( len( master_entity_list ) )
     
             # output network.
             network_data_OUT += self.create_network_string()
@@ -409,13 +362,13 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
     
         #-- END check to see if include network matrix --#
 
-        # include person type attributes?
+        # include entity relation type attributes?
         if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES )
             or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS )
             or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS ) ):
 
             # yes - append the attribute string.
-            network_data_OUT += self.create_person_type_attribute_string()
+            network_data_OUT += self.create_entity_relation_types_attribute_string()
             
         #-- END check to see if include attributes. --#
 

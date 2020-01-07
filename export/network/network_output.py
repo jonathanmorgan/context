@@ -411,10 +411,12 @@ class NetworkOutput( ContextBase ):
         NDO_instance_OUT = None
 
         # declare variables
-        output_type_IN = ""
+        request_instance = None
+        output_type = None
 
         # get output type.
-        output_type_IN = self.get_param_as_str( self.PARAM_OUTPUT_TYPE )
+        request_instance = self.get_network_data_request()
+        output_type = request_instance.get_output_type()
         
         # make instance for output type.
         if ( output_type_IN == self.NETWORK_OUTPUT_TYPE_SIMPLE_MATRIX ):

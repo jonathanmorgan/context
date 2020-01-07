@@ -33,15 +33,8 @@ from six import StringIO
 #from django.db.models import Count # for aggregating counts of authors, sources.
 #from django.db.models import Max   # for getting max value of author, source counts.
 
-# Import the classes for our context_text application
-#from context_text.models import Article
-#from context_text.models import Article_Author
-from context_text.models import Article_Subject
-#from context_text.models import Person
-#from context_text.models import Topic
-
 # parent abstract class.
-from context_text.export.network_data_output import NetworkDataOutput
+from context.export.network.network_data_output import NetworkDataOutput
 
 #===============================================================================
 # classes (in alphabetical order by name)
@@ -102,17 +95,18 @@ class NDO_CSVMatrix( NetworkDataOutput ):
     #---------------------------------------------------------------------------
 
 
-    def append_person_row( self, person_id_IN, row_count_IN = "" ):
+    def append_entity_row( self, entity_id_IN, row_count_IN = "" ):
 
         """
-            Method: append_person_row()
+            Method: append_entity_row()
 
-            Purpose: retrieves the master person list from the instance, uses it
-               and the person ID passed in to output the row for the current
-               person in a square matrix where rows and columns are people,
-               sorted by person ID, and the value at the intersection between
-               two people is the number of time they were linked in articles
-               during the time period that the network was drawn from.
+            Purpose: retrieves the master entity list from the instance, uses it
+               and the entity ID passed in to output the row for the current
+               entity in a square matrix where rows and columns are entities,
+               sorted by entity ID, and the value at the intersection between
+               two entities is the number of times they were linked by relations
+               from the pool of Entity_Relation instances that make up the
+               network.
 
             Postconditions: Doesn't return anything, but appends row for current
                user to the nested CSV writer.
@@ -124,48 +118,48 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         # return reference
 
         # declare variables
-        current_person_label = ""
-        person_list = None
+        current_entity_label = ""
+        entity_list = None
         do_output_network = False
-        current_person_relations = None
+        current_entity_relations = None
         current_other_id = -1
         current_other_count = -1
         column_value_list = []
         csv_writer = None
         do_output_attrs = False
-        person_type_id = -1
+        relation_type_role_counts_list = None
 
-        # get person ID?
-        if ( person_id_IN ):
+        # get entity ID?
+        if ( entity_id_IN ):
         
             if ( ( self.LOCAL_DEBUG_FLAG == True ) or ( self.DEBUG_FLAG == True ) ):
-                self.debug += "person " + str( person_id_IN ) + "; "
+                self.debug += "entity " + str( entity_id_IN ) + "; "
             #-- END DEBUG --#
                 
             # get label for current user
-            current_person_label = str( row_count_IN ) + "__" + self.get_person_label( person_id_IN )
+            current_entity_label = str( row_count_IN ) + "__" + self.get_entity_label( entity_id_IN )
             
             # make it first column in row.
-            column_value_list.append( current_person_label )
+            column_value_list.append( current_entity_label )
             
             # are we outputting network?
             do_output_network = self.do_output_network()
             if ( do_output_network == True ):
 
-                # get person list
-                person_list = self.get_master_person_list()
+                # get entity list
+                entity_list = self.get_master_entity_list()
     
-                # get relations for this person.
-                current_person_relations = self.get_relations_for_person( person_id_IN )
+                # get relations for this entity.
+                current_entity_relations = self.get_relations_for_entity( entity_id_IN )
     
-                # loop over master list, checking for relations with each person.
-                for current_other_id in sorted( person_list ):
+                # loop over master list, checking for relations with each entity.
+                for current_other_id in sorted( entity_list ):
     
                     # try to retrieve relation count from relations
-                    if current_other_id in current_person_relations:
+                    if current_other_id in current_entity_relations:
     
                         # they are related.  Get count.
-                        current_other_count = current_person_relations[ current_other_id ]
+                        current_other_count = current_entity_relations[ current_other_id ]
     
                     else:
     
@@ -174,7 +168,7 @@ class NDO_CSVMatrix( NetworkDataOutput ):
     
                     #-- END check to see if related.
     
-                    # output the count for the current person.
+                    # output the count for the current entity.
                     column_value_list.append( str( current_other_count ) )
     
                 #-- END loop over master list --#
@@ -187,33 +181,39 @@ class NDO_CSVMatrix( NetworkDataOutput ):
 
                 # yes - append attributes.
                 
-                # append person's ID.
-                column_value_list.append( str( person_id_IN ) )
+                # append entity's ID.
+                column_value_list.append( str( entity_id_IN ) )
 
-                # get current person's person type and append it.
-                person_type_id = self.get_person_type_id( person_id_IN )
-                column_value_list.append( str( person_type_id ) )
+                # ! TODO - append relation types and counts.
+                # walk the entity's relation type data structure in the same
+                #     order as the relation type list, and output FROM, TO, and
+                #     THROUGH numbers for each, 0 if not found.  Will result in
+                #     many attribute columns.
+                relation_type_role_counts_list = self.create_relation_type_roles_for_entity( entity_id_IN )
+                
+                # extend the row's column_value_list with these new values.
+                column_value_list.extend( relation_type_role_counts_list )
                             
             #-- END check to see if we append attributes to the end of rows. --#
             
             # append row to CSV
             self.append_row_to_csv( column_value_list )
 
-        #-- END check to make sure we have a person --#
+        #-- END check to make sure we have a entity --#
 
-    #-- END method append_person_row --#
+    #-- END method append_entity_row --#
 
 
-    def append_person_id_row( self ):
+    def append_entity_id_row( self ):
 
         '''
-            Method: append_person_id_row()
+            Method: append_entity_id_row()
 
-            Purpose: Create a list of person IDs for the people in
+            Purpose: Create a list of entity IDs for the entities in
                master list, then append the list to the end of the
                CSV document.
 
-            Preconditions: Master person list must be present.
+            Preconditions: Master entity list must be present.
 
             Params: none
             
@@ -223,70 +223,76 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         # return reference
 
         # declare variables
-        person_id_list = None
+        entity_id_list = None
 
-        # get person type ID list
-        person_id_list = self.create_person_id_list( True )
+        # get entity type ID list
+        entity_id_list = self.create_entity_id_list( True )
 
         if ( ( self.LOCAL_DEBUG_FLAG == True ) or ( self.DEBUG_FLAG == True ) ):
-            self.debug += "\n\nperson id list:\n" + "; ".join( person_id_list )
+            self.debug += "\n\nentity id list:\n" + "; ".join( entity_id_list )
         #-- END DEBUG --#
 
         # got it?
-        if ( ( person_id_list != None ) and ( len( person_id_list ) > 0 ) ):
+        if ( ( entity_id_list != None ) and ( len( entity_id_list ) > 0 ) ):
 
             # add label to front
-            person_id_list.insert( 0, "person_id" )
+            entity_id_list.insert( 0, "entity_id" )
 
             # write the row
-            self.append_row_to_csv( person_id_list )
+            self.append_row_to_csv( entity_id_list )
             
         #-- END check to make sure we have list.
 
-    #-- END method append_person_id_row --#
+    #-- END method append_entity_id_row --#
 
 
-    def append_person_type_id_row( self ):
+    def append_entity_relation_type_rows( self ):
 
         '''
-            Method: append_person_type_id_row()
+            Method: append_entity_relation_type_rows()
 
-            Purpose: Create a list of person type IDs for the people in
-               master list, for use in assigning person type attributes to the
-               corresponding people/nodes.  Append the list to the end of the
-               CSV document.
+            Purpose: Pull in all relation types, then for each
+                entity-->type-->role, walk all entities and output their value
+                for that relation type in the row.  So, will result in many rows
+                of attribute values.
 
-            Preconditions: Master person list must be present.
+            Preconditions: Master entity list must be present.
 
             Params: none
             
-            Postconditions: Row is appended to the end of the nested CSV document, but nothing is returned.
+            Postconditions: Rows are appended to the end of the nested CSV document, but nothing is returned.
         '''
+
+        # declare variables
+        
+
+        # ! TODO
+        pass
 
         # return reference
 
         # declare variables
-        person_type_id_list = None
+        #person_type_id_list = None
 
         # get person type ID list
-        person_type_id_list = self.create_person_type_id_list( True )
+        #person_type_id_list = self.create_person_type_id_list( True )
 
-        if ( ( self.LOCAL_DEBUG_FLAG == True ) or ( self.DEBUG_FLAG == True ) ):
-            self.debug += "\n\nperson type id list:\n" + "; ".join( person_type_id_list )
+        #if ( ( self.LOCAL_DEBUG_FLAG == True ) or ( self.DEBUG_FLAG == True ) ):
+        #    self.debug += "\n\nperson type id list:\n" + "; ".join( person_type_id_list )
         #-- END DEBUG --#
 
         # got it?
-        if ( ( person_type_id_list != None ) and ( len( person_type_id_list ) > 0 ) ):
+        #if ( ( person_type_id_list != None ) and ( len( person_type_id_list ) > 0 ) ):
 
             # add label to front
-            person_type_id_list.insert( 0, "person_type" )
+        #    person_type_id_list.insert( 0, "person_type" )
 
             # write the row
-            self.append_row_to_csv( person_type_id_list )
+        #    self.append_row_to_csv( person_type_id_list )
             
         #-- END check to make sure we have list.
 
-    #-- END method append_person_type_id_row --#
+    #-- END method append_entity_relation_type_rows --#
 
 
     def append_row_to_csv( self, column_value_list_IN ):
@@ -336,11 +342,12 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         """
             Method: create_csv_document()
 
-            Purpose: retrieves the master person list from the instance, uses it
-               to output a CSV square matrix where rows and columns are people,
-               by person ID, and the value at the intersection between two people
-               is the number of time they were linked in articles during the
-               time period that the network was drawn from.
+            Purpose: retrieves the master entity list from the instance, uses it
+                to output a CSV square matrix where rows and columns are entities,
+                sorted by entity ID, and the value at the intersection between
+                two entities is the number of times they were linked by relations
+                from the pool of Entity_Relation instances that make up the
+                network.
 
             Preconditions: Assumes that csv output is already initialized.
             
@@ -353,8 +360,8 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         # declare variables
         header_label_list = None
         master_list = None
-        current_person_id = -1
-        person_counter = -1
+        current_entity_id = -1
+        entity_counter = -1
         my_csv_buffer = None
         do_output_attr_rows = False
 
@@ -365,37 +372,37 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         self.append_row_to_csv( header_label_list )
 
         # get sorted master list (returns it sorted by default)
-        master_list = self.get_master_person_list()
+        master_list = self.get_master_entity_list()
 
         # got something?
         if ( ( master_list != None ) and ( len( master_list ) > 0 ) ):
 
-            # loop over sorted person list, calling method to output network
-            #    row for each person.  Leaving in sorted() since it copies
+            # loop over sorted entity list, calling method to output network
+            #    row for each entity.  Leaving in sorted() since it copies
             #    the array, and we are looping twice - not sure if it will
             #    maintain two separate positions in nested loops.
-            person_counter = 0
-            for current_person_id in sorted( master_list ):
+            entity_counter = 0
+            for current_entity_id in sorted( master_list ):
 
                 # increment counter
-                person_counter += 1
+                entity_counter += 1
 
-                # add the person's row to the CSV writer.
-                self.append_person_row( current_person_id, person_counter )
+                # add the entity's row to the CSV writer.
+                self.append_entity_row( current_entity_id, entity_counter )
 
-            #-- END loop over persons.
+            #-- END loop over entities.
 
-        #-- END check to make sure we have a person list. --#
+        #-- END check to make sure we have a entity list. --#
         
         # add attributes as rows?
         do_output_attr_rows = self.do_output_attribute_rows()
         if ( do_output_attr_rows == True ):
 
-            # yes - append the "person_id" attribute string...
-            self.append_person_id_row()
+            # yes - append the "entity_id" attribute string...
+            self.append_entity_id_row()
             
-            # ...and append the "person_type" attribute string.
-            self.append_person_type_id_row()
+            # ...and append the "entity_type" attribute string.
+            self.append_entity_relation_type_rows()
             
         #-- END check to see if include attributes. --#
 
@@ -407,11 +414,12 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         """
             Method: create_csv_string()
 
-            Purpose: retrieves the master person list from the instance, uses it
-               to output a CSV square matrix where rows and columns are people,
-               by person ID, and the value at the intersection between two people
-               is the number of time they were linked in articles during the
-               time period that the network was drawn from.
+            Purpose: retrieves the master entity list from the instance, uses it
+                to output a CSV square matrix where rows and columns are entities,
+                sorted by entity ID, and the value at the intersection between
+                two entities is the number of times they were linked by relations
+                from the pool of Entity_Relation instances that make up the
+                network.
 
             Returns:
             - string CSV representation of network.
@@ -422,8 +430,8 @@ class NDO_CSVMatrix( NetworkDataOutput ):
 
         # declare variables
         master_list = None
-        current_person_id = -1
-        person_counter = -1
+        current_entity_id = -1
+        entity_counter = -1
         my_csv_buffer = None
 
         # initialize CSV output.
@@ -524,51 +532,26 @@ class NDO_CSVMatrix( NetworkDataOutput ):
     def render_network_data( self ):
 
         """
-            Assumes render method has already created network data by calling
-               process_author_relations() and updated source person types by
-               calling update_source_person_types().  Outputs a simple text
-               matrix of ties.  For a given cell in the matrix, the value is an
-               integer: 0 if no tie, 1 or greater if tie.  Each column value is
-               separated by two spaces.
+            Assumes render method has already created network data and entity
+                relation types details.  Outputs a simple text
+                matrix of ties.  For a given cell in the matrix, the value is an
+                integer: 0 if no tie, 1 or greater if tie.
 
-            Preconditions: assumes that we have a query set of articles stored
-               in the instance.  If not, does nothing, returns empty string.
-
-            Postconditions: returns the delimited network data, each column separated by two spaces, in a string.
-
-            Parameters - all inputs are stored in instance variables:
-            - self.query_set - Query set of articles for which we want to create network data.
-            - self.person_dictionary - QuerySet of people we want included in our network (can include people not mentioned in an article, in case we want to include all people from two different time periods, for example).
-            - self.inclusion_params
+            Postconditions: returns the delimited network data in a string.
 
             Returns:
-            - String - delimited output (two spaces separate each column value in a row) for the network described by the articles selected based on the parameters passed in.
+            - String - Outputs a simple text matrix of ties.  For a given cell in the matrix, the value is an integer: 0 if no tie, 1 or greater if tie.
         """
 
         # return reference
         network_data_OUT = ''
 
         # declare variables
-        include_render_details = False
-        
-        # include render details?
-        include_render_details = self.include_render_details
 
         #--------------------------------------------------------------------
-        # render network data based on people and ties.
+        # render network data
         #--------------------------------------------------------------------
         
-        # then, need to output.  For each network, output the network, then also
-        #    output an attribute file that says, for all people whether each
-        #    person was a reporter or a source.
-
-        if ( include_render_details == True ):
-
-            # output the N of the network.
-            network_data_OUT += "\nN = " + str( len( self.master_person_list ) ) + "\n"
-            
-        #-- END check to see if include render details. --#
-    
         # output network.
         network_data_OUT += self.create_csv_string()
         

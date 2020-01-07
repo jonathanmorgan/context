@@ -32,15 +32,8 @@ from six import StringIO
 #from django.db.models import Count # for aggregating counts of authors, sources.
 #from django.db.models import Max   # for getting max value of author, source counts.
 
-# Import the classes for our context_text application
-#from context_text.models import Article
-#from context_text.models import Article_Author
-from context_text.models import Article_Subject
-#from context_text.models import Person
-#from context_text.models import Topic
-
 # parent class.
-from context_text.export.ndo_csv_matrix import NDO_CSVMatrix
+from context.export.network.ndo_csv_matrix import NDO_CSVMatrix
 
 #===============================================================================
 # classes (in alphabetical order by name)

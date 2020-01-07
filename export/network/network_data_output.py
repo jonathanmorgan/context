@@ -38,13 +38,6 @@ import six
 # python_utilities
 from python_utilities.parameters.param_container import ParamContainer
 
-# Import the classes for our context_text application
-#from context_text.models import Article
-#from context_text.models import Article_Author
-#from context_text.models import Article_Subject
-#from context_text.models import Person
-#from context_text.models import Topic
-
 # export classes
 from context.export.network.network_data_request import NetworkDataRequest
 
@@ -104,42 +97,6 @@ class NetworkDataOutput( ContextBase ):
         ( NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS, "Network + Attribute Rows" ),
     ]
 
-    # Person Query Types
-    PERSON_QUERY_TYPE_ALL = "all"
-    PERSON_QUERY_TYPE_ARTICLES = "articles"
-    PERSON_QUERY_TYPE_CUSTOM = "custom"
-    PERSON_QUERY_TYPE_DEFAULT = PERSON_QUERY_TYPE_ARTICLES
-
-    PERSON_QUERY_TYPE_CHOICES_LIST = [ 
-        ( PERSON_QUERY_TYPE_ALL, "All persons" ),
-        ( PERSON_QUERY_TYPE_ARTICLES, "From selected articles" ),
-        ( PERSON_QUERY_TYPE_CUSTOM, "Custom, defined below" ),
-    ]
-
-    # Filtering Article_Data on coder_type.
-    CODER_TYPE_FILTER_TYPE_NONE = ContextTextBase.CODER_TYPE_FILTER_TYPE_NONE
-    CODER_TYPE_FILTER_TYPE_AUTOMATED = ContextTextBase.CODER_TYPE_FILTER_TYPE_AUTOMATED
-    CODER_TYPE_FILTER_TYPE_ALL = ContextTextBase.CODER_TYPE_FILTER_TYPE_ALL
-    CODER_TYPE_FILTER_TYPE_DEFAULT = ContextTextBase.CODER_TYPE_FILTER_TYPE_DEFAULT
-    
-    CODER_TYPE_FILTER_TYPE_CHOICES_LIST = [ 
-        ( CODER_TYPE_FILTER_TYPE_NONE, "Do not filter" ),
-        ( CODER_TYPE_FILTER_TYPE_AUTOMATED, "Just automated" ),
-        ( CODER_TYPE_FILTER_TYPE_ALL, "All users" ),
-    ]
-
-    # person types
-    PERSON_TYPE_UNKNOWN = 'unknown'
-    PERSON_TYPE_AUTHOR = 'author'
-    PERSON_TYPE_SOURCE = 'source'
-    PERSON_TYPE_BOTH = 'both'
-    PERSON_TYPE_TO_ID = {
-        PERSON_TYPE_UNKNOWN : 1,
-        PERSON_TYPE_AUTHOR : 2,
-        PERSON_TYPE_SOURCE : 3,
-        PERSON_TYPE_BOTH : 4
-    }
-
     # status variables
     STATUS_OK = "OK!"
     STATUS_ERROR_PREFIX = "Error: "
@@ -158,21 +115,15 @@ class NetworkDataOutput( ContextBase ):
     # parameter constants
     PARAM_OUTPUT_TYPE = 'output_type'
     PARAM_NETWORK_DOWNLOAD_AS_FILE = 'network_download_as_file'
-    PARAM_NETWORK_DATA_OUTPUT_TYPE = 'network_data_output_type'   # type of data you want to output - either just the network, just node attributes, or network with attributes in same table, either with attributes as additional rows or additional columns.
-    PARAM_NETWORK_INCLUDE_HEADERS = 'network_include_headers'
-    PARAM_SOURCE_CAPACITY_INCLUDE_LIST = Article_Subject.PARAM_SOURCE_CAPACITY_INCLUDE_LIST
-    PARAM_SOURCE_CAPACITY_EXCLUDE_LIST = Article_Subject.PARAM_SOURCE_CAPACITY_EXCLUDE_LIST
-    PARAM_SOURCE_CONTACT_TYPE_INCLUDE_LIST = Article_Subject.PARAM_SOURCE_CONTACT_TYPE_INCLUDE_LIST
+    PARAM_NETWORK_DATA_OUTPUT_TYPE = 'output_structure'   # type of data you want to output - either just the network, just node attributes, or network with attributes in same table, either with attributes as additional rows or additional columns.  Old value: "network_data_output_type"
+    PARAM_NETWORK_INCLUDE_HEADERS = 'output_include_column_headers'  #  old value: network_include_headers
     PARAM_PERSON_QUERY_TYPE = "person_query_type"
-    PARAM_CODER_TYPE_FILTER_TYPE = "coder_type_filter_type"
-    PARAM_PERSON_CODER_TYPE_FILTER_TYPE = "person_" + PARAM_CODER_TYPE_FILTER_TYPE
     
     # node attributes
-    NODE_ATTRIBUTE_PERSON_ID = "person_id"
-    NODE_ATTRIBUTE_PERSON_TYPE = "person_type"
+    NODE_ATTRIBUTE_ENTITY_ID = "entity_id"
+    NODE_ATTRIBUTE_ENTITY_TYPE = "entity_type"
     NODE_ATTRIBUTE_LIST = [
-        NODE_ATTRIBUTE_PERSON_ID,
-        NODE_ATTRIBUTE_PERSON_TYPE,
+        NODE_ATTRIBUTE_ENTITY_ID
     ]
     
     # relation type roles
@@ -199,6 +150,8 @@ class NetworkDataOutput( ContextBase ):
         self.m_entity_dictionary = {}
         self.relation_map = {}
         self.include_row_and_column_headers = False
+        self.m_relation_type_slug_to_instance_map = {}
+        self.m_relation_type_slug_list = []
         
         # variables for outputting result as file
         self.mime_type = ""
@@ -450,6 +403,7 @@ class NetworkDataOutput( ContextBase ):
         my_data_output_type = ""
         node_attribute_list = []
         current_attr_name = ""
+        relation_type_roles_header_list = None
 
         # get the data output type.
         my_data_output_type = self.data_output_type
@@ -479,14 +433,19 @@ class NetworkDataOutput( ContextBase ):
         if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES )
             or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS ) ):
 
-            # we are - add column headers for attributes - loop over NODE_ATTRIBUTE_LIST.
-            node_attribute_list = NetworkDataOutput.NODE_ATTRIBUTE_LIST
-            for current_attr_name in node_attribute_list:
+            # we are - add column headers for attributes - entity ID
+            header_list_OUT.append( self.NODE_ATTRIBUTE_ENTITY_ID )
             
-                # add the attribute name to the list.
-                header_list_OUT.append( current_attr_name )
+            # build header list for entities' relation types.
+            relation_type_roles_header_list = self.create_relation_type_roles_header_list()
             
-            #-- END loop over attributes
+            # got anything?
+            if ( ( relation_type_roles_header_list is not None ) and ( len( relation_type_roles_header_list ) > 0 ) ):
+            
+                # yes.  Append items to end of list.
+                header_list_OUT.extend( relation_type_roles_header_list )
+                
+            #-- END check to see if any relation type roles headers returned --#
             
         #-- END check to see if output attributes as columns --#
 
@@ -613,6 +572,167 @@ class NetworkDataOutput( ContextBase ):
         return list_OUT
 
     #-- END method create_entity_id_list --#
+
+
+    def create_relation_type_roles_for_entity( self, entity_id_IN ):
+
+        """
+            Method: create_relation_type_roles_header_list()
+
+            Purpose: retrieves list of Entity types registered with this class.
+                loops, creates column header for "FROM", "TO", and "THROUGH" for
+                each type, adds all to list.  Returns list of headers.
+
+            Returns:
+            - List of relation type role headers for our CSV document.
+        """
+
+        # return reference
+        value_list_OUT = None
+
+        # declare variables
+        me = "create_relation_type_roles_for_entity"
+        status_message = None
+        debug_flag = None
+        entity_relation_roles = None
+        relation_type_role_counts_map = None
+        relation_type_slug_list = None
+        slug_count = None
+        current_slug = None
+        role_list = None
+        current_role = None
+        role_count = None
+        
+        # initialize
+        debug_flag = self.DEBUG_FLAG
+        role_list = self.VALID_RELATION_TYPE_ROLES
+
+        # make sure we have entity ID
+        if ( entity_id_IN is not None ):
+        
+            # retrieve roles for entity.
+            entity_relation_roles = self.get_relation_roles_for_entity( entity_id_IN )
+        
+            # get slug list.
+            relation_type_slug_list = self.get_relation_type_slug_list()
+            if ( ( relation_type_slug_list is not None ) and ( len( relation_type_slug_list ) > 0 ) ):
+            
+                # there are slugs.  We can make list.
+                value_list_OUT = []
+                
+                # loop over slugs.
+                for current_slug in relation_type_slug_list:
+                
+                    # retrieve this slug's role counts.
+                    relation_type_role_counts_map = entity_relation_roles.get( current_slug, None )
+                    
+                    # got anything?
+                    if ( relation_type_role_counts_map is not None ):
+                
+                        # loop over roles
+                        for current_role in role_list:
+                        
+                            # get role count
+                            role_count = relation_type_role_counts_map.get( current_role, 0 )
+                            
+                            # append it to list.
+                            value_list_OUT.append( role_count )
+                            
+                        #-- END loop over roles. --#
+                        
+                    else:
+                    
+                        # slug not set for entity - append zeroes for each role.
+                        for current_role in role_list:
+                        
+                            # append it to list.
+                            value_list_OUT.append( 0 )
+                            
+                        #-- END loop over roles. --#
+                        
+                    #-- END check to see if there are role counts for current relation type slug. --#
+                    
+                #-- END loop over slugs. --#
+                
+            else:
+            
+                # no slugs.  Return empty list.
+                value_list_OUT = []
+            
+            #-- END check to see if we have list of slugs. --#
+            
+        else:
+        
+            # no Entity ID passed in.
+            status_message = "In {}(): ERROR - no Entity ID passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            value_list_OUT = None 
+
+        #-- END check to see if entity ID passed in. --#
+
+        return value_list_OUT
+
+    #-- END method create_relation_type_roles_for_entity --#
+
+
+    def create_relation_type_roles_header_list( self ):
+
+        """
+            Method: create_relation_type_roles_header_list()
+
+            Purpose: retrieves list of Entity types registered with this class.
+                loops, creates column header for "FROM", "TO", and "THROUGH" for
+                each type, adds all to list.  Returns list of headers.
+
+            Returns:
+            - List of relation type role headers for our CSV document.
+        """
+
+        # return reference
+        header_list_OUT = None
+
+        # declare variables
+        relation_type_slug_list = ""
+        slug_count = None
+        current_slug = None
+        role_list = None
+        current_role = None
+        header_name = None
+        
+        # get slug list.
+        relation_type_slug_list = self.get_relation_type_slug_list()
+        if ( ( relation_type_slug_list is not None ) and ( len( relation_type_slug_list ) > 0 ) ):
+        
+            # there are slugs.  We can make headers.
+            header_list_OUT = []
+            
+            # loop over slugs.
+            for current_slug in relation_type_slug_list:
+            
+                # loop over roles
+                role_list = self.VALID_RELATION_TYPE_ROLES
+                for current_role in role_list:
+                
+                    # create header name ("<slug>-<ROLE>")
+                    header_name = "{}-{}".format( current_slug, current_role )
+                    
+                    # append it to list.
+                    header_list_OUT.append( header_name )
+                    
+                #-- END loop over roles. --#
+                
+            #-- END loop over slugs. --#
+            
+        else:
+        
+            # no slugs.  Return empty list.
+            header_list_OUT = []
+        
+        #-- END check to see if we have list of slugs. --#
+
+        return header_list_OUT
+
+    #-- END method create_relation_type_roles_header_list --#
 
 
     def do_output_attribute_columns( self ):
@@ -987,6 +1107,138 @@ class NetworkDataOutput( ContextBase ):
     #-- END method get_relation_map() --#
 
 
+    def get_relation_type_slug_list( self ):
+
+        """
+            Method: get_relation_type_slug_list()
+
+            Purpose: Returns the list.
+
+            Preconditions: None
+
+            Returns:
+            - List - reference to the nested relation type slug list.
+        """
+
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        relation_type_list = None
+        
+        # see if already stored.
+        value_OUT = self.m_relation_type_slug_list
+        
+        # None?
+        if ( value_OUT is None ):
+        
+            # make a list, ...
+            relation_type_list = []
+
+            #...store it, ...
+            self.set_relation_type_slug_list( relation_type_list )
+
+            # ...and return it.
+            value_OUT = self.get_relation_type_slug_list()
+            
+        #-- END check to make sure list isn't None --#
+                
+        return value_OUT
+    
+    #-- END method get_relation_type_slug_list() --#
+
+
+    def get_relation_type_slug_to_instance_map( self ):
+
+        """
+            Method: get_relation_type_slug_to_instance_map()
+
+            Purpose: Returns the dict.
+
+            Preconditions: None
+
+            Returns:
+            - dictionary - reference to the nested relation type map.
+        """
+
+        # return reference
+        value_OUT = None
+        
+        # declare variables
+        relation_type_dict = None
+        
+        # see if already stored.
+        value_OUT = self.m_relation_type_slug_to_instance_map
+        
+        # None?
+        if ( value_OUT is None ):
+        
+            # make a dictionary, ...
+            relation_type_dict = {}
+
+            #...store it, ...
+            self.set_relation_type_slug_to_instance_map( relation_type_dict )
+
+            # ...and return it.
+            value_OUT = self.get_relation_type_slug_to_instance_map()
+            
+        #-- END check to make sure list isn't None --#
+                
+        return value_OUT
+    
+    #-- END method get_relation_type_slug_to_instance_map() --#
+
+
+    def get_relation_roles_for_entity( self, entity_id_IN ):
+
+        """
+            Method: get_relation_roles_for_entity()
+
+            Purpose: retrieves nested relation roles map.  Retrieves relation
+                type role information for entity whose ID was passed in.
+
+            Returns:
+            - dictionary - dictionary that maps Entity IDs to their related
+                relations and roles within each relation type.
+        """
+
+        # return reference
+        value_OUT = {}
+
+        # declare variables
+        relation_role_dict = None
+
+        # got an ID?
+        if ( entity_id_IN != '' ):
+
+            # grab map
+            relation_role_dict = self.get_entity_relation_type_summary_dict()
+
+            # anything there?
+            if ( ( relation_role_dict is not None ) and ( len( relation_role_dict ) > 0 ) ):
+
+                # yes.  Check if ID is a key.
+                if entity_id_IN in relation_role_dict:
+
+                    # it is.  Return what is there.
+                    value_OUT = relation_role_dict[ entity_id_IN ]
+
+                else:
+
+                    # no relation roles.  Return empty dictionary.
+                    value_OUT = {}
+
+                #-- END check to see if Entity has any relations.
+
+            #-- END check to make sure dict is populated. --#
+
+        #-- END check to see if ID passed in. --#
+
+        return value_OUT
+
+    #-- END method get_relation_roles_for_entity() --#
+
+
     def get_relations_for_entity( self, entity_id_IN ):
 
         """
@@ -1057,6 +1309,74 @@ class NetworkDataOutput( ContextBase ):
     #-- END method initialize_from_request() --#
 
 
+    def register_relation_type( self, relation_type_IN ):
+
+        """
+            Method: register_relation_type()
+
+            Purpose: accepts relation type, if not already in nested variable
+            self.m_relation_type_slug_to_instance_map, adds it using slug of
+            type as key and instance itself as value.
+
+            Params:
+            - relation_type_IN - relation type instance we want to add.
+        """
+
+        # return value
+        value_OUT = None
+        
+        # declare variables
+        relation_type_slug = None
+        relation_type_map = None
+        relation_type_slug_list = None
+
+        # got something?
+        if ( relation_type_IN is not None ):
+        
+            # yes - get slug.
+            relation_type_slug = relation_type_IN.slug
+            
+            #------------------------------------------------------------------#
+            # ! ----> Entity_Relation_Type slug-to-instance map
+            
+            # retrieve the map of slugs to instances.
+            relation_type_map = self.get_relation_type_slug_to_instance_map()
+            
+            # is slug a key?
+            if ( relation_type_slug not in relation_type_map ):
+            
+                # no.  Add it.
+                relation_type_map[ relation_type_slug ] = relation_type_IN
+                
+            #-- END check to see if already added. --#
+            
+            #------------------------------------------------------------------#
+            # ! ----> Entity_Relation_Type slug list/set
+            
+            # get relation type slug list
+            relation_type_slug_list = self.get_relation_type_slug_list()
+            
+            # is slug in list?
+            if ( relation_type_slug not in relation_type_slug_list ):
+            
+                # not in list.  Append it.
+                relation_type_slug_list.append( relation_type_slug )
+                
+                # and sort it.
+                relation_type_slug_list.sort()
+                
+            #-- END check to see if slug already in list. --#
+            
+        #-- END check to see if instance passed in. --#
+        
+        # return relation type slug for relation type passed in.
+        value_OUT = relation_type_slug
+        
+        return value_OUT
+
+    #-- END method register_relation_type() --#
+
+
     def render( self ):
 
         """
@@ -1072,8 +1392,7 @@ class NetworkDataOutput( ContextBase ):
 
             Parameters - all inputs are stored in instance variables:
             - self.m_query_set - Query set of articles for which we want to create network data.
-            - self.m_entity_dictionary - QuerySet of Entities we want included in our network (can include people not mentioned in a relation, in case we want to include all entities from two different time periods, for example).
-            - self.inclusion_params
+            - self.m_entity_dictionary - QuerySet of Entities we want included in our network (can include entities not mentioned in a relation, in case we want to include all entities from two different time periods, for example).
 
             Returns:
             - String - delimited output (two spaces separate each column value in a row) for the network described by the articles selected based on the parameters passed in.
@@ -1179,15 +1498,18 @@ class NetworkDataOutput( ContextBase ):
                                 # got relation type?
                                 relation_type = current_entity_relation.relation_type
                                 if ( relation_type is not None ):
+                                
+                                    # add it to our nested slug-to-instance map.
+                                    self.register_relation_type( relation_type )
 
                                     # got a type.  Get slug.
                                     relation_type_slug = relation_type.slug
                                     
                                     # update FROM entity's relation type details
-                                    self.update_entity_relations_details( from_entity_id, relation_type_slug, ContextBase.RELATION_ROLES_FROM, current_entity_relation )
+                                    self.update_entity_relations_details( from_entity_id, relation_type, ContextBase.RELATION_ROLES_FROM, current_entity_relation )
                                     
                                     # update TO entity's relation type details
-                                    self.update_entity_relations_details( to_entity_id, relation_type_slug, ContextBase.RELATION_ROLES_TO, current_entity_relation )
+                                    self.update_entity_relations_details( to_entity_id, relation_type, ContextBase.RELATION_ROLES_TO, current_entity_relation )
                                 
                                 else:
                                 
@@ -1234,10 +1556,9 @@ class NetworkDataOutput( ContextBase ):
                 #-- END DEBUG --#
     
                 #--------------------------------------------------------------------
-                # ! ----> render network data based on people and ties.
+                # ! ----> render network data based on entities and ties.
                 #--------------------------------------------------------------------
                 
-                # ! TODO - render_network_data()
                 network_data_OUT += self.render_network_data()
             
             else:
@@ -1268,7 +1589,7 @@ class NetworkDataOutput( ContextBase ):
 
         '''
         Invoked from render(), after ties have been generated based on articles
-           and people passed in.  Returns a string.  This string can contain the
+           and entities passed in.  Returns a string.  This string can contain the
            rendered data (CSV file, etc.), or it can just contain a status
            message if the data is rendered to a file or a database.
         '''
@@ -1358,6 +1679,22 @@ class NetworkDataOutput( ContextBase ):
     #-- END method set_master_entity_list() --#
 
 
+    def set_network_data_request( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_network_data_request = value_IN
+        
+        # return it
+        value_OUT = self.get_network_data_request()
+        
+        return value_OUT
+    
+    #-- END method set_network_data_request() --#
+
+
     def set_output_type( self, value_IN ):
 
         """
@@ -1407,27 +1744,62 @@ class NetworkDataOutput( ContextBase ):
     #-- END method set_query_set() --#
 
 
-    def set_network_data_request( self, value_IN ):
-        
-        # return reference
+    def set_relation_type_slug_list( self, value_IN ):
+
+        """
+            Method: set_relation_type_slug_list()
+
+            Purpose: accepts a list, stores it in the instance.
+
+            Params:
+            - value_IN - list of IDs of all entities in current network data set.
+        """
+
+        # return value
         value_OUT = None
+
+        # store value
+        self.m_relation_type_slug_list = value_IN
         
-        # store it
-        self.m_network_data_request = value_IN
-        
-        # return it
-        value_OUT = self.get_network_data_request()
+        # sanity check - retrieve and return.
+        value_OUT = self.get_relation_type_slug_list()
         
         return value_OUT
-    
-    #-- END method set_network_data_request() --#
+
+    #-- END method set_relation_type_slug_list() --#
+
+
+    def set_relation_type_slug_to_instance_map( self, value_IN ):
+
+        """
+            Method: set_relation_type_slug_to_instance_map()
+
+            Purpose: accepts a dictionary, stores it in the instance.
+
+            Params:
+            - value_IN - dictionary to store relation type slugs mapped to their corresponding Entity_Relation_Type instances.
+        """
+
+        # return value
+        value_OUT = None
+
+        # store value
+        self.m_relation_type_slug_to_instance_map = value_IN
+        
+        # sanity check - retrieve and return.
+        value_OUT = self.get_relation_type_slug_to_instance_map()
+        
+        return value_OUT
+
+    #-- END method set_relation_type_slug_to_instance_map() --#
 
 
     def update_entity_relations_details( self,
                                          entity_id_IN,
-                                         relation_type_slug_IN,
+                                         relation_type_IN,
                                          relation_role_IN,
-                                         relation_instance_IN = None ):
+                                         relation_instance_IN = None,
+                                         update_relation_map_IN = False ):
 
         """
             Method: update_entity_relations_details()
@@ -1451,7 +1823,7 @@ class NetworkDataOutput( ContextBase ):
 
             Params:
             - entity_id_IN - ID of Entity whose type we are updating.
-            - relation_type_slug_IN - slug of relation type we are processing.
+            - relation_type_IN - Entity_Relation_Type instance we are processing.
             - relation_role_IN - ROLE the entity was assigned in the relation (FROM, TO, THROUGH)
             - relation_instance_IN - optional Entity_Relation instance, in case we want to keep track eventually.
         """
@@ -1463,6 +1835,8 @@ class NetworkDataOutput( ContextBase ):
         me = "update_entity_relations_details"
         debug_flag = None
         status_message = None
+        relation_type_slug_IN = None
+        master_relation_type_list = None
         entity_to_relation_type_map = None
         entity_relation_type_map = None
         relation_type_role_map = None
@@ -1475,7 +1849,18 @@ class NetworkDataOutput( ContextBase ):
         if ( entity_id_IN is not None ):
 
             # got a relation type?
-            if ( relation_type_slug_IN is not None ):
+            if ( relation_type_IN is not None ):
+            
+                # check if is in master map?
+                if ( update_relation_map_IN == True ):
+    
+                    # yes.
+                    self.register_relation_type( relation_type_IN )
+                    
+                #-- END check to see if we make sure relation type is in map --#
+            
+                # get slug
+                relation_type_slug_IN = relation_type_IN.slug
             
                 # got a role?
                 if ( relation_role_IN is not None ):
