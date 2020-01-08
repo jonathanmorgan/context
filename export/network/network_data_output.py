@@ -499,7 +499,7 @@ class NetworkDataOutput( ContextBase ):
         """
             Method: create_header_list()
 
-            Purpose: checks data_output_type, renders header list based on what
+            Purpose: checks output_structure, renders header list based on what
                data we are outputting.  Returns list of headers.
 
             Returns:
@@ -510,20 +510,20 @@ class NetworkDataOutput( ContextBase ):
         header_list_OUT = None
 
         # declare variables
-        my_data_output_type = ""
+        data_output_structure = ""
         node_attribute_list = []
         current_attr_name = ""
         relation_type_roles_header_list = None
 
         # get the data output type.
-        my_data_output_type = self.data_output_type
+        data_output_structure = self.get_output_structure()
         
         # only need to get list of labels if we are outputting network as well as attributes.
 
         # include network?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
+        if ( ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
             # yes.  Start with list of labels.
             header_list_OUT = self.create_label_list()
@@ -540,8 +540,8 @@ class NetworkDataOutput( ContextBase ):
         header_list_OUT.insert( 0, "id" )
         
         # Are we outputting attributes in columns, either just attributes, or network plus attributes as columns?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS ) ):
+        if ( ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS ) ):
 
             # we are - add column headers for attributes - entity ID
             header_list_OUT.append( self.NODE_ATTRIBUTE_ENTITY_ID )
@@ -967,7 +967,7 @@ class NetworkDataOutput( ContextBase ):
         """
             Method: do_output_attribute_columns()
 
-            Purpose: Examines self.data_output_type to see if we are to output
+            Purpose: Examines self.m_output_structure to see if we are to output
                node attribute rows.  If so, returns True, if not, returns False.
                Values that mean we output attribute columns:
                - NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES
@@ -981,14 +981,14 @@ class NetworkDataOutput( ContextBase ):
         do_it_OUT = False
 
         # declare variables
-        my_data_output_type = ""
+        data_output_structure = ""
 
         # get data output type
-        my_data_output_type = self.data_output_type
+        data_output_structure = self.get_output_structure()
         
         # do the output?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS ) ):
+        if ( ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS ) ):
 
             # yes.
             do_it_OUT = True
@@ -1010,7 +1010,7 @@ class NetworkDataOutput( ContextBase ):
         """
             Method: do_output_attribute_rows()
 
-            Purpose: Examines self.data_output_type to see if we are to output
+            Purpose: Examines self.m_output_structure to see if we are to output
                node attribute rows.  If so, returns True, if not, returns False.
                Values that mean we output attribute rows:
                - NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS
@@ -1023,13 +1023,13 @@ class NetworkDataOutput( ContextBase ):
         do_it_OUT = False
 
         # declare variables
-        my_data_output_type = ""
+        data_output_structure = ""
 
         # get data output type
-        my_data_output_type = self.data_output_type
+        data_output_structure = self.get_output_structure()
         
         # do the output?
-        if ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ):
+        if ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ):
 
             # yes.
             do_it_OUT = True
@@ -1051,7 +1051,7 @@ class NetworkDataOutput( ContextBase ):
         """
             Method: do_output_network()
 
-            Purpose: Examines self.data_output_type to see if we are to output
+            Purpose: Examines self.m_output_structure to see if we are to output
                network data.  If so, returns True, if not, returns False.
                Values that mean we output network data:
                - NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK
@@ -1066,15 +1066,15 @@ class NetworkDataOutput( ContextBase ):
         do_it_OUT = False
 
         # declare variables
-        my_data_output_type = ""
+        data_output_structure = ""
 
         # get data output type
-        my_data_output_type = self.data_output_type
+        data_output_structure = self.get_output_structure()
         
         # include network?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
+        if ( ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
             # yes, we output network.
             do_it_OUT = True
@@ -1577,15 +1577,18 @@ class NetworkDataOutput( ContextBase ):
 
         # declare variables
         output_type_IN = ''
-        data_output_type_IN = ''
+        output_format_IN = ''
+        output_structure_IN = ''
 
         # retrieve info.
         output_type_IN = network_data_request_IN.get_output_type()
-        data_output_type_IN = network_data_request_IN.get_output_structure()
+        output_format_IN = network_data_request_IN.get_output_format()
+        output_structure_IN = network_data_request_IN.get_output_structure()
 
         # store
         self.set_output_type( output_type_IN )
-        self.data_output_type = data_output_type_IN
+        self.set_output_format( output_format_IN )
+        self.set_output_structure( output_structure_IN )
         
         # and store the request, as well, for reference.
         self.set_network_data_request( network_data_request_IN )
@@ -1665,8 +1668,9 @@ class NetworkDataOutput( ContextBase ):
 
         """
             Assumes query set of Entity_Relation instances has been placed in
-                this instance.  Uses the query set to output delimited data in
-                the format specified in the output_type instance variable.
+                this instance.  Uses the nested QuerySet to output delimited
+                data in the format specified in the self.m_output_format
+                instance variable.
 
             Preconditions: assumes that we have a query set of Entity_Relations
                 stored in the instance.  If not, does nothing, returns empty
@@ -1982,24 +1986,51 @@ class NetworkDataOutput( ContextBase ):
     def set_output_format( self, value_IN ):
 
         """
-            Method: set_output_type()
+            Method: set_output_format()
 
             Purpose: accepts an output format, stores it in instance.
 
             Params:
-            - value_IN - String output type value.
+            - value_IN - String output format value.
         """
 
-        # got a value?
-        if ( value_IN ):
-
-            # store value
-            self.m_output_format = value_IN
-            self.data_format = value_IN
-
-        #-- END check to see if we have a value --#
-
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_output_format = value_IN
+        
+        # return it
+        value_OUT = self.get_output_format()
+        
+        return value_OUT
+    
     #-- END method set_output_format() --#
+
+
+    def set_output_structure( self, value_IN ):
+
+        """
+            Method: set_output_structure()
+
+            Purpose: accepts an output structure, stores it in instance.
+
+            Params:
+            - value_IN - String output structure value.
+        """
+
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_output_structure = value_IN
+        
+        # return it
+        value_OUT = self.get_output_structure()
+        
+        return value_OUT
+    
+    #-- END method set_output_structure() --#
 
 
     def set_output_type( self, value_IN ):
@@ -2007,20 +2038,23 @@ class NetworkDataOutput( ContextBase ):
         """
             Method: set_output_type()
 
-            Purpose: accepts an output format, stores it in instance.
+            Purpose: accepts an output type, stores it in instance.
 
             Params:
             - value_IN - String output type value.
         """
 
-        # got a value?
-        if ( value_IN ):
-
-            # store value
-            self.m_output_type = value_IN
-
-        #-- END check to see if we have a value --#
-
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_output_type = value_IN
+        
+        # return it
+        value_OUT = self.get_output_type()
+        
+        return value_OUT
+    
     #-- END method set_output_type() --#
 
 

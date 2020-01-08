@@ -231,7 +231,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the comparison_type value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_COMPARISON_TYPE )
         
         return value_OUT
@@ -244,7 +244,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the data_type value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_DATA_TYPE )
         
         return value_OUT
@@ -298,7 +298,7 @@ class FilterSpec( ContextBase ):
         # get output spec
         prop_dict = self.get_filter_spec()
         
-        # retrieve the output_type value.
+        # retrieve the named value.
         value_OUT = prop_dict.get( name_IN, default_IN )
         
         return value_OUT
@@ -311,7 +311,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the filter_type value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_FILTER_TYPE )
         
         return value_OUT
@@ -337,7 +337,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the name value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_NAME )
         
         return value_OUT
@@ -353,7 +353,7 @@ class FilterSpec( ContextBase ):
         # declare variables
         temp_list = None
         
-        # retrieve the output_type value.
+        # retrieve the relation_roles_list value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_RELATION_ROLES_LIST )
         
         # check if empty.  If so, set it to default (all).
@@ -381,7 +381,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the type_id value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_TYPE_ID )
         
         return value_OUT
@@ -394,7 +394,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the type_label value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_TYPE_LABEL )
         
         return value_OUT
@@ -407,7 +407,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the value value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_VALUE )
         
         return value_OUT
@@ -420,7 +420,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the value_from value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_VALUE_FROM )
         
         return value_OUT
@@ -433,7 +433,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the value_list value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_VALUE_LIST )
         
         return value_OUT
@@ -446,7 +446,7 @@ class FilterSpec( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the value_to value.
         value_OUT = self.get_filter_spec_property( self.PROP_NAME_VALUE_TO )
         
         return value_OUT

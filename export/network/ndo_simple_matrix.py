@@ -406,15 +406,15 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         network_data_OUT = ''
 
         # declare variables
-        data_output_type = ""
+        data_output_structure = ""
         master_entity_list = None
 
         #--------------------------------------------------------------------
         # render network data.
         #--------------------------------------------------------------------
         
-        # get data output type
-        my_data_output_type = self.data_output_type
+        # get data output structure
+        data_output_structure = self.get_output_structure()
         
         # then, need to output.  For each network, output the network, then also
         #     output an attribute file that says, for all entities and relation
@@ -422,9 +422,9 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         #     each of the relation types.
         
         # include network?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
+        if ( ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
             # output the N of the network.
             master_entity_list = self.get_master_entity_list()
@@ -439,9 +439,9 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         #-- END check to see if include network matrix --#
 
         # include entity relation type attributes?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
+        if ( ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
+            or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
             # yes - append the attribute string.
             network_data_OUT += self.create_entity_relation_types_attribute_string()

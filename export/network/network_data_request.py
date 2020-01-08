@@ -2062,7 +2062,7 @@ class NetworkDataRequest( ContextBase ):
         # get output spec
         prop_dict = self.get_entity_selection()
         
-        # retrieve the output_type value.
+        # retrieve the named value.
         value_OUT = prop_dict.get( name_IN, default_IN )
         
         return value_OUT
@@ -2075,7 +2075,7 @@ class NetworkDataRequest( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the output_file_path value.
         value_OUT = self.get_output_spec_property( self.PROP_NAME_OUTPUT_FILE_PATH )
         
         return value_OUT
@@ -2088,7 +2088,7 @@ class NetworkDataRequest( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the output_format value.
         value_OUT = self.get_output_spec_property( self.PROP_NAME_OUTPUT_FORMAT )
         
         return value_OUT
@@ -2101,7 +2101,7 @@ class NetworkDataRequest( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the output_include_column_headers value.
         value_OUT = self.get_output_spec_property( self.PROP_NAME_OUTPUT_INCLUDE_COLUMN_HEADERS )
         
         return value_OUT
@@ -2155,7 +2155,7 @@ class NetworkDataRequest( ContextBase ):
         # get output spec
         output_spec = self.get_output_specification()
         
-        # retrieve the output_type value.
+        # retrieve the named output spec value.
         value_OUT = output_spec.get( name_IN, default_IN )
         
         return value_OUT
@@ -2168,7 +2168,7 @@ class NetworkDataRequest( ContextBase ):
         # return reference
         value_OUT = None
         
-        # retrieve the output_type value.
+        # retrieve the output_structure value.
         value_OUT = self.get_output_spec_property( self.PROP_NAME_OUTPUT_STRUCTURE )
         
         return value_OUT
@@ -2235,7 +2235,7 @@ class NetworkDataRequest( ContextBase ):
         # get output spec
         prop_dict = self.get_relation_selection()
         
-        # retrieve the output_type value.
+        # retrieve the named relation selection value.
         value_OUT = prop_dict.get( name_IN, default_IN )
         
         return value_OUT
