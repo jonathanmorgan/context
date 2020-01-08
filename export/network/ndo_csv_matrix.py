@@ -48,8 +48,13 @@ class NDO_CSVMatrix( NetworkDataOutput ):
     # CONSTANTS-ish
     #---------------------------------------------------------------------------
 
-    # output type
-    MY_OUTPUT_TYPE = "csv_matrix"
+
+    DEBUG_FLAG = True
+    LOGGER_NAME = "context.export.network.ndo_csv_matrix.NDO_CSVMatrix"
+    ME = LOGGER_NAME
+
+    # output format
+    MY_OUTPUT_FORMAT = NetworkDataOutput.NETWORK_DATA_FORMAT_CSV_MATRIX
 
     # LOCAL_DEBUG_FLAG
     LOCAL_DEBUG_FLAG = False
@@ -76,8 +81,8 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         super( NDO_CSVMatrix, self ).__init__()
 
         # override things set in parent.
-        self.output_type = self.MY_OUTPUT_TYPE
-        self.debug = "NDO_CSVMatrix debug:\n\n"
+        self.set_output_format( self.MY_OUTPUT_FORMAT )
+        self.debug = "{} debug:\n\n".format( self.ME )
 
         # initialize variables.
         self.csv_string_buffer = None

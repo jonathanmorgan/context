@@ -32,7 +32,8 @@ from six import StringIO
 #from django.db.models import Count # for aggregating counts of authors, sources.
 #from django.db.models import Max   # for getting max value of author, source counts.
 
-# parent class.
+# parent classes.
+from context.export.network.network_data_output import NetworkDataOutput
 from context.export.network.ndo_csv_matrix import NDO_CSVMatrix
 
 #===============================================================================
@@ -46,8 +47,13 @@ class NDO_TabDelimitedMatrix( NDO_CSVMatrix ):
     # CONSTANTS-ish
     #---------------------------------------------------------------------------
 
-    # output type
-    MY_OUTPUT_TYPE = "tab_delimited_matrix"
+
+    DEBUG_FLAG = True
+    LOGGER_NAME = "context.export.network.ndo_tab_delimited_matrix.NDO_TabDelimitedMatrix"
+    ME = LOGGER_NAME
+
+    # output format
+    MY_OUTPUT_FORMAT = NetworkDataOutput.NETWORK_DATA_FORMAT_TAB_DELIMITED_MATRIX
 
     # LOCAL_DEBUG_FLAG
     LOCAL_DEBUG_FLAG = False
@@ -69,8 +75,8 @@ class NDO_TabDelimitedMatrix( NDO_CSVMatrix ):
         super( NDO_TabDelimitedMatrix, self ).__init__()
 
         # override things set in parent.
-        self.output_type = self.MY_OUTPUT_TYPE
-        self.debug = "NDO_TabDelimitedMatrix debug:\n\n"
+        self.set_output_format( self.MY_OUTPUT_FORMAT )
+        self.debug = "{} debug:\n\n".format( self.ME )
 
         # initialize variables.
         self.csv_string_buffer = None
@@ -89,4 +95,4 @@ class NDO_TabDelimitedMatrix( NDO_CSVMatrix ):
     #---------------------------------------------------------------------------
 
 
-#-- END class NDO_CSVMatrix --#
+#-- END class NDO_TabDelimitedMatrix --#

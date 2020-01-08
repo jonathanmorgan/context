@@ -25,6 +25,7 @@ if __name__ == "__main__":
 
 # python libraries
 from abc import ABCMeta, abstractmethod
+import logging
 
 #import copy
 
@@ -72,9 +73,9 @@ class NetworkDataOutput( ContextBase ):
     # network output type constants
     
     # Network data format output types
-    NETWORK_DATA_FORMAT_SIMPLE_MATRIX = "simple_matrix"
-    NETWORK_DATA_FORMAT_CSV_MATRIX = "csv_matrix"
-    NETWORK_DATA_FORMAT_TAB_DELIMITED_MATRIX = "tab_delimited_matrix"
+    NETWORK_DATA_FORMAT_SIMPLE_MATRIX = NetworkDataRequest.PROP_VALUE_OUTPUT_FORMAT_SIMPLE_MATRIX
+    NETWORK_DATA_FORMAT_CSV_MATRIX = NetworkDataRequest.PROP_VALUE_OUTPUT_FORMAT_CSV_MATRIX
+    NETWORK_DATA_FORMAT_TAB_DELIMITED_MATRIX = NetworkDataRequest.PROP_VALUE_OUTPUT_FORMAT_TSV_MATRIX
     NETWORK_DATA_FORMAT_DEFAULT = NETWORK_DATA_FORMAT_TAB_DELIMITED_MATRIX
     
     NETWORK_DATA_FORMAT_CHOICES_LIST = [
@@ -83,18 +84,18 @@ class NetworkDataOutput( ContextBase ):
         ( NETWORK_DATA_FORMAT_TAB_DELIMITED_MATRIX, "Tab-Delimited Matrix" ),
     ]
 
-    # Network data output types
-    NETWORK_DATA_OUTPUT_TYPE_NETWORK = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_JUST_TIES
-    NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_JUST_TRAITS
-    NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_COLUMNS
-    NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_ROWS
-    NETWORK_DATA_OUTPUT_TYPE_DEFAULT = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_DEFAULT
+    # Network data output structures
+    NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_JUST_TIES
+    NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_JUST_TRAITS
+    NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_COLUMNS
+    NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_ROWS
+    NETWORK_DATA_OUTPUT_STRUCTURE_DEFAULT = NetworkDataRequest.PROP_VALUE_OUTPUT_STRUCTURE_DEFAULT
     
     NETWORK_DATA_OUTPUT_TYPE_CHOICES_LIST = [
-        ( NETWORK_DATA_OUTPUT_TYPE_NETWORK, "Just Network" ),
-        ( NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES, "Just Attributes" ),
-        ( NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS, "Network + Attribute Columns" ),
-        ( NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS, "Network + Attribute Rows" ),
+        ( NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK, "Just Network" ),
+        ( NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES, "Just Attributes" ),
+        ( NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS, "Network + Attribute Columns" ),
+        ( NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS, "Network + Attribute Rows" ),
     ]
 
     # status variables
@@ -114,8 +115,9 @@ class NetworkDataOutput( ContextBase ):
 
     # parameter constants
     PARAM_OUTPUT_TYPE = 'output_type'
+    PARAM_OUTPUT_FORMAT = 'output_format'
     PARAM_NETWORK_DOWNLOAD_AS_FILE = 'network_download_as_file'
-    PARAM_NETWORK_DATA_OUTPUT_TYPE = 'output_structure'   # type of data you want to output - either just the network, just node attributes, or network with attributes in same table, either with attributes as additional rows or additional columns.  Old value: "network_data_output_type"
+    PARAM_NETWORK_DATA_OUTPUT_STRUCTURE = 'output_structure'   # structure of data you want to output - either just the network, just node attributes, or network with attributes in same table, either with attributes as additional rows or additional columns.
     PARAM_NETWORK_INCLUDE_HEADERS = 'output_include_column_headers'  #  old value: network_include_headers
     PARAM_PERSON_QUERY_TYPE = "person_query_type"
     
@@ -144,9 +146,9 @@ class NetworkDataOutput( ContextBase ):
 
         # declare variables
         self.m_query_set = None
-        self.output_type = NetworkDataOutput.NETWORK_DATA_FORMAT_DEFAULT
-        self.data_format = NetworkDataOutput.NETWORK_DATA_FORMAT_DEFAULT
-        self.data_output_type = NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_DEFAULT
+        self.m_output_type = None
+        self.m_output_format = NetworkDataOutput.NETWORK_DATA_FORMAT_DEFAULT
+        self.m_output_structure = NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_DEFAULT
         self.m_entity_dictionary = {}
         self.relation_map = {}
         self.include_row_and_column_headers = False
@@ -519,9 +521,9 @@ class NetworkDataOutput( ContextBase ):
         # only need to get list of labels if we are outputting network as well as attributes.
 
         # include network?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NETWORK )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS ) ):
+        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
             # yes.  Start with list of labels.
             header_list_OUT = self.create_label_list()
@@ -538,8 +540,8 @@ class NetworkDataOutput( ContextBase ):
         header_list_OUT.insert( 0, "id" )
         
         # Are we outputting attributes in columns, either just attributes, or network plus attributes as columns?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS ) ):
+        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS ) ):
 
             # we are - add column headers for attributes - entity ID
             header_list_OUT.append( self.NODE_ATTRIBUTE_ENTITY_ID )
@@ -830,7 +832,7 @@ class NetworkDataOutput( ContextBase ):
         
                 # get entity list
                 entity_list = self.get_master_entity_list()
-                if ( ( entity_list is not None ) and ( len( entity_list ) > 0 ):
+                if ( ( entity_list is not None ) and ( len( entity_list ) > 0 ) ):
                 
                     # retrieve map of entities to their relation types and roles.
                     entity_relation_roles_map = self.get_entity_relation_type_summary_dict()
@@ -943,7 +945,7 @@ class NetworkDataOutput( ContextBase ):
                 value_list = self.create_relation_type_role_value_list( relation_type_slug_IN, current_role )
                 
                 # add to output dictionary
-                relation_type_role_values_dict_OUT[ current_role ] = value_list_OUT
+                relation_type_role_values_dict_OUT[ current_role ] = value_list
                 
             #-- END loop over roles --#
             
@@ -955,7 +957,7 @@ class NetworkDataOutput( ContextBase ):
         
         #-- END check to see if relation type slug passed in --#
 
-        return value_list_OUT
+        return relation_type_role_values_dict_OUT
 
     #-- END method create_relation_type_value_dict() --#
 
@@ -968,8 +970,8 @@ class NetworkDataOutput( ContextBase ):
             Purpose: Examines self.data_output_type to see if we are to output
                node attribute rows.  If so, returns True, if not, returns False.
                Values that mean we output attribute columns:
-               - NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES
-               - NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS
+               - NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES
+               - NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS
 
             Returns:
             - boolean - If we are to output attribute columns, returns True.  If not, returns False.
@@ -985,8 +987,8 @@ class NetworkDataOutput( ContextBase ):
         my_data_output_type = self.data_output_type
         
         # do the output?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS ) ):
+        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS ) ):
 
             # yes.
             do_it_OUT = True
@@ -1011,7 +1013,7 @@ class NetworkDataOutput( ContextBase ):
             Purpose: Examines self.data_output_type to see if we are to output
                node attribute rows.  If so, returns True, if not, returns False.
                Values that mean we output attribute rows:
-               - NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS
+               - NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS
 
             Returns:
             - boolean - If we are to output attribute rows, returns True.  If not, returns False.
@@ -1027,7 +1029,7 @@ class NetworkDataOutput( ContextBase ):
         my_data_output_type = self.data_output_type
         
         # do the output?
-        if ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS ):
+        if ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ):
 
             # yes.
             do_it_OUT = True
@@ -1052,9 +1054,9 @@ class NetworkDataOutput( ContextBase ):
             Purpose: Examines self.data_output_type to see if we are to output
                network data.  If so, returns True, if not, returns False.
                Values that mean we output network data:
-               - NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NETWORK
-               - NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS
-               - NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS
+               - NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK
+               - NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS
+               - NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS
 
             Returns:
             - boolean - If we are to output network data, returns True.  If not, returns False.
@@ -1070,9 +1072,9 @@ class NetworkDataOutput( ContextBase ):
         my_data_output_type = self.data_output_type
         
         # include network?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NETWORK )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS ) ):
+        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
             # yes, we output network.
             do_it_OUT = True
@@ -1239,9 +1241,9 @@ class NetworkDataOutput( ContextBase ):
         is_ok = True
 
         # retrieve master Entity list
-        list_OUT = self.get_master_entity_list()
+        list_OUT = self.m_master_entity_list
 
-        if ( list_OUT ):
+        if ( list_OUT is not None ):
 
             if ( len( list_OUT ) < 1 ):
 
@@ -1312,6 +1314,45 @@ class NetworkDataOutput( ContextBase ):
 
     #-- END method get_entity_label() --#
 
+
+    def get_output_format( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_output_format
+                
+        return value_OUT
+    
+    #-- END method get_output_format() --#
+    
+
+    def get_output_structure( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_output_structure
+                
+        return value_OUT
+    
+    #-- END method get_output_type() --#
+    
+
+    def get_output_type( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_output_type
+                
+        return value_OUT
+    
+    #-- END method get_output_type() --#
+    
 
     def get_query_set( self ):
         
@@ -1802,7 +1843,7 @@ class NetworkDataOutput( ContextBase ):
                 # ! ----> render network data based on entities and ties.
                 #--------------------------------------------------------------------
                 
-                network_data_OUT += self.render_network_data()
+                network_data_OUT = self.render_network_data()
             
             else:
             
@@ -1938,12 +1979,12 @@ class NetworkDataOutput( ContextBase ):
     #-- END method set_network_data_request() --#
 
 
-    def set_output_type( self, value_IN ):
+    def set_output_format( self, value_IN ):
 
         """
             Method: set_output_type()
 
-            Purpose: accepts an output type, stores it in instance.
+            Purpose: accepts an output format, stores it in instance.
 
             Params:
             - value_IN - String output type value.
@@ -1953,8 +1994,30 @@ class NetworkDataOutput( ContextBase ):
         if ( value_IN ):
 
             # store value
-            self.output_type = value_IN
+            self.m_output_format = value_IN
             self.data_format = value_IN
+
+        #-- END check to see if we have a value --#
+
+    #-- END method set_output_format() --#
+
+
+    def set_output_type( self, value_IN ):
+
+        """
+            Method: set_output_type()
+
+            Purpose: accepts an output format, stores it in instance.
+
+            Params:
+            - value_IN - String output type value.
+        """
+
+        # got a value?
+        if ( value_IN ):
+
+            # store value
+            self.m_output_type = value_IN
 
         #-- END check to see if we have a value --#
 
@@ -2147,7 +2210,7 @@ class NetworkDataOutput( ContextBase ):
                         if ( relation_role_IN in self.VALID_RELATION_TYPE_ROLES ):
                             
                             # valid role, update count for that role.
-                            role_count = entity_relation_type_map.get( relation_role_IN, None )
+                            role_count = relation_type_role_map.get( relation_role_IN, None )
                             
                             # got something?
                             if ( role_count is not None ):
@@ -2164,12 +2227,11 @@ class NetworkDataOutput( ContextBase ):
                                 #     count.  Should be 0 or greater.
                                 status_message = "In {}(): DEBUG - role count retrieved was empty, should never be.  Should either be 0 or greater.  Strange.  entity_id_IN: {}; relation_type_slug_IN: {}; relation_role_IN: {}; relation_instance_IN: {}.  entity_relation_type_map: {}".format( me, entity_id_IN, relation_type_slug_IN, relation_role_IN, relation_instance_IN, entity_relation_type_map )
                                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                                role_count_IN = None
                                 
                             #-- END Check to see if count set --#
 
                             # store the updated count, and return it.
-                            entity_relation_type_map[ relation_role_IN ] = role_count
+                            relation_type_role_map[ relation_role_IN ] = role_count
                             role_count_OUT = role_count
                             
                         else:
@@ -2177,7 +2239,7 @@ class NetworkDataOutput( ContextBase ):
                             # unknown role, error.
                             status_message = "In {}(): ERROR - role passed in is not valid.  entity_id_IN: {}; relation_type_slug_IN: {}; relation_role_IN: {}; relation_instance_IN: {}.  Doing nothing. Valid roles: {}".format( me, entity_id_IN, relation_type_slug_IN, relation_role_IN, relation_instance_IN, self.VALID_RELATION_TYPE_ROLES )
                             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                            role_count_IN = None
+                            role_count_OUT = None
                             
                         #-- END check if valid role. --#
     
@@ -2186,7 +2248,7 @@ class NetworkDataOutput( ContextBase ):
                         # no relation type to role types and counts map... strange.
                         status_message = "In {}(): ERROR - no map of relation type to roles and counts for entity.  Should have been created above, or already exist.  entity_id_IN: {}; relation_type_slug_IN: {}; relation_role_IN: {}; relation_instance_IN: {}.  Doing nothing.".format( me, entity_id_IN, relation_type_slug_IN, relation_role_IN, relation_instance_IN )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                        role_count_IN = None
+                        role_count_OUT = None
                             
                     #-- END check to see if map of relation type to roles and counts for entity --#
 
@@ -2195,7 +2257,7 @@ class NetworkDataOutput( ContextBase ):
                     # no relation type passed in.
                     status_message = "In {}(): ERROR - no relation type role passed in. entity_id_IN: {}; relation_type_slug_IN: {}; relation_role_IN: {}; relation_instance_IN: {}.  Doing nothing.".format( me, entity_id_IN, relation_type_slug_IN, relation_role_IN, relation_instance_IN )
                     self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                    role_count_IN = None
+                    role_count_OUT = None
                         
                 #-- END check to see if we have a role --#
         
@@ -2204,7 +2266,7 @@ class NetworkDataOutput( ContextBase ):
                 # no relation type passed in.
                 status_message = "In {}(): ERROR - no relation type passed in. entity_id_IN: {}; relation_type_slug_IN: {}; relation_role_IN: {}; relation_instance_IN: {}.  Doing nothing.".format( me, entity_id_IN, relation_type_slug_IN, relation_role_IN, relation_instance_IN )
                 self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-                role_count_IN = None
+                role_count_OUT = None
     
             #-- END check to see if we have a relation type --#
 
@@ -2213,7 +2275,7 @@ class NetworkDataOutput( ContextBase ):
             # no entity ID passed in.
             status_message = "In {}(): ERROR - no entity ID passed in. entity_id_IN: {}; relation_type_slug_IN: {}; relation_role_IN: {}; relation_instance_IN: {}.  Doing nothing.".format( me, entity_id_IN, relation_type_slug_IN, relation_role_IN, relation_instance_IN )
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
-            role_count_IN = None
+            role_count_OUT = None
 
         #-- END check to see if we have entity ID --#
         

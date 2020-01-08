@@ -68,13 +68,12 @@ from context.models import Entity_Relation
 
 # Import context export classes.
 from context.export.network.filter_spec import FilterSpec
-#from context.export.network.csv_article_output import CsvArticleOutput
-#from context.export.network.network_data_output import NetworkDataOutput
+from context.export.network.network_data_output import NetworkDataOutput
 from context.export.network.ndo_simple_matrix import NDO_SimpleMatrix
 from context.export.network.ndo_csv_matrix import NDO_CSVMatrix
 from context.export.network.ndo_tab_delimited_matrix import NDO_TabDelimitedMatrix
 
-# Import context_text shared classes.
+# Import context shared classes.
 from context.shared.context_base import ContextBase
 
 
@@ -93,6 +92,14 @@ class NetworkOutput( ContextBase ):
     DEBUG_FLAG = True
     LOGGER_NAME = "context.export.network.network_output.NetworkOutput"
     ME = LOGGER_NAME
+
+    # Network data output formats
+    NETWORK_OUTPUT_FORMAT_SIMPLE_MATRIX = NetworkDataOutput.NETWORK_DATA_FORMAT_SIMPLE_MATRIX
+    NETWORK_OUTPUT_FORMAT_CSV_MATRIX = NetworkDataOutput.NETWORK_DATA_FORMAT_CSV_MATRIX
+    NETWORK_OUTPUT_FORMAT_TAB_DELIMITED_MATRIX = NetworkDataOutput.NETWORK_DATA_FORMAT_TAB_DELIMITED_MATRIX
+    NETWORK_OUTPUT_FORMAT_DEFAULT = NetworkDataOutput.NETWORK_DATA_FORMAT_DEFAULT
+    
+    NETWORK_OUTPUT_FORMAT_CHOICES_LIST = NetworkDataOutput.NETWORK_DATA_FORMAT_CHOICES_LIST
 
     #---------------------------------------------------------------------------
     # __init__() method
@@ -120,6 +127,9 @@ class NetworkOutput( ContextBase ):
         
         # entity relation query set, for populating network ties.
         self.m_relation_query_set = None
+        
+        # for debugging, reference to last NetworkDataOutput instance used.
+        self.m_NDO_instance = None
         
         # set logger name (for LoggingHelper parent class: (LoggingHelper --> BasicRateLimited --> ContextTextBase --> ArticleCoding).
         self.set_logger_name( self.LOGGER_NAME )
@@ -368,7 +378,7 @@ class NetworkOutput( ContextBase ):
             #     Entity_Relations.
             relation_query_set = network_data_request.filter_relation_query_set( use_entity_selection_IN = True )
             
-            my_logger.debug( "In {}(): relation_query_set.count() = {}".filter( me, relation_query_set.count() ) )
+            my_logger.debug( "In {}(): relation_query_set.count() = {}".format( me, relation_query_set.count() ) )
 
             # add entities from relation QuerySet to dict.
             dict_OUT = self.add_entities_to_dict( relation_query_set,
@@ -385,26 +395,13 @@ class NetworkOutput( ContextBase ):
     #-- END function create_entity_dict() --#
 
 
-    def get_relation_query_set( self ):
-        
-        # return reference
-        value_OUT = None
-        
-        # see if already stored.
-        value_OUT = self.m_relation_query_set
-                
-        return value_OUT
-    
-    #-- END method get_relation_query_set() --#
-    
-
-    def get_NDO_instance( self ):
+    def create_NDO_instance( self ):
 
         '''
-        Assumes there is an output type property specified in the POST parameters
-           passed in as part of the current request.  Retrieves this output type,
-           creates a NetworkDataOutput implementer instance to match the type,
-           then returns the instance.  If no type or unknown type, returns None.
+        Assumes there is an output format property specified in the request
+            stored in this instance.  Retrieves this output type, creates a
+            NetworkDataOutput implementer instance to match the type, then
+            returns the instance.  If no type or unknown type, returns None.
         '''
         
         # return reference
@@ -412,24 +409,24 @@ class NetworkOutput( ContextBase ):
 
         # declare variables
         request_instance = None
-        output_type = None
+        output_format = None
 
         # get output type.
         request_instance = self.get_network_data_request()
-        output_type = request_instance.get_output_type()
+        output_format = request_instance.get_output_format()
         
-        # make instance for output type.
-        if ( output_type_IN == self.NETWORK_OUTPUT_TYPE_SIMPLE_MATRIX ):
+        # make instance for output format.
+        if ( output_format == self.NETWORK_OUTPUT_FORMAT_SIMPLE_MATRIX ):
         
             # simple matrix.
             NDO_instance_OUT = NDO_SimpleMatrix()
         
-        elif ( output_type_IN == self.NETWORK_OUTPUT_TYPE_CSV_MATRIX ):
+        elif ( output_format == self.NETWORK_OUTPUT_FORMAT_CSV_MATRIX ):
         
             # CSV matrix.
             NDO_instance_OUT = NDO_CSVMatrix()
         
-        elif ( output_type_IN == self.NETWORK_OUTPUT_TYPE_TAB_DELIMITED_MATRIX ):
+        elif ( output_format == self.NETWORK_OUTPUT_FORMAT_TAB_DELIMITED_MATRIX ):
         
             # Tab-delimited matrix.
             NDO_instance_OUT = NDO_TabDelimitedMatrix()
@@ -444,6 +441,42 @@ class NetworkOutput( ContextBase ):
         # set mime type and file extension from instance
         self.mime_type = NDO_instance_OUT.mime_type
         self.file_extension = NDO_instance_OUT.file_extension
+        
+        # store instance
+        NDO_instance_OUT = self.set_NDO_instance( NDO_instance_OUT )
+
+        return NDO_instance_OUT
+
+    #-- END create_NDO_instance() --#
+
+
+    def get_NDO_instance( self ):
+
+        '''
+        Assumes there is an output type property specified in the POST parameters
+           passed in as part of the current request.  Retrieves this output type,
+           creates a NetworkDataOutput implementer instance to match the type,
+           then returns the instance.  If no type or unknown type, returns None.
+        '''
+        
+        # return reference
+        NDO_instance_OUT = None
+
+        # declare variables
+
+        # try to just retrieve the instance.
+        NDO_instance_OUT = self.m_NDO_instance
+        
+        # got one?
+        if ( NDO_instance_OUT is None ):
+
+            # no.  Create one, then return it.
+            self.create_NDO_instance()
+            
+            # Recursive call to make sure it got set.
+            NDO_instance_OUT = self.get_NDO_instance()
+
+        #-- END check to see if nested instance. --#
 
         return NDO_instance_OUT
 
@@ -461,6 +494,19 @@ class NetworkOutput( ContextBase ):
         return value_OUT
     
     #-- END method get_network_data_request() --#
+    
+
+    def get_relation_query_set( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_relation_query_set
+                
+        return value_OUT
+    
+    #-- END method get_relation_query_set() --#
     
 
     def render_network_data( self, network_data_request_IN = None, relation_qs_IN = None ):
@@ -527,8 +573,6 @@ class NetworkOutput( ContextBase ):
         network_data_request = self.get_network_data_request()
         if ( network_data_request is not None ):
             
-            # ! TODO - set up output.
-            
             # ! ----> build network data from request.
 
             # create the entity_dictionary
@@ -558,6 +602,8 @@ class NetworkOutput( ContextBase ):
                 network_OUT += "\n\n" + network_data_outputter.debug + "\n\n"
 
             #-- END check to see if we have debug to output. --#
+            
+            # ! ----> output
             
             # Are we to output to a file?
             output_file_path = network_data_request.get_output_file_path()
@@ -597,20 +643,20 @@ class NetworkOutput( ContextBase ):
     #-- END render_network_data() --#
 
 
-    def set_relation_query_set( self, value_IN ):
+    def set_NDO_instance( self, value_IN ):
         
         # return reference
         value_OUT = None
         
         # store it
-        self.m_relation_query_set = value_IN
+        self.m_NDO_instance = value_IN
         
         # return it
-        value_OUT = self.get_relation_query_set()
+        value_OUT = self.get_NDO_instance()
         
         return value_OUT
     
-    #-- END method set_relation_query_set() --#
+    #-- END method set_NDO_instance() --#
 
 
     def set_network_data_request( self, value_IN ):
@@ -627,6 +673,22 @@ class NetworkOutput( ContextBase ):
         return value_OUT
     
     #-- END method set_network_data_request() --#
+
+
+    def set_relation_query_set( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_relation_query_set = value_IN
+        
+        # return it
+        value_OUT = self.get_relation_query_set()
+        
+        return value_OUT
+    
+    #-- END method set_relation_query_set() --#
 
 
 #-- END class NetworkOutput --#

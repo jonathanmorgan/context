@@ -21,6 +21,10 @@ if __name__ == "__main__":
 #===============================================================================
 
 #import copy
+import logging
+
+# six imports - support Pythons 2 and 3
+import six
 
 # Django DB classes, just to play with...
 #from django.db.models import Count # for aggregating counts of authors, sources.
@@ -40,12 +44,16 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
     # CONSTANTS-ish
     #---------------------------------------------------------------------------
 
+    DEBUG_FLAG = True
+    LOGGER_NAME = "context.export.network.ndo_simple_matrix.NDO_SimpleMatrix"
+    ME = LOGGER_NAME
+
     # output constants
     OUTPUT_END_OF_LINE = "\n"
     OUTPUT_DEFAULT_COLUMN_SEPARATOR = "  "
     
     # output type
-    MY_OUTPUT_TYPE = "simple_matrix"
+    MY_OUTPUT_FORMAT = NetworkDataOutput.NETWORK_DATA_FORMAT_SIMPLE_MATRIX
 
 
     #---------------------------------------------------------------------------
@@ -70,8 +78,8 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         self.column_separator = self.OUTPUT_DEFAULT_COLUMN_SEPARATOR
 
         # override things set in parent.
-        self.output_type = self.MY_OUTPUT_TYPE
-        self.debug = "NDO_SimpleMatrix debug:\n\n"
+        self.set_output_format( self.MY_OUTPUT_FORMAT )
+        self.debug = "{} debug:\n\n".format( self.ME )
         
         # variables for outputting result as file
         self.mime_type = "text/plain"
@@ -297,6 +305,7 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         role_to_value_list_map = None
         current_role = None
         value_list = None
+        string_value_list = None
         attribute_label = None
         
         # initialize
@@ -339,7 +348,8 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
                             string_OUT += "{}\n".format( attribute_label )
 
                             # join the list into a string, separated by newlines.
-                            string_OUT += "\n".join( value_list )
+                            string_value_list = [ str( i ) for i in value_list ]
+                            string_OUT += "\n".join( string_value_list )
             
                             # add two newlines to the end.
                             string_OUT += "\n\n"
@@ -352,16 +362,16 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
                             
                         #-- END check to see if list for role --#
                         
-                    else:
-                    
-                        # No role-to-values map relation type slug
-                        status_message = "In {}(): WARNING - No role-to-values map for relation type slug: {}.  No attributes added for this type.".format( me, current_slug )
-                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
-                            
-                    #-- END check to see if role-to-values map for slug --#
-                    
-                #-- END loop over roles. --#
+                    #-- END loop over roles. --#
                 
+                else:
+                
+                    # No role-to-values map relation type slug
+                    status_message = "In {}(): WARNING - No role-to-values map for relation type slug: {}.  No attributes added for this type.".format( me, current_slug )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                        
+                #-- END check to see if role-to-values map for slug --#
+                    
             #-- END loop over relation type slugs --#
             
         else:
@@ -412,9 +422,9 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         #     each of the relation types.
         
         # include network?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NETWORK )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS ) ):
+        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NETWORK )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
             # output the N of the network.
             master_entity_list = self.get_master_entity_list()
@@ -429,9 +439,9 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         #-- END check to see if include network matrix --#
 
         # include entity relation type attributes?
-        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_ATTRIBUTES )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_COLS )
-            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_TYPE_NET_AND_ATTR_ROWS ) ):
+        if ( ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
+            or ( my_data_output_type == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
             # yes - append the attribute string.
             network_data_OUT += self.create_entity_relation_types_attribute_string()
