@@ -22,6 +22,7 @@ if __name__ == "__main__":
 
 # python libraries
 import csv
+import logging
 # documentation: https://docs.python.org/2/library/csv.html
 
 # six imports - support Pythons 2 and 3
@@ -256,7 +257,8 @@ class NDO_CSVMatrix( NetworkDataOutput ):
                 for that relation type in the row.  So, will result in many rows
                 of attribute values.
 
-            Preconditions: Master entity list must be present.
+            Preconditions: Master entity list must be present.  Note: if the
+                network is large, might take a lot of memory...
 
             Params: none
             
@@ -264,33 +266,87 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         '''
 
         # declare variables
+        me = "append_entity_relation_type_rows"
+        debug_flag = None
+        status_message = None
+        relation_type_slug_to_roles_map = None
+        sorted_slug_list = None
+        role_list = None
+        current_slug = None
+        role_to_value_list_map = None
+        current_role = None
+        value_list = None
+        row_label = None
         
+        # initialize
+        debug_flag = self.DEBUG_FLAG
 
-        # ! TODO
-        pass
-
-        # return reference
-
-        # declare variables
-        #person_type_id_list = None
-
-        # get person type ID list
-        #person_type_id_list = self.create_person_type_id_list( True )
-
-        #if ( ( self.LOCAL_DEBUG_FLAG == True ) or ( self.DEBUG_FLAG == True ) ):
-        #    self.debug += "\n\nperson type id list:\n" + "; ".join( person_type_id_list )
-        #-- END DEBUG --#
-
-        # got it?
-        #if ( ( person_type_id_list != None ) and ( len( person_type_id_list ) > 0 ) ):
-
-            # add label to front
-        #    person_type_id_list.insert( 0, "person_type" )
-
-            # write the row
-        #    self.append_row_to_csv( person_type_id_list )
+        # first, retrieve the values.
+        relation_type_slug_to_roles_map = self.create_all_relation_type_values_lists()
+        
+        # got anything?
+        if ( relation_type_slug_to_roles_map is not None ):
+        
+            # get list of slugs, sort alphabetically
+            sorted_slug_list = list( six.viewkeys( relation_type_slug_to_roles_map ) )
+            sorted_slug_list.sort()
             
-        #-- END check to make sure we have list.
+            # get role list
+            role_list = self.VALID_RELATION_TYPE_ROLES
+            
+            # loop over slugs
+            for current_slug in sorted_slug_list:
+            
+                # retrieve per-role value lists for this slug
+                role_to_value_list_map = relation_type_slug_to_roles_map.get( current_slug, None )
+                
+                if ( role_to_value_list_map is not None ):
+                
+                    # loop over roles
+                    for current_role in role_list:
+                    
+                        # retrieve value list
+                        value_list = role_to_value_list_map.get( current_role, None )
+                        
+                        # got anything?
+                        if ( value_list is not None ):
+                        
+                            # build row label
+                            row_label = "{}-{}".format( current_slug, current_role )
+                            
+                            # prepend row label
+                            value_list.insert( 0, row_label )
+        
+                            # write the row
+                            self.append_row_to_csv( value_list )
+                            
+                        else:
+                        
+                            # No value list for relation type slug+role
+                            status_message = "In {}(): WARNING - No value list for relation type slug: {}; role: {}.  No row added for this type and role.".format( me, current_slug, current_role )
+                            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                            
+                        #-- END check to see if list for role --#
+                        
+                    else:
+                    
+                        # No role-to-values map relation type slug
+                        status_message = "In {}(): WARNING - No role-to-values map for relation type slug: {}.  No rows added for this type.".format( me, current_slug )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                            
+                    #-- END check to see if role-to-values map for slug --#
+                    
+                #-- END loop over roles. --#
+                
+            #-- END loop over relation type slugs --#
+            
+        else:
+        
+            # no slug passed in, can't do anything.
+            status_message = "In {}(): ERROR - Call to self.create_all_relation_type_values_lists() returned None.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if create list method returned anything --#
 
     #-- END method append_entity_relation_type_rows --#
 

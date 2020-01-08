@@ -287,24 +287,90 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         string_OUT = ""
 
         # declare variables
-        #person_type_id_list = None
+        me = "create_entity_relation_types_attribute_string"
+        debug_flag = None
+        status_message = None
+        relation_type_slug_to_roles_map = None
+        sorted_slug_list = None
+        role_list = None
+        current_slug = None
+        role_to_value_list_map = None
+        current_role = None
+        value_list = None
+        attribute_label = None
+        
+        # initialize
+        debug_flag = self.DEBUG_FLAG
 
-        # get person type ID list
-        #person_type_id_list = self.create_person_type_id_list( True )
-
-        # got it?
-        #if ( person_type_id_list ):
-
-            # output the name of this attribute
-        #    string_OUT += "person_type\n"
-
-            # join the list into a string, separated by newlines.
-        #    string_OUT += "\n".join( person_type_id_list )
+        # first, retrieve the values.
+        relation_type_slug_to_roles_map = self.create_all_relation_type_values_lists()
+        
+        # got anything?
+        if ( relation_type_slug_to_roles_map is not None ):
+        
+            # get list of slugs, sort alphabetically
+            sorted_slug_list = list( six.viewkeys( relation_type_slug_to_roles_map ) )
+            sorted_slug_list.sort()
             
-            # add a newline to the end.
-        #    string_OUT += "\n"
+            # get role list
+            role_list = self.VALID_RELATION_TYPE_ROLES
             
-        #-- END check to make sure we have list.
+            # loop over slugs
+            for current_slug in sorted_slug_list:
+            
+                # retrieve per-role value lists for this slug
+                role_to_value_list_map = relation_type_slug_to_roles_map.get( current_slug, None )
+                
+                if ( role_to_value_list_map is not None ):
+                
+                    # loop over roles
+                    for current_role in role_list:
+                    
+                        # retrieve value list
+                        value_list = role_to_value_list_map.get( current_role, None )
+                        
+                        # got anything?
+                        if ( value_list is not None ):
+                        
+                            # build row label
+                            attribute_label = "{}-{}".format( current_slug, current_role )
+                            
+                            # output the name of this attribute
+                            string_OUT += "{}\n".format( attribute_label )
+
+                            # join the list into a string, separated by newlines.
+                            string_OUT += "\n".join( value_list )
+            
+                            # add two newlines to the end.
+                            string_OUT += "\n\n"
+
+                        else:
+                        
+                            # No value list for relation type slug+role
+                            status_message = "In {}(): WARNING - No value list for relation type slug: {}; role: {}.  No attribute added for this type and role.".format( me, current_slug, current_role )
+                            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                            
+                        #-- END check to see if list for role --#
+                        
+                    else:
+                    
+                        # No role-to-values map relation type slug
+                        status_message = "In {}(): WARNING - No role-to-values map for relation type slug: {}.  No attributes added for this type.".format( me, current_slug )
+                        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                            
+                    #-- END check to see if role-to-values map for slug --#
+                    
+                #-- END loop over roles. --#
+                
+            #-- END loop over relation type slugs --#
+            
+        else:
+        
+            # no slug passed in, can't do anything.
+            status_message = "In {}(): ERROR - Call to self.create_all_relation_type_values_lists() returned None.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if create list method returned anything --#
 
         return string_OUT
 

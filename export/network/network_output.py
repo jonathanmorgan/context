@@ -495,11 +495,15 @@ class NetworkOutput( ContextBase ):
         # declare variables
         me = "render_network_data"
         debug_flag = None
+        status_message = None
         network_data_request = None
         network_data_outputter = None
         entity_dictionary = None
         my_params = None
         relation_qs = None
+        output_file_path = None
+        output_file = None
+        exception_instance = None
 
         # init
         debug_flag = False
@@ -554,12 +558,37 @@ class NetworkOutput( ContextBase ):
                 network_OUT += "\n\n" + network_data_outputter.debug + "\n\n"
 
             #-- END check to see if we have debug to output. --#
+            
+            # Are we to output to a file?
+            output_file_path = network_data_request.get_output_file_path()
+            if ( ( output_file_path is not None ) and ( output_file_path != "" ) ):
+            
+                try:
+                
+                    # yes.  Output to file.
+                    with open( output_file_path, "w" ) as output_file:
+                    
+                        # write to file
+                        output_file.write( network_OUT )
+                        
+                    #-- END with open( output_file_path, "w" ) as output_file --#
+                    
+                except:
+                
+                    # no slug passed in, can't do anything.
+                    status_message = "ERROR - Exception thrown writing network data to {}.  Ignoring error, returning data.".format( output_file_path )
+                    exception_instance = sys.exc_info()[0]
+                    self.log_exception( exception_instance, message_IN = status_message, method_IN = me, logger_name_IN = self.LOGGER_NAME, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+                    
+                #-- END try...except around writing output to file --#
+            
+            #-- END check to see if output file path set --#
 
         else:
         
-            # ! TODO - add error
             # no request spec, so can't process.
-            pass
+            status_message = "In {}(): ERROR - no request specification, so doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
         
         #-- END check to make sure we have a query set. --#
 

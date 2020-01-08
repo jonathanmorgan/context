@@ -384,6 +384,114 @@ class NetworkDataOutput( ContextBase ):
     #-- END method add_reciprocal_relation() --#
 
 
+    def create_all_relation_type_values_lists( self ):
+
+        """
+            Method: create_all_relation_type_values_lists()
+
+            Purpose: Loops over relation type slugs, then for each, calls
+                `NetworkDataOutput.create_relation_type_value_dict() to create
+                dictionary that maps roles to values lists.  Creates a
+                dictionary that maps relation type slugs to these dictionaries,
+                then returns the new dictionary.
+
+            Returns:
+            - dictionary that maps relation type slugs to dictionaries that map roles to value list for the slug and role.
+        """
+
+        # return reference
+        value_dict_OUT = None
+
+        # declare variables
+        relation_type_slug_list = ""
+        current_slug = None
+        role_values_dict = None
+        
+        # get slug list.
+        relation_type_slug_list = self.get_relation_type_slug_list()
+        if ( ( relation_type_slug_list is not None ) and ( len( relation_type_slug_list ) > 0 ) ):
+        
+            # there are slugs.  We can make value lists.
+            value_dict_OUT = {}
+            
+            # loop over slugs.
+            for current_slug in relation_type_slug_list:
+            
+                # get value lists dictionary
+                role_values_dict = self.create_relation_type_value_dict( current_slug )
+                
+                # store in output dictionary
+                value_dict_OUT[ current_slug ] = role_values_dict
+                
+            #-- END loop over relation type slugs. --#
+            
+        else:
+        
+            # no slugs.  Return empty list.
+            value_dict_OUT = {}
+        
+        #-- END check to see if we have list of slugs. --#
+
+        return value_dict_OUT
+
+    #-- END method create_all_relation_type_values_lists --#
+
+
+    def create_entity_id_list( self, as_string_IN = True ):
+
+        """
+            Method: create_entity_id_list()
+
+            Purpose: Create a list of Entity IDs for the Entities in master
+               list.
+
+            Preconditions: Master Entity list must be present.
+
+            Params: none
+
+            Returns:
+            - list_OUT - list of Entity IDs, in sorted master Entity list order.
+        """
+
+        # return reference
+        list_OUT = []
+
+        # declare variables
+        entity_list = None
+        current_entity_id = -1
+        output_entity_id = -1
+
+        # get master list
+        entity_list = self.get_master_entity_list()
+
+        # got it?
+        if ( entity_list ):
+
+            # loop over the master list.
+            for current_entity_id in sorted( entity_list ):
+            
+                # store in output variable
+                output_entity_id = current_entity_id
+
+                # append as a string?
+                if ( as_string_IN == True ):
+
+                    output_entity_id = str( output_entity_id )
+
+                #-- END check to see if append as string --#
+
+                # append to output list.
+                list_OUT.append( output_entity_id )
+
+            #-- END loop over Entities --#
+
+        #-- END check to make sure we have list. --#
+
+        return list_OUT
+
+    #-- END method create_entity_id_list --#
+
+
     def create_header_list( self ):
 
         """
@@ -517,61 +625,6 @@ class NetworkDataOutput( ContextBase ):
         return list_OUT
 
     #-- END method create_label_list --#
-
-
-    def create_entity_id_list( self, as_string_IN = True ):
-
-        """
-            Method: create_entity_id_list()
-
-            Purpose: Create a list of Entity IDs for the Entities in master
-               list.
-
-            Preconditions: Master Entity list must be present.
-
-            Params: none
-
-            Returns:
-            - list_OUT - list of Entity IDs, in sorted master Entity list order.
-        """
-
-        # return reference
-        list_OUT = []
-
-        # declare variables
-        entity_list = None
-        current_entity_id = -1
-        output_entity_id = -1
-
-        # get master list
-        entity_list = self.get_master_entity_list()
-
-        # got it?
-        if ( entity_list ):
-
-            # loop over the master list.
-            for current_entity_id in sorted( entity_list ):
-            
-                # store in output variable
-                output_entity_id = current_entity_id
-
-                # append as a string?
-                if ( as_string_IN == True ):
-
-                    output_entity_id = str( output_entity_id )
-
-                #-- END check to see if append as string --#
-
-                # append to output list.
-                list_OUT.append( output_entity_id )
-
-            #-- END loop over Entities --#
-
-        #-- END check to make sure we have list. --#
-
-        return list_OUT
-
-    #-- END method create_entity_id_list --#
 
 
     def create_relation_type_roles_for_entity( self, entity_id_IN ):
@@ -735,6 +788,178 @@ class NetworkDataOutput( ContextBase ):
     #-- END method create_relation_type_roles_header_list --#
 
 
+    def create_relation_type_role_value_list( self, relation_type_slug_IN, relation_role_IN ):
+
+        """
+            Method: create_relation_type_role_value_list()
+
+            Purpose: accepts a relation type slug and a role, creates list of
+                values for all entities in master entity list for that
+                combination of slug and role.  If not present for a given
+                entity, sets to 0.
+
+            Returns:
+            - List of values for relation type slug and role passed in.
+        """
+
+        # return reference
+        value_list_OUT = None
+
+        # declare variables
+        me = "create_relation_type_role_value_list"
+        debug_flag = None
+        status_message = None
+        entity_list = None
+        entity_relation_roles_map = None
+        entity_id = None
+        entity_relation_type_roles = None
+        relation_type_roles = None
+        current_value = None
+        
+        # initialization
+        debug_flag = self.DEBUG_FLAG
+        
+        # make sure we have relation type slug
+        if ( ( relation_type_slug_IN is not None ) and ( relation_type_slug_IN != "" ) ):
+        
+            # ...and a role.
+            if ( ( relation_role_IN is not None ) and ( relation_role_IN != "" ) ):
+        
+                # initialize output list
+                value_list_OUT = []
+        
+                # get entity list
+                entity_list = self.get_master_entity_list()
+                if ( ( entity_list is not None ) and ( len( entity_list ) > 0 ):
+                
+                    # retrieve map of entities to their relation types and roles.
+                    entity_relation_roles_map = self.get_entity_relation_type_summary_dict()
+                
+                    # we have a list.  Loop.
+                    for entity_id in entity_list:
+                    
+                        # retrieve the relation type roles for this entity.
+                        entity_relation_type_roles = entity_relation_roles_map.get( entity_id, None )
+                        
+                        # got anything at all?
+                        if ( entity_relation_type_roles is not None ):
+                        
+                            # yes.  How about for the requested relation type?
+                            relation_type_roles = entity_relation_type_roles.get( relation_type_slug_IN, None )
+                            
+                            # any roles for this relation type?
+                            if ( relation_type_roles is not None ):
+                            
+                                # yes - get count for requested role.
+                                current_value = relation_type_roles.get( relation_role_IN, 0 )
+                            
+                            else:
+                            
+                                # no roles for the requested type.
+                                current_value = 0
+                                
+                            #-- END check to see if roles for requested relation type --#
+                        
+                        else:
+                        
+                            # no roles, likely no ties, just here for comparison.
+                            current_value = 0
+                            
+                        #-- END check to see if any relation type roles at all --#
+                        
+                        # add value to list.
+                        value_list_OUT.append( current_value )
+                        
+                    #-- END loop over entity IDs. --#
+                    
+                else:
+                
+                    # no entities, output a warning.
+                    status_message = "In {}(): WARNING - No entities to process.  Returning empty list.  relation_type_slug_IN: {}; relation_role_IN: {}".format( me, relation_type_slug_IN, relation_role_IN )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                        
+                #-- END check to see if entity list. --#
+        
+            else:
+            
+                # no role passed in, can't do anything.
+                status_message = "In {}(): ERROR - No relation type role passed in for slug {}.  Doing nothing.".format( me, relation_type_slug_IN )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            
+            #-- END check to see if role passed in. --#
+            
+        else:
+        
+            # no slug passed in, can't do anything.
+            status_message = "In {}(): ERROR - No relation type slug passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if relation type slug passed in --#
+
+        return value_list_OUT
+
+    #-- END method create_relation_type_role_value_list --#
+
+
+    def create_relation_type_value_dict( self, relation_type_slug_IN ):
+
+        """
+            Method: create_relation_type_value_dict()
+
+            Purpose: accepts a relation type slug, loops over all roles, calls
+                `NetworkDataOutput.create_relation_type_role_value_list()` to
+                build the list of values for each, then makes and returns
+                dictionary mapping roles to value lists.
+
+            Returns:
+            - dictionary mapping roles to value lists for relation type slug passed in.
+        """
+
+        # return reference
+        relation_type_role_values_dict_OUT = None
+
+        # declare variables
+        me = "create_relation_type_value_set"
+        status_message = None
+        debug_flag = None
+        role_list = None
+        current_role = None
+        value_list = None
+        
+        # initialize
+        debug_flag = self.DEBUG_FLAG
+        role_list = self.VALID_RELATION_TYPE_ROLES
+
+        # make sure we have relation type slug
+        if ( ( relation_type_slug_IN is not None ) and ( relation_type_slug_IN != "" ) ):
+        
+            # initialize
+            relation_type_role_values_dict_OUT = {}
+        
+            # loop over role list.
+            for current_role in role_list:
+            
+                # get values
+                value_list = self.create_relation_type_role_value_list( relation_type_slug_IN, current_role )
+                
+                # add to output dictionary
+                relation_type_role_values_dict_OUT[ current_role ] = value_list_OUT
+                
+            #-- END loop over roles --#
+            
+        else:
+        
+            # no slug passed in, can't do anything.
+            status_message = "In {}(): ERROR - No relation type slug passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if relation type slug passed in --#
+
+        return value_list_OUT
+
+    #-- END method create_relation_type_value_dict() --#
+
+
     def do_output_attribute_columns( self ):
 
         """
@@ -884,22 +1109,28 @@ class NetworkDataOutput( ContextBase ):
 
         # declare variables
         me = "generate_master_entity_list"
+        debug_flag = None
+        status_message = None
         my_logger = None
         debug_string = ""
         entity_dict = None
+        entity_dict_count = None
         entity_ids_list = None
         current_entity_id = None
         entity_id_to_relation_details_dict = None
+        details_count = None
         master_entity_relations_details = None
         merged_entity_id_list = None
 
-        # initialize logger
+        # initialize
         my_logger = self.get_logger()
+        debug_flag = self.DEBUG_FLAG
 
         # retrieve the Entity dictionary
         entity_dict = self.get_entity_dictionary()
+        entity_dict_count = len( entity_dict )
 
-        my_logger.debug( "In " + me + ": len( entity_dict ) = " + str( len( entity_dict ) ) )
+        my_logger.debug( "In {}: len( entity_dict ) = {}".format( me, entity_dict_count ) )
 
         # grab list of keys from self.m_entity_dictionary.
         entity_ids_list = entity_dict.keys()
@@ -917,11 +1148,23 @@ class NetworkDataOutput( ContextBase ):
         # update or add entities and corresponding type details from the nested
         #    self.m_entity_relation_type_summary_dict.
         master_entity_relations_details = self.get_entity_relation_type_summary_dict()
+        
+        # update dictionary
         entity_id_to_relation_details_dict.update( master_entity_relations_details )
+        details_count = len( entity_id_to_relation_details_dict )
 
-        my_logger.debug( "In {}(): after entity_id_to_relation_details_dict.update( master_entity_relations_details ), len( entity_id_to_relation_details_dict ) = {}".format( me, len( entity_id_to_relation_details_dict ) ) )
+        my_logger.debug( "In {}(): after entity_id_to_relation_details_dict.update( master_entity_relations_details ), len( entity_id_to_relation_details_dict ) = {}".format( me, details_count ) )
+        
+        # Check to see entity_dict_count == details_count
+        if ( entity_dict_count != details_count ):
+        
+            # counts don't match.  Likely an error.
+            status_message = "In {}(): master list is larger ( before: {}; after: {} ) after integrating items from network processing - for the entity_selection filter to be effective, it must be a superset of the Entity_Relations returned by the relation_selection filter.".format( me, entity_dict_count, details_count )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )            
+        
+        #-- END check to see entity_dict_count == details_count --#
 
-        # ! TODO - store this in the entity_relation_type_summary_dict?
+        # Question: update entity_relation_type_summary_dict with merged dictionary?
 
         # grab the ID list from this merged dictionary, sort it, and use it
         #    as your list of entities to iterate over as you create actual
