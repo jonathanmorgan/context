@@ -621,7 +621,7 @@ class NetworkOutput( ContextBase ):
                     
                 except:
                 
-                    # no slug passed in, can't do anything.
+                    # Error writing data to file, let's still return data.
                     status_message = "ERROR - Exception thrown writing network data to {}.  Ignoring error, returning data.".format( output_file_path )
                     exception_instance = sys.exc_info()[0]
                     self.log_exception( exception_instance, message_IN = status_message, method_IN = me, logger_name_IN = self.LOGGER_NAME, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )

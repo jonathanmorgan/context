@@ -58,16 +58,20 @@ class TestHelper( context.tests.test_helper.TestHelper ):
 
 
     # JSON files
-    FILE_PATH_BASE_FOLDER = "{}/".format( os.path.dirname( os.path.realpath( __file__ ) ) )
-    FILE_PATH_NETWORK_DATA_REQUEST_BASIC = "{}network_data_request_basic.json".format( FILE_PATH_BASE_FOLDER )
-    FILE_PATH_NETWORK_DATA_REQUEST_BASIC_2 = "{}network_data_request_basic_2.json".format( FILE_PATH_BASE_FOLDER )    
-    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER = "{}network_data_request_with_entity_id_filter.json".format( FILE_PATH_BASE_FOLDER )
-    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION = "{}network_data_request_with_entity_select.json".format( FILE_PATH_BASE_FOLDER )
+    FILE_PATH_BASE_FOLDER = "{}".format( os.path.dirname( os.path.realpath( __file__ ) ) )
+    FILE_PATH_NETWORK_DATA_REQUEST_BASIC = "{}/network_data_request_basic.json".format( FILE_PATH_BASE_FOLDER )
+    FILE_PATH_NETWORK_DATA_REQUEST_BASIC_2 = "{}/network_data_request_basic_2.json".format( FILE_PATH_BASE_FOLDER )    
+    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER = "{}/network_data_request_with_entity_id_filter.json".format( FILE_PATH_BASE_FOLDER )
+    FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION = "{}/network_data_request_with_entity_select.json".format( FILE_PATH_BASE_FOLDER )
     FILE_PATH_LIST = []
     FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_BASIC )
     #FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_BASIC_2 )
     FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_ID_FILTER )
     FILE_PATH_LIST.append( FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION )
+    
+    # output files
+    FILE_PATH_NETWORK_DATA_REQUEST_BASIC_TSV_OUTPUT = "{}/NetworkDataRequest_basic_test_output.tsv".format( FILE_PATH_BASE_FOLDER )
+    TEST_BASIC_TSV_OUTPUT = "{}/NetworkDataRequest_basic_test_output-test.tsv".format( FILE_PATH_BASE_FOLDER )
     
 
     #----------------------------------------------------------------------------

@@ -190,7 +190,6 @@ class NDO_CSVMatrix( NetworkDataOutput ):
                 # append entity's ID.
                 column_value_list.append( str( entity_id_IN ) )
 
-                # ! TODO - append relation types and counts.
                 # walk the entity's relation type data structure in the same
                 #     order as the relation type list, and output FROM, TO, and
                 #     THROUGH numbers for each, 0 if not found.  Will result in

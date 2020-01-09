@@ -1,7 +1,7 @@
 {
     "output_specification": {
         "output_type": "file",
-        "output_file_path": "./NetworkDataRequest_test_output.txt",
+        "output_file_path": "./NetworkDataRequest_entity_select_test_output.tsv",
         "output_format": "TSV_matrix",
         "output_structure": "both_trait_columns",
         "output_include_column_headers": true

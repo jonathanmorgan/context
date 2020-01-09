@@ -150,7 +150,7 @@ class NetworkDataOutput( ContextBase ):
         self.m_output_format = NetworkDataOutput.NETWORK_DATA_FORMAT_DEFAULT
         self.m_output_structure = NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_DEFAULT
         self.m_entity_dictionary = {}
-        self.relation_map = {}
+        self.m_relation_map = {}
         self.include_row_and_column_headers = False
         self.m_relation_type_slug_to_instance_map = {}
         self.m_relation_type_slug_list = []
@@ -164,7 +164,7 @@ class NetworkDataOutput( ContextBase ):
         self.m_entity_relation_type_summary_dict = {}
 
         # variable to hold master Entity list.
-        self.m_master_entity_list = []
+        self.m_master_entity_list = None
 
         # internal debug string
         self.debug = "NetworkDataOutput debug:\n\n"
@@ -360,7 +360,7 @@ class NetworkDataOutput( ContextBase ):
     
                 if ( self.DEBUG_FLAG == True ):
                     # output the relation map
-                    self.debug += "\n\n*** in add_reciprocal_relation, after adding relations, relation_map:\n" + str( self.relation_map ) + "\n\n"
+                    self.debug += "\n\n*** in add_reciprocal_relation, after adding relations, relation_map:\n" + str( self.m_relation_map ) + "\n\n"
                 #-- END DEBUG --#
 
             else:
@@ -632,14 +632,16 @@ class NetworkDataOutput( ContextBase ):
     def create_relation_type_roles_for_entity( self, entity_id_IN ):
 
         """
-            Method: create_relation_type_roles_header_list()
+            Method: create_relation_type_roles_for_entity()
 
-            Purpose: retrieves list of Entity types registered with this class.
-                loops, creates column header for "FROM", "TO", and "THROUGH" for
-                each type, adds all to list.  Returns list of headers.
+            Purpose: retrieves relation type information for Entity whose ID is
+                passed in.  Retrieves Entity types registered with this class.
+                loops, pulls in counts for the entity for "FROM", "TO", and
+                "THROUGH" for each type, adds all to list.  Returns list of
+                these counts.
 
             Returns:
-            - List of relation type role headers for our CSV document.
+            - List of counts for the entity for "FROM", "TO", and "THROUGH" for each type.
         """
 
         # return reference
@@ -1177,10 +1179,15 @@ class NetworkDataOutput( ContextBase ):
         if ( is_sorted_IN == True ):
         
             # we want it sorted.
-            merged_entity_id_list = sorted( merged_entity_id_list )
+            merged_entity_id_list.sort()
         
         #-- END check to see if we want the list sorted. --#
 
+        # output list and length
+        merged_entity_id_list_length = len( merged_entity_id_list )
+        status_message = "In {}(): master entity ID list length: {} ( list: {} )".format( me, merged_entity_id_list_length, merged_entity_id_list )
+        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )            
+    
         # save this as the master entity list.
         self.set_master_entity_list( merged_entity_id_list )
 
@@ -1238,24 +1245,44 @@ class NetworkDataOutput( ContextBase ):
         list_OUT = []
 
         # declare variables
+        me = "get_master_entity_list"
+        debug_flag = None
+        status_message = None
         is_ok = True
+        list_length = None
+
+        # initialize
+        debug_flag = self.DEBUG_FLAG
 
         # retrieve master Entity list
         list_OUT = self.m_master_entity_list
 
-        if ( list_OUT is not None ):
+        #if ( list_OUT is not None ):
+        
+        #    list_length = len( list_OUT )
 
-            if ( len( list_OUT ) < 1 ):
+        #    if ( list_length < 1 ):
 
-                # nothing in list.  Not OK.
-                is_ok = False
+        #        # nothing in list.  Not OK.
+        #        is_ok = False
 
+                # List not OK.
+        #        status_message = "In {}(): master list is not OK, length less than 1 ( {} - length: {} )".format( me, list_OUT, list_length )
+        #        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )            
+            
             #-- END check to see if anything in list.
 
-        else:
+        #else:
+
+        # just check for None - empty list is OK.
+        if ( list_OUT is None ):
 
             # no list.  not OK.
             is_ok = False
+
+            # List not OK.
+            status_message = "In {}(): master list is None ( {} )".format( me, list_OUT )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )            
 
         #-- END check to see if stored list is OK --#
 
@@ -1384,7 +1411,7 @@ class NetworkDataOutput( ContextBase ):
         value_OUT = ''
 
         # grab map
-        value_OUT = self.relation_map
+        value_OUT = self.m_relation_map
 
         return value_OUT
 
@@ -1673,8 +1700,9 @@ class NetworkDataOutput( ContextBase ):
                 instance variable.
 
             Preconditions: assumes that we have a query set of Entity_Relations
-                stored in the instance.  If not, does nothing, returns empty
-                string.
+                stored in the instance, and a dictionary of entity IDs
+                optionally tied to their instances.  If not, does nothing,
+                returns empty string.
 
             Postconditions: returns the delimited network data, each column separated by two spaces, in a string.
 
@@ -2061,7 +2089,7 @@ class NetworkDataOutput( ContextBase ):
     def set_query_set( self, value_IN ):
 
         """
-            Method: set_request()
+            Method: set_query_set()
 
             Purpose: accepts a query set, stores it in instance.
 
@@ -2082,6 +2110,31 @@ class NetworkDataOutput( ContextBase ):
         return value_OUT
 
     #-- END method set_query_set() --#
+
+
+    def set_relation_map( self, value_IN ):
+
+        """
+            Method: set_relation_map()
+
+            Purpose: accepts map to store relations, stores it in instance.
+
+            Params:
+            - value_IN - Dictionary.
+        """
+
+        # return value
+        value_OUT = None
+
+        # store value
+        self.m_relation_map = value_IN
+        
+        # sanity check - retrieve and return.
+        value_OUT = self.get_relation_map()
+        
+        return value_OUT
+
+    #-- END method set_relation_map() --#
 
 
     def set_relation_type_slug_list( self, value_IN ):
