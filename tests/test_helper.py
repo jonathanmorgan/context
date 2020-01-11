@@ -158,7 +158,7 @@ class TestHelper( object ):
     #---------------------------------------------------------------------------
     # ! ----> Entity_Relation
 
-     # Entity_Relation_Type slugs - FROM NEWSPAPER
+    # Entity_Relation_Type slugs - FROM NEWSPAPER
     CONTEXT_RELATION_TYPE_SLUG_NEWSPAPER_ARTICLE = "newspaper_article"    # FROM newspaper TO article.
     CONTEXT_RELATION_TYPE_SLUG_NEWSPAPER_REPORTER = "newspaper_reporter"  # FROM newspaper TO person (reporter) THROUGH article.
     CONTEXT_RELATION_TYPE_SLUG_NEWSPAPER_SOURCE = "newspaper_source"      # FROM newspaper TO person (source) THROUGH article.
@@ -205,6 +205,15 @@ class TestHelper( object ):
     ENTITY_NUMBER_TO_TYPE_MAP[ 10 ] = ENTITY_TYPE_SLUG_PERSON
     ENTITY_NUMBER_TO_TYPE_MAP[ 11 ] = ENTITY_TYPE_SLUG_NEWSPAPER
     ENTITY_NUMBER_TO_TYPE_MAP[ 12 ] = ENTITY_TYPE_SLUG_ARTICLE
+    
+    # test relation IDs
+    TEST_RELATION_IDS_WITH_THROUGH = [ 1101, 1245, 2264, 2271, 2288, 2595, 2638, 2687, 2973, 3086 ]
+    TEST_RELATION_IDS_WITH_THROUGH_FROM_TO_ENTITY_IDS = [ 80, 128, 147, 151, 245, 246, 248, 253, 271, 277, 279, 284, 288, 291, 308 ]
+    TEST_RELATION_IDS_WITH_THROUGH_ALL_ENTITY_IDS = [ 80, 125, 128, 146, 147, 151, 244, 245, 246, 248, 253, 270, 271, 277, 279, 284, 286, 288, 291, 307, 308 ]
+    
+    # counts at each index as you loop through IDS above.
+    TEST_FROM_TO_ENTITY_COUNT_AT_INDEX = [ 2, 4, 6, 7, 8, 9, 11, 12, 14, 15 ]
+    TEST_ALL_ENTITY_COUNT_AT_INDEX = [ 3, 6, 9, 10, 11, 13, 15, 16, 19, 21 ]
 
     #----------------------------------------------------------------------------
     # ! ==> Class variables
