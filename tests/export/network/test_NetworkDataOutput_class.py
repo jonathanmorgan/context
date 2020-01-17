@@ -121,13 +121,51 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
     #----------------------------------------------------------------------------
 
 
-    def set_up_basic_test_instance( self, request_IN = None ):
+    def set_up_basic_test_instance( self ):
 
         # return reference
         instance_OUT = None
 
         # declare variables
         me = "set_up_basic_test_instance"
+
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # call the base method, passing it the method for entity selection.
+        instance_OUT = self.set_up_test_instance( request_load_function_IN = TestHelper.load_basic )
+        
+        return instance_OUT
+
+    #-- END test method set_up_basic_test_instance() --#
+        
+
+    def set_up_entity_selection_test_instance( self ):
+
+        # return reference
+        instance_OUT = None
+
+        # declare variables
+        me = "set_up_entity_selection_test_instance"
+
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # call the base method, passing it the method for entity selection.
+        instance_OUT = self.set_up_test_instance( request_load_function_IN = TestHelper.load_with_entity_selection )
+        
+        return instance_OUT
+
+    #-- END test method set_up_entity_selection_test_instance() --#
+        
+
+    def set_up_test_instance( self, request_IN = None, request_load_function_IN = TestHelper.load_basic ):
+
+        # return reference
+        instance_OUT = None
+
+        # declare variables
+        me = "set_up_test_instance"
         debug_flag = None
         network_output = None
         test_request = None
@@ -151,7 +189,7 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
         else:
         
             # no request passed in, use basic.
-            test_request = TestHelper.load_basic()
+            test_request = request_load_function_IN()
             
             # remove output type and file path, so no output
             test_request.set_output_type( None )
@@ -691,6 +729,94 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
     #-- END test method test_add_reciprocal_relation() --#
         
         
+    def test_generate_master_entity_list( self ):
+
+        # declare variables
+        me = "test_generate_master_entity_list"
+        debug_flag = None
+        test_instance = None
+        entity_id_list = None
+        entity_id_list_count = None
+        network_data = None
+        test_value = None
+        should_be = None
+        error_string = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> simple test
+        
+        # create instance
+        test_instance = NetworkDataOutput()
+        
+        # set entity_dictionary and entity relation type summary
+        test_instance.set_entity_dictionary( self.TEST_SET_ENTITY_DICTIONARY )
+        test_instance.set_entity_relation_type_summary_dict( self.TEST_SET_ENTITY_RELATION_TYPE_SUMMARY_DICT )
+        
+        # call the method.
+        entity_id_list = test_instance.generate_master_entity_list()
+        entity_id_list_count = len( entity_id_list )
+        
+        # should have 8 items.
+        test_value = entity_id_list_count
+        should_be = 8
+        error_string = "Simple test entity list count = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # should contain IDs 1 through 8.
+        for id_value in range( 1, 9 ):
+        
+            # id value should be in list.
+            test_value = id_value in entity_id_list
+            error_string = "id {} in entity_id_list {}?: {}".format( id_value, entity_id_list, test_value )
+            self.assertTrue( test_value, msg = error_string )
+            
+        #-- END loop over IDs that should be in the list --#
+
+        #----------------------------------------------------------------------#
+        # ! ----> basic test
+
+        test_instance = self.set_up_basic_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # call the method.
+        entity_id_list = test_instance.generate_master_entity_list()
+        entity_id_list_count = len( entity_id_list )
+
+        # should have ? items.
+        test_value = entity_id_list_count
+        should_be = 72
+        error_string = "Basic test entity list count = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> entity selection test
+
+        test_instance = self.set_up_entity_selection_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # call the method.
+        entity_id_list = test_instance.generate_master_entity_list()
+        entity_id_list_count = len( entity_id_list )
+
+        # should have ? items.
+        test_value = entity_id_list_count
+        should_be = 153
+        error_string = "Entity selection test entity list count = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+    #-- END test method test_generate_master_entity_list() --#
+
+
     def test_getters_and_setters( self ):
 
         # declare variables
@@ -975,7 +1101,7 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
         eval_output_type = eval_request.get_output_type()
         
         # use it to set up test instance.
-        test_instance = self.set_up_basic_test_instance( request_IN = eval_request )
+        test_instance = self.set_up_test_instance( request_IN = eval_request )
         
         # part of set up is call to initialize from request.
         
