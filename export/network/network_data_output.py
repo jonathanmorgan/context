@@ -1134,7 +1134,8 @@ class NetworkDataOutput( ContextBase ):
         entity_dict = self.get_entity_dictionary()
         entity_dict_count = len( entity_dict )
 
-        my_logger.debug( "In {}: len( entity_dict ) = {}".format( me, entity_dict_count ) )
+        status_message = "In {}: len( entity_dict ) = {}; entity_dict: {}".format( me, entity_dict_count, entity_dict )
+        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )            
 
         # grab list of keys from self.m_entity_dictionary.
         entity_ids_list = entity_dict.keys()
@@ -1586,8 +1587,11 @@ class NetworkDataOutput( ContextBase ):
 
                 else:
 
-                    # no relations.  Return empty dictionary.
+                    # no relations.  Create new dictionary, add it for this
+                    #     entity, then return empty dictionary.
                     value_OUT = {}
+                    relation_dict[ entity_id_IN ] = value_OUT
+                    value_OUT = self.get_relations_for_entity( entity_id_IN )
 
                 #-- END check to see if Entity has any relations.
 
@@ -1603,19 +1607,19 @@ class NetworkDataOutput( ContextBase ):
     def initialize_from_request( self, network_data_request_IN ):
 
         # declare variables
-        output_type_IN = ''
         output_format_IN = ''
         output_structure_IN = ''
+        output_type_IN = ''
 
         # retrieve info.
-        output_type_IN = network_data_request_IN.get_output_type()
         output_format_IN = network_data_request_IN.get_output_format()
         output_structure_IN = network_data_request_IN.get_output_structure()
+        output_type_IN = network_data_request_IN.get_output_type()
 
         # store
-        self.set_output_type( output_type_IN )
         self.set_output_format( output_format_IN )
         self.set_output_structure( output_structure_IN )
+        self.set_output_type( output_type_IN )
         
         # and store the request, as well, for reference.
         self.set_network_data_request( network_data_request_IN )
@@ -2192,7 +2196,7 @@ class NetworkDataOutput( ContextBase ):
                                          relation_type_IN,
                                          relation_role_IN,
                                          relation_instance_IN = None,
-                                         update_relation_map_IN = False ):
+                                         update_relation_map_IN = True ):
 
         """
             Method: update_entity_relations_details()
