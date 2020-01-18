@@ -44,7 +44,7 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
 
 
     # DEBUG
-    DEBUG = True
+    DEBUG = False
     LOGGER_NAME = "context.tests.export.network.test_NetworkDataOutput_class.py.NetworkDataOutputTest"
 
     # CLASS NAME
