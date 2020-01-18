@@ -44,7 +44,7 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
 
 
     # DEBUG
-    DEBUG = False
+    DEBUG = True
     LOGGER_NAME = "context.tests.export.network.test_NetworkDataOutput_class.py.NetworkDataOutputTest"
 
     # CLASS NAME
@@ -62,6 +62,95 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
     TEST_SET_RELATION_MAP = { 1 : None, 2 : None, 3 : None, 4 : None, 5 : None, 6 : None, 7 : None, 8 : None }
     TEST_SET_RELATION_TYPE_SLUG_LIST = [ "a", "b", "c" ]
     TEST_SET_RELATION_TYPE_SLUG_TO_INSTANCE_MAP = { "a" : None, "b" : None, "3" : None }
+    
+    # ! ----> testing creating relation type role value lists
+    
+    TEST_RELATION_TYPE_SLUG_LIST = [ "mentioned", "quoted", "shared_byline" ]
+    TEST_ROLE_LIST = [ ContextBase.RELATION_ROLES_FROM, ContextBase.RELATION_ROLES_TO, ContextBase.RELATION_ROLES_THROUGH ]
+    
+    # ! --------> SIMPLE
+    SIMPLE_MENTIONED_FROM_GOAL_LIST = [ 2, 0, 0 ]
+    SIMPLE_MENTIONED_TO_GOAL_LIST = [ 1, 0, 0 ]
+    SIMPLE_MENTIONED_THROUGH_GOAL_LIST = [ 0, 0, 0 ]
+    SIMPLE_QUOTED_FROM_GOAL_LIST = [ 0, 0, 0 ]
+    SIMPLE_QUOTED_TO_GOAL_LIST = [ 1, 2, 0 ]
+    SIMPLE_QUOTED_THROUGH_GOAL_LIST = [ 0, 0, 0 ]
+    SIMPLE_SHARED_BYLINE_FROM_GOAL_LIST = [ 0, 1, 0 ]
+    SIMPLE_SHARED_BYLINE_TO_GOAL_LIST = [ 0, 0, 0 ]
+    SIMPLE_SHARED_BYLINE_THROUGH_GOAL_LIST = [ 0, 0, 1 ]
+    
+    SIMPLE_TYPE_TO_ROLES_MAP = {}
+    SIMPLE_MENTIONED_ROLES_TO_LISTS_MAP = {}
+    SIMPLE_MENTIONED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_FROM ] = SIMPLE_MENTIONED_FROM_GOAL_LIST
+    SIMPLE_MENTIONED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_TO ] = SIMPLE_MENTIONED_TO_GOAL_LIST
+    SIMPLE_MENTIONED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_THROUGH ] = SIMPLE_MENTIONED_THROUGH_GOAL_LIST
+    SIMPLE_TYPE_TO_ROLES_MAP[ "mentioned" ] = SIMPLE_MENTIONED_ROLES_TO_LISTS_MAP
+    SIMPLE_QUOTED_ROLES_TO_LISTS_MAP = {}
+    SIMPLE_QUOTED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_FROM ] = SIMPLE_QUOTED_FROM_GOAL_LIST
+    SIMPLE_QUOTED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_TO ] = SIMPLE_QUOTED_TO_GOAL_LIST
+    SIMPLE_QUOTED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_THROUGH ] = SIMPLE_QUOTED_THROUGH_GOAL_LIST
+    SIMPLE_TYPE_TO_ROLES_MAP[ "quoted" ] = SIMPLE_QUOTED_ROLES_TO_LISTS_MAP
+    SIMPLE_SHARED_BYLINE_ROLES_TO_LISTS_MAP = {}
+    SIMPLE_SHARED_BYLINE_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_FROM ] = SIMPLE_SHARED_BYLINE_FROM_GOAL_LIST
+    SIMPLE_SHARED_BYLINE_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_TO ] = SIMPLE_SHARED_BYLINE_TO_GOAL_LIST
+    SIMPLE_SHARED_BYLINE_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_THROUGH ] = SIMPLE_SHARED_BYLINE_THROUGH_GOAL_LIST
+    SIMPLE_TYPE_TO_ROLES_MAP[ "shared_byline" ] = SIMPLE_SHARED_BYLINE_ROLES_TO_LISTS_MAP
+
+    # ! --------> BASIC
+    BASIC_MENTIONED_FROM_GOAL_LIST = [ 7, 24, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 0, 5, 0, 0, 0, 0, 0 ]
+    BASIC_MENTIONED_TO_GOAL_LIST = [ 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1 ]
+    BASIC_MENTIONED_THROUGH_GOAL_LIST = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    BASIC_QUOTED_FROM_GOAL_LIST = [ 4, 9, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 0, 2, 0, 0, 0, 0, 0 ]
+    BASIC_QUOTED_TO_GOAL_LIST = [ 0, 0, 0, 2, 2, 2, 0, 0, 2, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0 ]
+    BASIC_QUOTED_THROUGH_GOAL_LIST = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    BASIC_SHARED_BYLINE_FROM_GOAL_LIST = [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    BASIC_SHARED_BYLINE_TO_GOAL_LIST = [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    BASIC_SHARED_BYLINE_THROUGH_GOAL_LIST = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]    
+
+    BASIC_TYPE_TO_ROLES_MAP = {}
+    BASIC_MENTIONED_ROLES_TO_LISTS_MAP = {}
+    BASIC_MENTIONED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_FROM ] = BASIC_MENTIONED_FROM_GOAL_LIST
+    BASIC_MENTIONED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_TO ] = BASIC_MENTIONED_TO_GOAL_LIST
+    BASIC_MENTIONED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_THROUGH ] = BASIC_MENTIONED_THROUGH_GOAL_LIST
+    BASIC_TYPE_TO_ROLES_MAP[ "mentioned" ] = BASIC_MENTIONED_ROLES_TO_LISTS_MAP
+    BASIC_QUOTED_ROLES_TO_LISTS_MAP = {}
+    BASIC_QUOTED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_FROM ] = BASIC_QUOTED_FROM_GOAL_LIST
+    BASIC_QUOTED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_TO ] = BASIC_QUOTED_TO_GOAL_LIST
+    BASIC_QUOTED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_THROUGH ] = BASIC_QUOTED_THROUGH_GOAL_LIST
+    BASIC_TYPE_TO_ROLES_MAP[ "quoted" ] = BASIC_QUOTED_ROLES_TO_LISTS_MAP
+    BASIC_SHARED_BYLINE_ROLES_TO_LISTS_MAP = {}
+    BASIC_SHARED_BYLINE_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_FROM ] = BASIC_SHARED_BYLINE_FROM_GOAL_LIST
+    BASIC_SHARED_BYLINE_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_TO ] = BASIC_SHARED_BYLINE_TO_GOAL_LIST
+    BASIC_SHARED_BYLINE_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_THROUGH ] = BASIC_SHARED_BYLINE_THROUGH_GOAL_LIST
+    BASIC_TYPE_TO_ROLES_MAP[ "shared_byline" ] = BASIC_SHARED_BYLINE_ROLES_TO_LISTS_MAP
+
+    # ! --------> ENTITY_SELECTION
+    ENTITY_SELECTION_MENTIONED_FROM_GOAL_LIST = [ 7, 24, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ENTITY_SELECTION_MENTIONED_TO_GOAL_LIST = [ 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ENTITY_SELECTION_MENTIONED_THROUGH_GOAL_LIST = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ENTITY_SELECTION_QUOTED_FROM_GOAL_LIST = [ 4, 9, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ENTITY_SELECTION_QUOTED_TO_GOAL_LIST = [ 0, 0, 0, 2, 2, 2, 0, 0, 2, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ENTITY_SELECTION_QUOTED_THROUGH_GOAL_LIST = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ENTITY_SELECTION_SHARED_BYLINE_FROM_GOAL_LIST = [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ENTITY_SELECTION_SHARED_BYLINE_TO_GOAL_LIST = [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ENTITY_SELECTION_SHARED_BYLINE_THROUGH_GOAL_LIST = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+
+    ENTITY_SELECTION_TYPE_TO_ROLES_MAP = {}
+    ENTITY_SELECTION_MENTIONED_ROLES_TO_LISTS_MAP = {}
+    ENTITY_SELECTION_MENTIONED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_FROM ] = ENTITY_SELECTION_MENTIONED_FROM_GOAL_LIST
+    ENTITY_SELECTION_MENTIONED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_TO ] = ENTITY_SELECTION_MENTIONED_TO_GOAL_LIST
+    ENTITY_SELECTION_MENTIONED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_THROUGH ] = ENTITY_SELECTION_MENTIONED_THROUGH_GOAL_LIST
+    ENTITY_SELECTION_TYPE_TO_ROLES_MAP[ "mentioned" ] = ENTITY_SELECTION_MENTIONED_ROLES_TO_LISTS_MAP
+    ENTITY_SELECTION_QUOTED_ROLES_TO_LISTS_MAP = {}
+    ENTITY_SELECTION_QUOTED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_FROM ] = ENTITY_SELECTION_QUOTED_FROM_GOAL_LIST
+    ENTITY_SELECTION_QUOTED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_TO ] = ENTITY_SELECTION_QUOTED_TO_GOAL_LIST
+    ENTITY_SELECTION_QUOTED_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_THROUGH ] = ENTITY_SELECTION_QUOTED_THROUGH_GOAL_LIST
+    ENTITY_SELECTION_TYPE_TO_ROLES_MAP[ "quoted" ] = ENTITY_SELECTION_QUOTED_ROLES_TO_LISTS_MAP
+    ENTITY_SELECTION_SHARED_BYLINE_ROLES_TO_LISTS_MAP = {}
+    ENTITY_SELECTION_SHARED_BYLINE_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_FROM ] = ENTITY_SELECTION_SHARED_BYLINE_FROM_GOAL_LIST
+    ENTITY_SELECTION_SHARED_BYLINE_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_TO ] = ENTITY_SELECTION_SHARED_BYLINE_TO_GOAL_LIST
+    ENTITY_SELECTION_SHARED_BYLINE_ROLES_TO_LISTS_MAP[ ContextBase.RELATION_ROLES_THROUGH ] = ENTITY_SELECTION_SHARED_BYLINE_THROUGH_GOAL_LIST
+    ENTITY_SELECTION_TYPE_TO_ROLES_MAP[ "shared_byline" ] = ENTITY_SELECTION_SHARED_BYLINE_ROLES_TO_LISTS_MAP
 
 
     #----------------------------------------------------------------------
@@ -140,6 +229,366 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
     #-- END test method set_up_basic_test_instance() --#
         
 
+    def set_up_entity_relations_details( self, do_validate_IN = False ):
+
+        # return reference
+        instance_OUT = None
+        
+        # declare variables
+        me = "set_up_entity_relations_details"
+        debug_flag = None
+        test_instance = None
+        current_type_slug = None
+        total_entity_count = None
+        total_type_count = None
+        entity_type_count = None
+        mentioned_type = None
+        quoted_type = None
+        shared_byline_type = None
+        entity_id = None
+        relation_type = None
+        relation_role = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # ! ----> get basic test instance
+        
+        # use it to set up test instance.
+        test_instance = self.set_up_basic_test_instance()
+        
+        # set master entity list
+        test_instance.set_master_entity_list( [ 1, 2, 3 ] )
+        
+        # load relation types: "mentioned", "quoted", "shared_byline"
+        mentioned_type = Entity_Relation_Type.objects.get( slug = "mentioned" )
+        quoted_type = Entity_Relation_Type.objects.get( slug = "quoted" )
+        shared_byline_type = Entity_Relation_Type.objects.get( slug = "shared_byline" )
+        
+        # ! ----> 1 - "mentioned" - FROM
+        entity_id = 1
+        relation_type = mentioned_type
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        
+        # update details
+        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
+        
+        if ( do_validate_IN == True ):
+        
+            # validate
+            total_type_count = 1
+            total_entity_count = 1
+            entity_type_count = 1
+            type_from_count = 1
+            type_to_count = 0
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+                                                           
+        #-- END check to see if we validate --#
+
+        # ! ----> 1 - "mentioned" - FROM
+        entity_id = 1
+        relation_type = mentioned_type
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        
+        # update details
+        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
+        
+        if ( do_validate_IN == True ):
+        
+            # validate
+            total_type_count = 1
+            total_entity_count = 1
+            entity_type_count = 1
+            type_from_count = 2
+            type_to_count = 0
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+    
+        #-- END check to see if we validate --#
+
+        # ! ----> 1 - "mentioned" - TO
+        entity_id = 1
+        relation_type = mentioned_type
+        relation_role = ContextBase.RELATION_ROLES_TO
+        
+        # update details
+        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
+        
+        # validate
+        total_type_count = 1
+        total_entity_count = 1
+        entity_type_count = 1
+        type_from_count = 2
+        type_to_count = 1
+        type_through_count = 0
+        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                       entity_id_IN = entity_id,
+                                                       relation_type_IN = relation_type,
+                                                       relation_role_IN = relation_role,
+                                                       total_type_count_IN = total_type_count,
+                                                       total_entity_count_IN = total_entity_count,
+                                                       entity_type_count_IN = entity_type_count,
+                                                       type_from_count_IN = type_from_count,
+                                                       type_to_count_IN = type_to_count,
+                                                       type_through_count_IN = type_through_count )
+
+        # ! ----> 1 - "quoted" - TO
+        entity_id = 1
+        relation_type = quoted_type
+        relation_role = ContextBase.RELATION_ROLES_TO
+        
+        # update details
+        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
+        
+        if ( do_validate_IN == True ):
+        
+            # validate
+            total_type_count = 2
+            total_entity_count = 1
+            entity_type_count = 2
+            type_from_count = 0
+            type_to_count = 1
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+
+        #-- END check to see if we validate --#
+
+        # ! ----> 2 - "quoted" - TO
+        entity_id = 2
+        relation_type = quoted_type
+        relation_role = ContextBase.RELATION_ROLES_TO
+        
+        # update details
+        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
+        
+        if ( do_validate_IN == True ):
+        
+            # validate
+            total_type_count = 2
+            total_entity_count = 2
+            entity_type_count = 1
+            type_from_count = 0
+            type_to_count = 1
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+    
+        #-- END check to see if we validate --#
+
+        # ! ----> 2 - "quoted" - TO
+        entity_id = 2
+        relation_type = quoted_type
+        relation_role = ContextBase.RELATION_ROLES_TO
+        
+        # update details
+        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
+        
+        if ( do_validate_IN == True ):
+        
+            # validate
+            total_type_count = 2
+            total_entity_count = 2
+            entity_type_count = 1
+            type_from_count = 0
+            type_to_count = 2
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+
+        #-- END check to see if we validate --#
+
+        # ! ----> 2 - "shared_byline" - FROM
+        entity_id = 2
+        relation_type = shared_byline_type
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        
+        # update details
+        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
+        
+        if ( do_validate_IN == True ):
+        
+            # validate
+            total_type_count = 3
+            total_entity_count = 2
+            entity_type_count = 2
+            type_from_count = 1
+            type_to_count = 0
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+
+        #-- END check to see if we validate --#
+
+        # ! ----> 3 - "shared_byline" - THROUGH
+        entity_id = 3
+        relation_type = shared_byline_type
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        
+        # update details
+        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
+        
+        if ( do_validate_IN == True ):
+        
+            # validate
+            total_type_count = 3
+            total_entity_count = 3
+            entity_type_count = 1
+            type_from_count = 0
+            type_to_count = 0
+            type_through_count = 1
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+                                                       
+            # ! ----> validate final state for entities 1 and 2.
+            
+            total_type_count = 3
+            total_entity_count = 3
+    
+            # --------> 1 - "mentioned"
+            entity_id = 1
+            relation_type = mentioned_type
+            relation_role = ContextBase.RELATION_ROLES_TO
+            entity_type_count = 2
+            type_from_count = 2
+            type_to_count = 1
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+            
+            # --------> 1 - "quoted"
+            entity_id = 1
+            relation_type = quoted_type
+            relation_role = ContextBase.RELATION_ROLES_TO
+            entity_type_count = 2
+            type_from_count = 0
+            type_to_count = 1
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+    
+            # --------> 2 - "quoted"
+            entity_id = 2
+            relation_type = quoted_type
+            relation_role = ContextBase.RELATION_ROLES_TO
+            entity_type_count = 2
+            type_from_count = 0
+            type_to_count = 2
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+    
+            # --------> 2 - "shared_byline"
+            entity_id = 2
+            relation_type = shared_byline_type
+            relation_role = ContextBase.RELATION_ROLES_FROM
+            entity_type_count = 2
+            type_from_count = 1
+            type_to_count = 0
+            type_through_count = 0
+            self.validate_update_entity_relations_details( test_instance_IN = test_instance,
+                                                           entity_id_IN = entity_id,
+                                                           relation_type_IN = relation_type,
+                                                           relation_role_IN = relation_role,
+                                                           total_type_count_IN = total_type_count,
+                                                           total_entity_count_IN = total_entity_count,
+                                                           entity_type_count_IN = entity_type_count,
+                                                           type_from_count_IN = type_from_count,
+                                                           type_to_count_IN = type_to_count,
+                                                           type_through_count_IN = type_through_count )
+
+        #-- END check to see if we validate --#
+
+        instance_OUT = test_instance
+        
+        return test_instance
+
+    #-- END method set_up_entity_relations_details() --#
+        
+        
     def set_up_entity_selection_test_instance( self ):
 
         # return reference
@@ -156,7 +605,7 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
         
         return instance_OUT
 
-    #-- END test method set_up_entity_selection_test_instance() --#
+    #-- END method set_up_entity_selection_test_instance() --#
         
 
     def set_up_test_instance( self, request_IN = None, request_load_function_IN = TestHelper.load_basic ):
@@ -226,8 +675,69 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
         
         return instance_OUT
 
-    #-- END test method set_up_basic_test_instance() --#
+    #-- END method set_up_basic_test_instance() --#
         
+
+    def validate_create_relation_type_role_value_list( self,
+                                                       test_list_IN,
+                                                       goal_list_IN,
+                                                       relation_type_slug_IN = None,
+                                                       relation_role_IN = None ):
+
+        # declare variables
+        me = "validate_create_relation_type_role_value_list"
+        debug_flag = None
+        test_list = None
+        test_list_count = None
+        test_value = None
+        should_be = None
+        error_string = None
+        goal_list = None
+        goal_list_count = None
+        list_index = None
+        current_value = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # init
+        test_list = test_list_IN
+        test_list_count = len( test_list )
+        goal_list = goal_list_IN
+        goal_list_count = len( goal_list )
+        
+        if ( debug_flag == True ):
+        
+            print( "In {}(): relation type slug: {}".format( me, relation_type_slug_IN ) )
+            print( "In {}(): relation type role: {}".format( me, relation_role_IN ) )
+            print( "In {}(): test_list ( count = {} ): {}".format( me, test_list_count, test_list ) )
+            print( "In {}(): goal_list ( count = {} ): {}".format( me, goal_list_count, goal_list ) )
+            
+        #-- END DEBUG --#
+        
+        # counts should be equal
+        test_value = test_list_count
+        should_be = goal_list_count
+        error_string = "list count = {}, should = {} ( type: {}; role: {} ).".format( test_value, should_be, relation_type_slug_IN, relation_role_IN )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # lists should be identical
+        list_index = -1
+        for current_value in goal_list:
+        
+            # increment index
+            list_index += 1
+            
+            # value at that index should be current_value.
+            test_value = test_list[ list_index ]
+            should_be = current_value
+            error_string = "index: {}; value = {}, should = {} ( type: {}; role: {} ).".format( list_index, test_value, should_be, relation_type_slug_IN, relation_role_IN )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+        #-- END loop over items in goal list. --#
+
+    #-- END test method validate_create_relation_type_role_value_list() --#
+
 
     def validate_register_relation_type( self,
                                          test_instance_IN = None,
@@ -729,6 +1239,931 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
     #-- END test method test_add_reciprocal_relation() --#
         
         
+    def test_create_all_relation_type_values_lists( self ):
+
+        # declare variables
+        me = "test_create_all_relation_type_values_lists"
+        debug_flag = None
+        test_instance = None
+        test_type_to_roles_map = None
+        relation_type_slug_list = None
+        relation_type_slug = None
+        role_list = None
+        relation_role = None
+        test_dict = None
+        test_dict_count = None
+        test_list = None
+        test_value = None
+        should_be = None
+        error_string = None
+        goal_type_to_roles_map = None
+        goal_dict = None
+        goal_list = None
+        list_index = None
+        current_value = None
+        
+        # init
+        debug_flag = self.DEBUG
+        relation_type_slug_list = self.TEST_RELATION_TYPE_SLUG_LIST
+        role_list = self.TEST_ROLE_LIST
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> simple test
+
+        goal_type_to_roles_map = self.SIMPLE_TYPE_TO_ROLES_MAP
+        test_instance = self.set_up_entity_relations_details()
+
+        # make all possible lists, validate each.
+        test_type_to_roles_map = test_instance.create_all_relation_type_values_lists()
+        
+        # loop over slugs.
+        for relation_type_slug in relation_type_slug_list:
+        
+            # get goal and test dicts
+            goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+            test_dict = test_type_to_roles_map.get( relation_type_slug, None )
+            test_dict_count = len( test_dict )
+            
+            # should be three things.
+            test_value = test_dict_count
+            should_be = 3
+            error_string = "simple - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # loop over the roles
+            for relation_role in role_list:
+            
+                # validate role
+                test_list = test_dict.get( relation_role, None )
+                goal_list = goal_dict.get( relation_role, None )
+                self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+                
+            #-- END loop over roles --#
+
+        #-- END loop over relation type slugs. --#
+            
+        #----------------------------------------------------------------------#
+        # ! ----> basic test
+
+        goal_type_to_roles_map = self.BASIC_TYPE_TO_ROLES_MAP
+        test_instance = self.set_up_basic_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # make all possible lists, validate each.
+        test_type_to_roles_map = test_instance.create_all_relation_type_values_lists()
+        
+        # loop over slugs.
+        for relation_type_slug in relation_type_slug_list:
+        
+            # get goal and test dicts
+            goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+            test_dict = test_type_to_roles_map.get( relation_type_slug, None )
+            test_dict_count = len( test_dict )
+            
+            # should be three things.
+            test_value = test_dict_count
+            should_be = 3
+            error_string = "basic - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # loop over the roles
+            for relation_role in role_list:
+            
+                # validate role
+                test_list = test_dict.get( relation_role, None )
+                goal_list = goal_dict.get( relation_role, None )
+                self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+                
+            #-- END loop over roles --#
+
+        #-- END loop over relation type slugs. --#
+
+        #----------------------------------------------------------------------#
+        # ! ----> entity selection test
+
+        goal_type_to_roles_map = self.ENTITY_SELECTION_TYPE_TO_ROLES_MAP
+        test_instance = self.set_up_entity_selection_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # make all possible lists, validate each.
+        test_type_to_roles_map = test_instance.create_all_relation_type_values_lists()
+        
+        # loop over slugs.
+        for relation_type_slug in relation_type_slug_list:
+        
+            # get goal and test dicts
+            goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+            test_dict = test_type_to_roles_map.get( relation_type_slug, None )
+            test_dict_count = len( test_dict )
+            
+            # should be three things.
+            test_value = test_dict_count
+            should_be = 3
+            error_string = "entity selection - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+            self.assertEqual( test_value, should_be, msg = error_string )
+
+            # loop over the roles
+            for relation_role in role_list:
+            
+                # validate role
+                test_list = test_dict.get( relation_role, None )
+                goal_list = goal_dict.get( relation_role, None )
+                self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+                
+            #-- END loop over roles --#
+
+        #-- END loop over relation type slugs. --#
+
+    #-- END test method test_create_all_relation_type_values_lists() --#
+
+
+    def test_create_entity_id_list( self ):
+
+        # declare variables
+        me = "test_create_entity_id_list"
+        debug_flag = None
+        test_instance = None
+        entity_id_list = None
+        entity_id_list_count = None
+        test_entity_id_list = None
+        test_entity_id_list_count = None
+        network_data = None
+        test_value = None
+        should_be = None
+        error_string = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> simple test
+        
+        # create instance
+        test_instance = NetworkDataOutput()
+        
+        # set entity_dictionary and entity relation type summary
+        test_instance.set_entity_dictionary( self.TEST_SET_ENTITY_DICTIONARY )
+        test_instance.set_entity_relation_type_summary_dict( self.TEST_SET_ENTITY_RELATION_TYPE_SUMMARY_DICT )
+        
+        # call the method.
+        entity_id_list = test_instance.generate_master_entity_list()
+        entity_id_list_count = len( entity_id_list )
+        
+        # should have 8 items.
+        test_value = entity_id_list_count
+        should_be = 8
+        error_string = "Simple test entity list count = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # should contain IDs 1 through 8.
+        for id_value in range( 1, 9 ):
+        
+            # id value should be in list.
+            test_value = id_value in entity_id_list
+            error_string = "id {} in entity_id_list {}?: {}".format( id_value, entity_id_list, test_value )
+            self.assertTrue( test_value, msg = error_string )
+            
+        #-- END loop over IDs that should be in the list --#
+        
+        # get test list
+        test_entity_id_list = test_instance.create_entity_id_list()
+        test_entity_id_list_count = len( test_entity_id_list )
+        
+        # should be same length as entity_id_list
+        test_value = test_entity_id_list_count
+        should_be = entity_id_list_count
+        error_string = "Simple test create_entity_id_list count = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # entity_id_list should contain all IDs in test_entity_id_list.
+        for id_value in test_entity_id_list:
+        
+            # id value should be in list.
+            test_value = int( id_value ) in entity_id_list
+            error_string = "id {} in entity_id_list {}?: {}".format( id_value, entity_id_list, test_value )
+            self.assertTrue( test_value, msg = error_string )
+            
+        #-- END loop over IDs that should be in the list --#
+        
+        # and vice versa.
+        for id_value in entity_id_list:
+        
+            # id value should be in list.
+            test_value = str( id_value ) in test_entity_id_list
+            error_string = "id {} in test_entity_id_list {}?: {}".format( id_value, test_entity_id_list, test_value )
+            self.assertTrue( test_value, msg = error_string )
+            
+        #-- END loop over IDs that should be in the list --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> basic test
+
+        test_instance = self.set_up_basic_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # call the method.
+        entity_id_list = test_instance.generate_master_entity_list()
+        entity_id_list_count = len( entity_id_list )
+
+        # should have ? items.
+        test_value = entity_id_list_count
+        should_be = 72
+        error_string = "Basic test entity list count = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # get test list
+        test_entity_id_list = test_instance.create_entity_id_list()
+        test_entity_id_list_count = len( test_entity_id_list )
+        
+        # should be same length as entity_id_list
+        test_value = test_entity_id_list_count
+        should_be = entity_id_list_count
+        error_string = "Simple test create_entity_id_list count = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # entity_id_list should contain all IDs in test_entity_id_list.
+        for id_value in test_entity_id_list:
+        
+            # id value should be in list.
+            test_value = int( id_value ) in entity_id_list
+            error_string = "id {} in entity_id_list {}?: {}".format( id_value, entity_id_list, test_value )
+            self.assertTrue( test_value, msg = error_string )
+            
+        #-- END loop over IDs that should be in the list --#
+        
+        # and vice versa.
+        for id_value in entity_id_list:
+        
+            # id value should be in list.
+            test_value = str( id_value ) in test_entity_id_list
+            error_string = "id {} in test_entity_id_list {}?: {}".format( id_value, test_entity_id_list, test_value )
+            self.assertTrue( test_value, msg = error_string )
+            
+        #-- END loop over IDs that should be in the list --#
+        
+        #----------------------------------------------------------------------#
+        # ! ----> entity selection test
+
+        test_instance = self.set_up_entity_selection_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # call the method.
+        entity_id_list = test_instance.generate_master_entity_list()
+        entity_id_list_count = len( entity_id_list )
+
+        # should have ? items.
+        test_value = entity_id_list_count
+        should_be = 153
+        error_string = "Entity selection test entity list count = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # get test list
+        test_entity_id_list = test_instance.create_entity_id_list()
+        test_entity_id_list_count = len( test_entity_id_list )
+        
+        # should be same length as entity_id_list
+        test_value = test_entity_id_list_count
+        should_be = entity_id_list_count
+        error_string = "Simple test create_entity_id_list count = {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # entity_id_list should contain all IDs in test_entity_id_list.
+        for id_value in test_entity_id_list:
+        
+            # id value should be in list.
+            test_value = int( id_value ) in entity_id_list
+            error_string = "id {} in entity_id_list {}?: {}".format( id_value, entity_id_list, test_value )
+            self.assertTrue( test_value, msg = error_string )
+            
+        #-- END loop over IDs that should be in the list --#
+        
+        # and vice versa.
+        for id_value in entity_id_list:
+        
+            # id value should be in list.
+            test_value = str( id_value ) in test_entity_id_list
+            error_string = "id {} in test_entity_id_list {}?: {}".format( id_value, test_entity_id_list, test_value )
+            self.assertTrue( test_value, msg = error_string )
+            
+        #-- END loop over IDs that should be in the list --#
+        
+    #-- END test method test_create_entity_id_list() --#
+
+
+    def test_create_relation_type_role_value_list( self ):
+
+        # declare variables
+        me = "test_create_relation_type_role_value_list"
+        debug_flag = None
+        test_instance = None
+        relation_type_slug = None
+        relation_role = None
+        test_list = None
+        test_list_count = None
+        test_value = None
+        should_be = None
+        error_string = None
+        goal_list = None
+        list_index = None
+        current_value = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> simple test
+
+        test_instance = self.set_up_entity_relations_details()
+
+        # make all possible lists, validate each.
+        
+        # --------> mentioned --> FROM
+        relation_type_slug = "mentioned"
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.SIMPLE_MENTIONED_FROM_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> mentioned --> TO
+        relation_type_slug = "mentioned"
+        relation_role = ContextBase.RELATION_ROLES_TO
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.SIMPLE_MENTIONED_TO_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> mentioned --> THROUGH
+        relation_type_slug = "mentioned"
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.SIMPLE_MENTIONED_THROUGH_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> quoted --> FROM
+        relation_type_slug = "quoted"
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.SIMPLE_QUOTED_FROM_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> quoted --> TO
+        relation_type_slug = "quoted"
+        relation_role = ContextBase.RELATION_ROLES_TO
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.SIMPLE_QUOTED_TO_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> quoted --> THROUGH
+        relation_type_slug = "quoted"
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.SIMPLE_QUOTED_THROUGH_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> shared_byline --> FROM
+        relation_type_slug = "shared_byline"
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.SIMPLE_SHARED_BYLINE_FROM_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> shared_byline --> TO
+        relation_type_slug = "shared_byline"
+        relation_role = ContextBase.RELATION_ROLES_TO
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.SIMPLE_SHARED_BYLINE_TO_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> shared_byline --> THROUGH
+        relation_type_slug = "shared_byline"
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.SIMPLE_SHARED_BYLINE_THROUGH_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        #----------------------------------------------------------------------#
+        # ! ----> basic test
+
+        test_instance = self.set_up_basic_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # make all possible lists, validate each.
+        
+        # --------> mentioned --> FROM
+        relation_type_slug = "mentioned"
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.BASIC_MENTIONED_FROM_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> mentioned --> TO
+        relation_type_slug = "mentioned"
+        relation_role = ContextBase.RELATION_ROLES_TO
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.BASIC_MENTIONED_TO_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> mentioned --> THROUGH
+        relation_type_slug = "mentioned"
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.BASIC_MENTIONED_THROUGH_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> quoted --> FROM
+        relation_type_slug = "quoted"
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.BASIC_QUOTED_FROM_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> quoted --> TO
+        relation_type_slug = "quoted"
+        relation_role = ContextBase.RELATION_ROLES_TO
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.BASIC_QUOTED_TO_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> quoted --> THROUGH
+        relation_type_slug = "quoted"
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.BASIC_QUOTED_THROUGH_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> shared_byline --> FROM
+        relation_type_slug = "shared_byline"
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.BASIC_SHARED_BYLINE_FROM_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> shared_byline --> TO
+        relation_type_slug = "shared_byline"
+        relation_role = ContextBase.RELATION_ROLES_TO
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.BASIC_SHARED_BYLINE_TO_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> shared_byline --> THROUGH
+        relation_type_slug = "shared_byline"
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.BASIC_SHARED_BYLINE_THROUGH_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        #----------------------------------------------------------------------#
+        # ! ----> entity selection test
+
+        test_instance = self.set_up_entity_selection_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # make all possible lists, validate each.
+        
+        # --------> mentioned --> FROM
+        relation_type_slug = "mentioned"
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.ENTITY_SELECTION_MENTIONED_FROM_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> mentioned --> TO
+        relation_type_slug = "mentioned"
+        relation_role = ContextBase.RELATION_ROLES_TO
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.ENTITY_SELECTION_MENTIONED_TO_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> mentioned --> THROUGH
+        relation_type_slug = "mentioned"
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.ENTITY_SELECTION_MENTIONED_THROUGH_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> quoted --> FROM
+        relation_type_slug = "quoted"
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.ENTITY_SELECTION_QUOTED_FROM_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> quoted --> TO
+        relation_type_slug = "quoted"
+        relation_role = ContextBase.RELATION_ROLES_TO
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.ENTITY_SELECTION_QUOTED_TO_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> quoted --> THROUGH
+        relation_type_slug = "quoted"
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.ENTITY_SELECTION_QUOTED_THROUGH_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> shared_byline --> FROM
+        relation_type_slug = "shared_byline"
+        relation_role = ContextBase.RELATION_ROLES_FROM
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.ENTITY_SELECTION_SHARED_BYLINE_FROM_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> shared_byline --> TO
+        relation_type_slug = "shared_byline"
+        relation_role = ContextBase.RELATION_ROLES_TO
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.ENTITY_SELECTION_SHARED_BYLINE_TO_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+        # --------> shared_byline --> THROUGH
+        relation_type_slug = "shared_byline"
+        relation_role = ContextBase.RELATION_ROLES_THROUGH
+        test_list = test_instance.create_relation_type_role_value_list( relation_type_slug, relation_role )
+        test_list_count = len( test_list )
+        
+        # validate
+        goal_list = self.ENTITY_SELECTION_SHARED_BYLINE_THROUGH_GOAL_LIST
+        self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+
+    #-- END test method test_create_relation_type_role_value_list() --#
+
+
+    def test_create_relation_type_value_dict( self ):
+
+        # declare variables
+        me = "test_create_relation_type_value_dict"
+        debug_flag = None
+        test_instance = None
+        relation_type_slug = None
+        role_list = None
+        relation_role = None
+        test_dict = None
+        test_dict_count = None
+        test_list = None
+        test_value = None
+        should_be = None
+        error_string = None
+        goal_type_to_roles_map = None
+        goal_dict = None
+        goal_list = None
+        list_index = None
+        current_value = None
+        
+        # init
+        debug_flag = self.DEBUG
+        role_list = self.TEST_ROLE_LIST
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> simple test
+
+        goal_type_to_roles_map = self.SIMPLE_TYPE_TO_ROLES_MAP
+        test_instance = self.set_up_entity_relations_details()
+
+        # make all possible lists, validate each.
+        
+        # --------> mentioned
+        relation_type_slug = "mentioned"
+        test_dict = test_instance.create_relation_type_value_dict( relation_type_slug )
+        test_dict_count = len( test_dict )
+        
+        # should be three things.
+        test_value = test_dict_count
+        should_be = 3
+        error_string = "simple - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # validate
+        goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+        
+        # loop over the roles
+        for relation_role in role_list:
+        
+            # validate role
+            test_list = test_dict.get( relation_role, None )
+            goal_list = goal_dict.get( relation_role, None )
+            self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+            
+        #-- END loop over roles --#
+            
+        # --------> quoted
+        relation_type_slug = "quoted"
+        test_dict = test_instance.create_relation_type_value_dict( relation_type_slug )
+        test_dict_count = len( test_dict )
+        
+        # should be three things.
+        test_value = test_dict_count
+        should_be = 3
+        error_string = "simple - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # validate
+        goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+        
+        # loop over the roles
+        for relation_role in role_list:
+        
+            # validate role
+            test_list = test_dict.get( relation_role, None )
+            goal_list = goal_dict.get( relation_role, None )
+            self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+            
+        #-- END loop over roles --#
+
+        # --------> shared_byline --> FROM
+        relation_type_slug = "shared_byline"
+        test_dict = test_instance.create_relation_type_value_dict( relation_type_slug )
+        test_dict_count = len( test_dict )
+        
+        # should be three things.
+        test_value = test_dict_count
+        should_be = 3
+        error_string = "simple - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # validate
+        goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+        
+        # loop over the roles
+        for relation_role in role_list:
+        
+            # validate role
+            test_list = test_dict.get( relation_role, None )
+            goal_list = goal_dict.get( relation_role, None )
+            self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+            
+        #-- END loop over roles --#
+
+        #----------------------------------------------------------------------#
+        # ! ----> basic test
+
+        goal_type_to_roles_map = self.BASIC_TYPE_TO_ROLES_MAP
+        test_instance = self.set_up_basic_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # make all possible lists, validate each.
+        
+        # --------> mentioned
+        relation_type_slug = "mentioned"
+        test_dict = test_instance.create_relation_type_value_dict( relation_type_slug )
+        test_dict_count = len( test_dict )
+        
+        # should be three things.
+        test_value = test_dict_count
+        should_be = 3
+        error_string = "basic - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # validate
+        goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+        
+        # loop over the roles
+        for relation_role in role_list:
+        
+            # validate role
+            test_list = test_dict.get( relation_role, None )
+            goal_list = goal_dict.get( relation_role, None )
+            self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+            
+        #-- END loop over roles --#
+            
+        # --------> quoted
+        relation_type_slug = "quoted"
+        test_dict = test_instance.create_relation_type_value_dict( relation_type_slug )
+        test_dict_count = len( test_dict )
+        
+        # should be three things.
+        test_value = test_dict_count
+        should_be = 3
+        error_string = "basic - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # validate
+        goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+        
+        # loop over the roles
+        for relation_role in role_list:
+        
+            # validate role
+            test_list = test_dict.get( relation_role, None )
+            goal_list = goal_dict.get( relation_role, None )
+            self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+            
+        #-- END loop over roles --#
+
+        # --------> shared_byline --> FROM
+        relation_type_slug = "shared_byline"
+        test_dict = test_instance.create_relation_type_value_dict( relation_type_slug )
+        test_dict_count = len( test_dict )
+        
+        # should be three things.
+        test_value = test_dict_count
+        should_be = 3
+        error_string = "basic - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # validate
+        goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+        
+        # loop over the roles
+        for relation_role in role_list:
+        
+            # validate role
+            test_list = test_dict.get( relation_role, None )
+            goal_list = goal_dict.get( relation_role, None )
+            self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+            
+        #-- END loop over roles --#
+
+        #----------------------------------------------------------------------#
+        # ! ----> entity selection test
+
+        goal_type_to_roles_map = self.ENTITY_SELECTION_TYPE_TO_ROLES_MAP
+        test_instance = self.set_up_entity_selection_test_instance()
+
+        # render to set everything up
+        network_data = test_instance.render()
+        
+        # make all possible lists, validate each.
+        
+        # --------> mentioned
+        relation_type_slug = "mentioned"
+        test_dict = test_instance.create_relation_type_value_dict( relation_type_slug )
+        test_dict_count = len( test_dict )
+        
+        # should be three things.
+        test_value = test_dict_count
+        should_be = 3
+        error_string = "entity selection - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # validate
+        goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+        
+        # loop over the roles
+        for relation_role in role_list:
+        
+            # validate role
+            test_list = test_dict.get( relation_role, None )
+            goal_list = goal_dict.get( relation_role, None )
+            self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+            
+        #-- END loop over roles --#
+            
+        # --------> quoted
+        relation_type_slug = "quoted"
+        test_dict = test_instance.create_relation_type_value_dict( relation_type_slug )
+        test_dict_count = len( test_dict )
+        
+        # should be three things.
+        test_value = test_dict_count
+        should_be = 3
+        error_string = "entity selection - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # validate
+        goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+        
+        # loop over the roles
+        for relation_role in role_list:
+        
+            # validate role
+            test_list = test_dict.get( relation_role, None )
+            goal_list = goal_dict.get( relation_role, None )
+            self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+            
+        #-- END loop over roles --#
+
+        # --------> shared_byline --> FROM
+        relation_type_slug = "shared_byline"
+        test_dict = test_instance.create_relation_type_value_dict( relation_type_slug )
+        test_dict_count = len( test_dict )
+        
+        # should be three things.
+        test_value = test_dict_count
+        should_be = 3
+        error_string = "entity selection - relation type value dict for type {}; count = {}, should = {}.".format( relation_type_slug, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # validate
+        goal_dict = goal_type_to_roles_map.get( relation_type_slug, None )
+        
+        # loop over the roles
+        for relation_role in role_list:
+        
+            # validate role
+            test_list = test_dict.get( relation_role, None )
+            goal_list = goal_dict.get( relation_role, None )
+            self.validate_create_relation_type_role_value_list( test_list, goal_list, relation_type_slug, relation_role )
+            
+        #-- END loop over roles --#
+
+    #-- END test method test_create_relation_type_value_dict() --#
+
+
     def test_generate_master_entity_list( self ):
 
         # declare variables
@@ -1273,16 +2708,6 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
         me = "test_update_entity_relations_details"
         debug_flag = None
         test_instance = None
-        current_type_slug = None
-        total_entity_count = None
-        total_type_count = None
-        entity_type_count = None
-        mentioned_type = None
-        quoted_type = None
-        shared_byline_type = None
-        entity_id = None
-        relation_type = None
-        relation_role = None
         
         # init debug
         debug_flag = self.DEBUG
@@ -1290,305 +2715,10 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
         # print test header
         TestHelper.print_test_header( self.CLASS_NAME, me )
         
-        # ! ----> get basic test instance
+        # ! ----> call set up method, includes validation.
         
-        # use it to set up test instance.
-        test_instance = self.set_up_basic_test_instance()
+        test_instance = self.set_up_entity_relations_details( do_validate_IN = True )
         
-        # load relation types: "mentioned", "quoted", "shared_byline"
-        mentioned_type = Entity_Relation_Type.objects.get( slug = "mentioned" )
-        quoted_type = Entity_Relation_Type.objects.get( slug = "quoted" )
-        shared_byline_type = Entity_Relation_Type.objects.get( slug = "shared_byline" )
-        
-        # ! ----> 1 - "mentioned" - FROM
-        entity_id = 1
-        relation_type = mentioned_type
-        relation_role = ContextBase.RELATION_ROLES_FROM
-        
-        # update details
-        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
-        
-        # validate
-        total_type_count = 1
-        total_entity_count = 1
-        entity_type_count = 1
-        type_from_count = 1
-        type_to_count = 0
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
-        # ! ----> 1 - "mentioned" - FROM
-        entity_id = 1
-        relation_type = mentioned_type
-        relation_role = ContextBase.RELATION_ROLES_FROM
-        
-        # update details
-        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
-        
-        # validate
-        total_type_count = 1
-        total_entity_count = 1
-        entity_type_count = 1
-        type_from_count = 2
-        type_to_count = 0
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
-        # ! ----> 1 - "mentioned" - TO
-        entity_id = 1
-        relation_type = mentioned_type
-        relation_role = ContextBase.RELATION_ROLES_TO
-        
-        # update details
-        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
-        
-        # validate
-        total_type_count = 1
-        total_entity_count = 1
-        entity_type_count = 1
-        type_from_count = 2
-        type_to_count = 1
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
-        # ! ----> 1 - "quoted" - TO
-        entity_id = 1
-        relation_type = quoted_type
-        relation_role = ContextBase.RELATION_ROLES_TO
-        
-        # update details
-        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
-        
-        # validate
-        total_type_count = 2
-        total_entity_count = 1
-        entity_type_count = 2
-        type_from_count = 0
-        type_to_count = 1
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
-        # ! ----> 2 - "quoted" - TO
-        entity_id = 2
-        relation_type = quoted_type
-        relation_role = ContextBase.RELATION_ROLES_TO
-        
-        # update details
-        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
-        
-        # validate
-        total_type_count = 2
-        total_entity_count = 2
-        entity_type_count = 1
-        type_from_count = 0
-        type_to_count = 1
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
-        # ! ----> 2 - "quoted" - TO
-        entity_id = 2
-        relation_type = quoted_type
-        relation_role = ContextBase.RELATION_ROLES_TO
-        
-        # update details
-        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
-        
-        # validate
-        total_type_count = 2
-        total_entity_count = 2
-        entity_type_count = 1
-        type_from_count = 0
-        type_to_count = 2
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
-        # ! ----> 2 - "shared_byline" - FROM
-        entity_id = 2
-        relation_type = shared_byline_type
-        relation_role = ContextBase.RELATION_ROLES_FROM
-        
-        # update details
-        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
-        
-        # validate
-        total_type_count = 3
-        total_entity_count = 2
-        entity_type_count = 2
-        type_from_count = 1
-        type_to_count = 0
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
-        # ! ----> 3 - "shared_byline" - THROUGH
-        entity_id = 3
-        relation_type = shared_byline_type
-        relation_role = ContextBase.RELATION_ROLES_THROUGH
-        
-        # update details
-        test_instance.update_entity_relations_details( entity_id, relation_type, relation_role, update_relation_map_IN = True )
-        
-        # validate
-        total_type_count = 3
-        total_entity_count = 3
-        entity_type_count = 1
-        type_from_count = 0
-        type_to_count = 0
-        type_through_count = 1
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-                                                       
-        # ! ----> validate final state for entities 1 and 2.
-        
-        total_type_count = 3
-        total_entity_count = 3
-
-        # --------> 1 - "mentioned"
-        entity_id = 1
-        relation_type = mentioned_type
-        relation_role = ContextBase.RELATION_ROLES_TO
-        entity_type_count = 2
-        type_from_count = 2
-        type_to_count = 1
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-        
-        # --------> 1 - "quoted"
-        entity_id = 1
-        relation_type = quoted_type
-        relation_role = ContextBase.RELATION_ROLES_TO
-        entity_type_count = 2
-        type_from_count = 0
-        type_to_count = 1
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
-        # --------> 2 - "quoted"
-        entity_id = 2
-        relation_type = quoted_type
-        relation_role = ContextBase.RELATION_ROLES_TO
-        entity_type_count = 2
-        type_from_count = 0
-        type_to_count = 2
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
-        # --------> 2 - "shared_byline"
-        entity_id = 2
-        relation_type = shared_byline_type
-        relation_role = ContextBase.RELATION_ROLES_FROM
-        entity_type_count = 2
-        type_from_count = 1
-        type_to_count = 0
-        type_through_count = 0
-        self.validate_update_entity_relations_details( test_instance_IN = test_instance,
-                                                       entity_id_IN = entity_id,
-                                                       relation_type_IN = relation_type,
-                                                       relation_role_IN = relation_role,
-                                                       total_type_count_IN = total_type_count,
-                                                       total_entity_count_IN = total_entity_count,
-                                                       entity_type_count_IN = entity_type_count,
-                                                       type_from_count_IN = type_from_count,
-                                                       type_to_count_IN = type_to_count,
-                                                       type_through_count_IN = type_through_count )
-
     #-- END test method test_update_entity_relations_details() --#
         
         
