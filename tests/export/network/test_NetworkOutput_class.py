@@ -466,10 +466,10 @@ class NetworkOutputTest( DjangoTestCaseHelper ):
     #-- END test method test_add_entity_to_dict() --#
         
         
-    def test_create_entity_dict( self ):
+    def test_process_entities( self ):
 
         # declare variables
-        me = "test_create_entity_dict"
+        me = "test_process_entities"
         debug_flag = None
         test_instance = None
         test_request = None
@@ -499,7 +499,7 @@ class NetworkOutputTest( DjangoTestCaseHelper ):
         test_instance.set_network_data_request( test_request )
         
         # call method
-        entity_dict = test_instance.create_entity_dict()
+        entity_dict = test_instance.process_entities()
         entity_dict_count = len( entity_dict )
         
         # should have 72 things in it.
@@ -519,7 +519,7 @@ class NetworkOutputTest( DjangoTestCaseHelper ):
         #-- END loop over entity dictionary --#
         
         # call method
-        entity_dict = test_instance.create_entity_dict( load_instance_IN = True )
+        entity_dict = test_instance.process_entities( load_instance_IN = True )
         entity_dict_count = len( entity_dict )
         
         # should have 72 things in it.
@@ -551,7 +551,7 @@ class NetworkOutputTest( DjangoTestCaseHelper ):
         #-- END loop over entity dictionary --#
         
         # call method
-        entity_dict = test_instance.create_entity_dict( include_through_IN = True )
+        entity_dict = test_instance.process_entities( include_through_IN = True )
         entity_dict_count = len( entity_dict )
         
         # should have 84 things in it.
@@ -560,7 +560,7 @@ class NetworkOutputTest( DjangoTestCaseHelper ):
         error_string = "when including THROUGH, Entity dictionary length = {}, should = {}, for request: {}.".format( test_value, should_be, test_request )
         self.assertEqual( test_value, should_be, msg = error_string )
 
-    #-- END test method test_create_entity_dict() --#
+    #-- END test method test_process_entities() --#
         
         
     def test_create_NDO_instance( self ):

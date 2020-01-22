@@ -4,7 +4,32 @@
         "output_file_path": "./NetworkDataRequest_entity_select_test_output.tsv",
         "output_format": "TSV_matrix",
         "output_structure": "both_trait_columns",
-        "output_include_column_headers": true
+        "output_include_column_headers": true,
+        "output_entity_traits_list": [
+            {
+                "name": "first_name"
+            },
+            {
+                "name": "middle_name"
+            },
+            {
+                "name": "last_name"
+            }
+        ],
+        "output_entity_identifiers_list": [
+            {
+                "name": "person_sourcenet_id",
+                "source": "sourcenet",
+                "identifier_type_id": 1,
+                "output_header" : "person_sourcenet_id"
+            },
+            {
+                "name": "person_open_calais_uuid",
+                "source": "Open Calais v.2",
+                "identifier_type_id": 2,
+                "output_header" : "person_open_calais_uuid"
+            }
+        ]
     },
     "relation_selection": {
         "filter_specification": {

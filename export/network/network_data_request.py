@@ -97,6 +97,21 @@ class NetworkDataRequest( ContextBase ):
     PROP_NAME_OUTPUT_FORMAT = "output_format"
     PROP_NAME_OUTPUT_STRUCTURE = "output_structure"
     PROP_NAME_OUTPUT_INCLUDE_COLUMN_HEADERS = "output_include_column_headers"
+    PROP_NAME_OUTPUT_ENTITY_TRAITS_LIST = "output_entity_traits_list"
+    PROP_NAME_OUTPUT_ENTITY_IDENTIFIERS_LIST = "output_entity_identifiers_list"    
+    
+    # entity identifier dictionary property names
+    PROP_NAME_ENTITY_IDENTIFIERS_NAME = "name"
+    PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE = "id_type"
+    PROP_NAME_ENTITY_IDENTIFIERS_SOURCE = "source"
+    PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID = "identifier_type_id"
+    PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER = "output_header"
+    
+    # entity trait dictionary property names
+    PROP_NAME_ENTITY_TRAITS_NAME = "name"
+    PROP_NAME_ENTITY_TRAITS_SLUG = "slug"
+    PROP_NAME_ENTITY_TRAITS_ENTITY_TYPE_TRAIT_ID = "entity_type_trait_id"
+    PROP_NAME_ENTITY_TRAITS_OUTPUT_HEADER = "output_header"
     
     # output_type values
     PROP_VALUE_OUTPUT_TYPE_FILE = "file"
@@ -1537,6 +1552,54 @@ class NetworkDataRequest( ContextBase ):
     #-- END method build_filter_spec_relation_type_slug_q() --#
 
 
+    def do_output_entity_traits_or_ids( self ):
+        
+        # return reference
+        boolean_OUT = False
+        
+        # declare variables
+        entity_traits_list = None
+        entity_traits_list_count = None
+        entity_ids_list = None
+        entity_ids_list_count = None
+        
+        # retrieve lists
+        entity_ids_list = self.get_output_entity_identifiers_list()
+        entity_traits_list = self.get_output_entity_traits_list()
+        
+        # got ids list?
+        if ( entity_ids_list is not None ):
+        
+            # yes - get count
+            entity_ids_list_count = len( entity_ids_list )
+            boolean_OUT = True
+            
+        else:
+        
+            # no - count = 0
+            entity_ids_list_count = 0
+            
+        #-- END check to see if list present. --#
+        
+        # got traits list?
+        if ( entity_traits_list is not None ):
+        
+            # yes - get count
+            entity_traits_list_count = len( entity_traits_list )
+            boolean_OUT = True
+            
+        else:
+        
+            # no - count = 0
+            entity_traits_list_count = 0
+            
+        #-- END check to see if list present. --#
+        
+        return boolean_OUT
+    
+    #-- END method do_output_entity_traits_or_ids() --#
+
+
     def filter_relation_query_set( self, qs_IN = None, use_entity_selection_IN = False ):
         
         '''
@@ -2068,6 +2131,32 @@ class NetworkDataRequest( ContextBase ):
         return value_OUT
     
     #-- END method get_entity_selection_property() --#
+
+
+    def get_output_entity_identifiers_list( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # retrieve the output_include_column_headers value.
+        value_OUT = self.get_output_spec_property( self.PROP_NAME_OUTPUT_ENTITY_IDENTIFIERS_LIST )
+        
+        return value_OUT
+    
+    #-- END method get_output_entity_identifiers_list() --#
+
+
+    def get_output_entity_traits_list( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # retrieve the output_include_column_headers value.
+        value_OUT = self.get_output_spec_property( self.PROP_NAME_OUTPUT_ENTITY_TRAITS_LIST )
+        
+        return value_OUT
+    
+    #-- END method get_output_entity_traits_list() --#
 
 
     def get_output_file_path( self ):
@@ -2614,6 +2703,32 @@ class NetworkDataRequest( ContextBase ):
         return value_OUT
     
     #-- END method set_is_request_ok() --#
+
+
+    def set_output_entity_identifiers_list( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # return it
+        value_OUT = self.set_output_spec_property( self.PROP_NAME_OUTPUT_ENTITY_IDENTIFIERS_LIST, value_IN )
+        
+        return value_OUT
+    
+    #-- END method set_output_entity_identifiers_list() --#
+
+
+    def set_output_entity_traits_list( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # return it
+        value_OUT = self.set_output_spec_property( self.PROP_NAME_OUTPUT_ENTITY_TRAITS_LIST, value_IN )
+        
+        return value_OUT
+    
+    #-- END method set_output_entity_traits_list() --#
 
 
     def set_output_file_path( self, value_IN ):

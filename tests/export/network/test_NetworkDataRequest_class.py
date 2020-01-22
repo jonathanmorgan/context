@@ -44,9 +44,11 @@ class NetworkDataRequestTest( django.test.TestCase ):
     # JSON files details are in network-specific TestHelper now.
 
     # test values
-    TEST_OUTPUT_SPEC_LEN = 5
+    TEST_OUTPUT_SPEC_LEN = 7
     TEST_OUTPUT_TYPE = "file"
-    TEST_OUTPUT_FILE_PATH = "./NetworkDataRequest_test_output.txt"
+    TEST_OUTPUT_FILE_PATH_BASIC = "./NetworkDataRequest_basic_test_output.tsv"
+    TEST_OUTPUT_FILE_PATH_ENTITY_ID = "./NetworkDataRequest_entity_id_test_output.tsv"
+    TEST_OUTPUT_FILE_PATH_ENTITY_SELECT = "./NetworkDataRequest_entity_select_test_output.tsv"
     TEST_OUTPUT_FORMAT = "TSV_matrix"
     TEST_OUTPUT_STRUCTURE = "both_trait_columns"
     TEST_OUTPUT_INCLUDE_COLUMN_HEADERS = True
@@ -60,6 +62,8 @@ class NetworkDataRequestTest( django.test.TestCase ):
     # test - get()/set()
     TEST_SET_ENTITY_SELECTION = "test_set_entity_selection"
     TEST_SET_IS_REQUEST_OK = "false"
+    TEST_SET_OUTPUT_ENTITY_IDENTIFIERS_LIST = [ { "name" : "identifier_name_1", "source" : "source_1" }, { "name" : "identifier_name_2", "source" : "source_2" } ]
+    TEST_SET_OUTPUT_ENTITY_TRAITS_LIST = [ { "name" : "trait_1" }, { "name" : "trait_2" } ]
     TEST_SET_OUTPUT_FILE_PATH = "test_set_output_file_path"
     TEST_SET_OUTPUT_FORMAT = "test_set_output_format"
     TEST_SET_OUTPUT_INCLUDE_COLUMN_HEADERS = "test_set_output_include_column_headers"
@@ -869,7 +873,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         if ( test_instance_IN is not None ):
         
             # ! ----> validate output_specification
-            self.validate_output_spec( test_instance_IN )
+            self.validate_output_spec( test_instance_IN, output_file_path_IN = self.TEST_OUTPUT_FILE_PATH_ENTITY_SELECT )
             
             # ! ----> validate relation_selection
             self.validate_relation_selection( test_instance_IN )
@@ -901,7 +905,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         if ( test_instance_IN is not None ):
         
             # ! ----> validate output_specification
-            self.validate_output_spec( test_instance_IN )
+            self.validate_output_spec( test_instance_IN, output_file_path_IN = self.TEST_OUTPUT_FILE_PATH_ENTITY_ID )
 
             # ! ----> validate same as basic, plus entity id filter
             self.validate_relation_selection( test_instance_IN )
@@ -918,7 +922,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #-- END method validate_instance_id_filter() --#
     
 
-    def validate_output_spec( self, test_instance_IN ):
+    def validate_output_spec( self, test_instance_IN, output_file_path_IN = None ):
         
         # declare variables
         me = "validate_output_spec"
@@ -932,6 +936,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         output_format = None
         output_structure = None
         output_include_column_headers = None
+        should_be_output_file_path = None
 
         # got test instance?
         if ( test_instance_IN is not None ):
@@ -944,7 +949,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
             error_string = "No output_specification found, should be a dictionary instance."
             self.assertIsNotNone( test_value, msg = error_string )
             
-            # should be 5 things in the output_specification
+            # should be 7 things in the output_specification
             test_value = len( output_spec )
             should_be = self.TEST_OUTPUT_SPEC_LEN
             error_string = "nested output_specification dictionary has {} items, should have {}.".format( test_value, should_be )
@@ -960,9 +965,19 @@ class NetworkDataRequestTest( django.test.TestCase ):
             self.assertEqual( test_value, should_be, msg = error_string )
             
             # output_file_path
+            
+            # init
+            should_be_output_file_path = self.TEST_OUTPUT_FILE_PATH_BASIC
+            if ( output_file_path_IN is not None ):
+            
+                # use path passed in.
+                should_be_output_file_path = output_file_path_IN
+                
+            #-- END check to see if should be file path passed in --#
+            
             output_file_path = test_instance_IN.get_output_file_path()
             test_value = output_file_path
-            should_be = self.TEST_OUTPUT_FILE_PATH
+            should_be = should_be_output_file_path
             error_string = "nested output_file_path is {}, should be {}.".format( test_value, should_be )
             self.assertEqual( test_value, should_be, msg = error_string )
 
@@ -3466,7 +3481,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # first, test getters by calling the validate method
         self.validate_instance_entity_selection( test_instance )
 
-        # ! ----> test set()-ers
+        # ! ----> test get/set()-ers
         
         # for each (using last loaded test instance):
         # - get original value and store
@@ -3502,6 +3517,40 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # setter converts strings to boolean values, so convert this value to
         #     boolean.
         new_value = BooleanHelper.convert_value_to_boolean( new_value )
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> get/set_output_entity_identifiers_list()
+        test_method = "set_output_entity_identifiers_list"
+        original_value = test_instance.get_output_entity_identifiers_list()
+        new_value = self.TEST_SET_OUTPUT_ENTITY_IDENTIFIERS_LIST
+        test_instance.set_output_entity_identifiers_list( new_value )
+        test_value = test_instance.get_output_entity_identifiers_list()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> get/set_output_entity_traits_list()
+        test_method = "set_output_entity_traits_list"
+        original_value = test_instance.get_output_entity_traits_list()
+        new_value = self.TEST_SET_OUTPUT_ENTITY_TRAITS_LIST
+        test_instance.set_output_entity_traits_list( new_value )
+        test_value = test_instance.get_output_entity_traits_list()
 
         # new should equal test
         should_be = new_value
