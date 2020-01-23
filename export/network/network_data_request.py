@@ -145,6 +145,10 @@ class NetworkDataRequest( ContextBase ):
     OUTPUT_STRUCTURE_VALUES.append( PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_COLUMNS )
     OUTPUT_STRUCTURE_VALUES.append( PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_ROWS )
     
+    # configuration for Trait and Identifier output.
+    OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX = "id_"
+    OUTPUT_ENTITY_TRAITS_LABEL_PREFIX = "trait_"
+    
     #--------------------------------------------------------------------------#
     # ! ----> filter types - name prefixes/types and variable name suffixes.
     FILTER_TYPE_RELATION_TYPE_SLUG = "relation_type_slug"
@@ -265,6 +269,170 @@ class NetworkDataRequest( ContextBase ):
     #-- END class method compact_entity_relation_queryset() --#
 
         
+    @classmethod
+    def create_entity_id_header_label( cls, id_info_dict_IN, prefix_IN = OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX ):
+
+        '''
+        Assumes there is an output format property specified in the request
+            stored in this instance.  Retrieves this output type, creates a
+            NetworkDataOutput implementer instance to match the type, then
+            returns the instance.  If no type or unknown type, returns None.
+        '''
+        
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        me = "create_entity_id_header_label"
+        id_info_dict = None
+        id_name = None
+        id_id_type = None
+        id_source = None
+        id_identifier_type_id = None
+        id_header = None
+        
+        # for an info dictionary?
+        id_info_dict = id_info_dict_IN
+        if ( id_info_dict is not None ):
+
+            # get values from the dict
+            id_name = id_info_dict.get( cls.PROP_NAME_ENTITY_IDENTIFIERS_NAME, None )
+            id_id_type = id_info_dict.get( cls.PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE, None )
+            id_source = id_info_dict.get( cls.PROP_NAME_ENTITY_IDENTIFIERS_SOURCE, None )
+            id_identifier_type_id = id_info_dict.get( cls.PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID, None )
+            id_header = id_info_dict.get( cls.PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER, None )
+            
+            # first, do we have a header?
+            if ( ( id_header is not None ) and ( id_header != "" ) ):
+            
+                # yes.  Use it.
+                value_OUT = id_header
+                
+            else:
+            
+                # start with mandatory name.
+                value_OUT = id_name
+                
+                # got an id type?
+                if ( ( id_id_type is not None ) and ( id_id_type != "" ) ):
+                
+                    # yes.  Append
+                    value_OUT = "{}_{}".format( value_OUT, id_id_type )
+                    
+                #-- END check to see if id_type --#
+                    
+                # got a source?
+                if ( ( id_source is not None ) and ( id_source != "" ) ):
+                
+                    # yes.  Append
+                    value_OUT = "{}_{}".format( value_OUT, id_source )
+                    
+                #-- END check to see if id_source --#
+                
+            #-- END check to see if pre-built header --#
+                
+        else:
+        
+            # no info dictionary passed in.  Nothing to see here.
+            value_OUT = None
+            
+        #-- END check to make sure info passed in. --#
+        
+        # got a value?
+        if ( ( value_OUT is not None ) and ( value_OUT != "" ) ):
+        
+            # prepend prefix if one set.
+            if ( ( prefix_IN is not None ) and ( prefix_IN != "" ) ):
+            
+                # prepend prefix
+                value_OUT = "{}{}".format( prefix_IN, value_OUT )
+                
+            #-- END check to see if prefix set. --#
+            
+        #-- END check to see if value set. --#
+
+        return value_OUT
+
+    #-- END create_entity_id_header_label() --#
+
+
+    @classmethod
+    def create_entity_trait_header_label( cls, trait_info_dict_IN, prefix_IN = OUTPUT_ENTITY_TRAITS_LABEL_PREFIX ):
+
+        '''
+        Assumes there is an output format property specified in the request
+            stored in this instance.  Retrieves this output type, creates a
+            NetworkDataOutput implementer instance to match the type, then
+            returns the instance.  If no type or unknown type, returns None.
+        '''
+        
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        me = "create_entity_trait_header_label"
+        trait_info_dict = None
+        trait_name = None
+        trait_slug = None
+        trait_entity_type_trait_id = None
+        trait_header = None
+        
+        # for an info dictionary?
+        trait_info_dict = trait_info_dict_IN
+        if ( trait_info_dict is not None ):
+
+            # get values from the dict
+            trait_name = trait_info_dict.get( cls.PROP_NAME_ENTITY_TRAITS_NAME, None )
+            trait_sluf = trait_info_dict.get( cls.PROP_NAME_ENTITY_TRAITS_SLUG, None )
+            trait_entity_type_trait_id = trait_info_dict.get( cls.PROP_NAME_ENTITY_TRAITS_ENTITY_TYPE_TRAIT_ID, None )
+            trait_header = trait_info_dict.get( cls.PROP_NAME_ENTITY_TRAITS_OUTPUT_HEADER, None )
+            
+            # first, do we have a header?
+            if ( ( trait_header is not None ) and ( trait_header != "" ) ):
+            
+                # yes.  Use it.
+                value_OUT = trait_header
+                
+            else:
+            
+                # start with mandatory name.
+                value_OUT = trait_name
+                
+                # got a slug?
+                if ( ( trait_slug is not None ) and ( trait_slug != "" ) ):
+                
+                    # yes.  Append
+                    value_OUT = "{}_{}".format( value_OUT, trait_slug )
+                    
+                #-- END check to see if slug --#
+                    
+            #-- END check to see if pre-built header --#
+                
+        else:
+        
+            # no info dictionary passed in.  Nothing to see here.
+            value_OUT = None
+            
+        #-- END check to make sure info passed in. --#
+
+        # got a value?
+        if ( ( value_OUT is not None ) and ( value_OUT != "" ) ):
+        
+            # prepend prefix if one set.
+            if ( ( prefix_IN is not None ) and ( prefix_IN != "" ) ):
+            
+                # prepend prefix
+                value_OUT = "{}{}".format( prefix_IN, value_OUT )
+                
+            #-- END check to see if prefix set. --#
+            
+        #-- END check to see if value set. --#
+
+        return value_OUT
+
+    #-- END create_entity_trait_header_label() --#
+
+
     #---------------------------------------------------------------------------
     # ! ==> overridden built-in methods
     #---------------------------------------------------------------------------
@@ -296,6 +464,14 @@ class NetworkDataRequest( ContextBase ):
         self.m_relation_selection_dict = None
         self.m_entity_selection_dict = None
                 
+        # entity relation query set, for populating network ties.
+        self.m_relation_query_set = None
+        
+        # entity dictionary and trait map
+        self.m_entity_id_to_instance_map = {}
+        self.m_entity_id_to_traits_map = {}
+        self.m_entity_ids_and_traits_header_list = None
+        
         # set logger name (for LoggingHelper parent class: (LoggingHelper --> BasicRateLimited --> ContextTextBase --> ArticleCoding).
         self.set_logger_name( self.LOGGER_NAME )
         
@@ -308,6 +484,185 @@ class NetworkDataRequest( ContextBase ):
     #---------------------------------------------------------------------------
     # ! ==> instance methods
     #---------------------------------------------------------------------------
+
+
+    def add_entities_to_dict( self, relation_qs_IN, dictionary_IN, include_through_IN = False, store_entity_IN = False ):
+
+        """
+            Accepts a dictionary, a list of Entity_Relation instances, and flags
+                that indicate if we want THROUGH in addition to FROM and TO; and
+                if Entity model instances should be stored in the dictionary.
+                Adds the entities from the FROM and TO of the relations in the Entity_Relation query set passed in to the
+                dictionary, making the Entity ID the key and either None or the
+                Entity instance the value, depending on the value in the
+                store_entity_IN flag.  If include_through_IN == True, also adds
+                Entities stored in relations as THROUGH to the map.
+
+            Preconditions: request must have contained at least a valid filter
+                specification, else this will likely be a list of all relations
+                (or we won't even get to calling this method).
+
+            Postconditions: uses a lot of memory if you choose a broad set of
+                filter criteria. Returns the same dictionary passed in, but with
+                the entities in relation_qs_IN added, and optionally adds the
+                associated entities, if store_entity_IN == True.
+
+            Parameters:
+            - self - self instance variable.
+            - relation_qs_IN - django query set object that contains the relations we
+                want to add to our dictionary.
+            - dictionary_IN - dictionary we want to add people to.  Returned
+                with people added.
+            - include_through_IN - boolean, defaults to False - If True,
+                includes the entity in relation_through in the dictionary along
+                with the FROM and TO.  If False, ignores THROUGH.
+            - store_entity_IN - boolean, if False, doesn't load Entity model
+                instances into dictionary while building the dictionary.  If
+                True, loads Entity model instances and stores them in the
+                dictionary as the value associated with each Entity's ID.
+
+            Returns:
+            - Dictionary - dictionary updated to include all entities from the
+                FROM, TO, and optionally THROUGH references in the
+                Entity_Relation QuerySet passed in, either mapped to None or to
+                Entity model instances, depending on the store_entity_IN
+                flag value.
+        """
+
+        # return reference
+        entity_dict_OUT = {}
+
+        # declare variables
+        me = "add_entities_to_dict"
+        current_relation = None
+        current_entity = None
+        current_entity_id = None
+        current_value = None
+
+        # set the output dictionary
+        if ( dictionary_IN ):
+
+            # yes, store in output parameter
+            entity_dict_OUT = dictionary_IN
+
+        #-- END check to see if dictionary passed in --#
+
+        # loop over the articles
+        for current_relation in relation_qs_IN:
+
+            # ! ----> FROM
+
+            # add FROM Entity ID to list.  If no Entity ID, don't add.
+            current_entity = current_relation.relation_from
+            
+            # add to dictionary
+            entity_dict_OUT = self.add_entity_to_dict( current_entity, entity_dict_OUT, store_entity_IN = store_entity_IN )
+
+            # ! ----> TO
+
+            # add TO Entity ID to list.  If no Entity ID, don't add.
+            current_entity = current_relation.relation_to
+            
+            # add to dictionary
+            entity_dict_OUT = self.add_entity_to_dict( current_entity, entity_dict_OUT, store_entity_IN = store_entity_IN )
+
+            # ! ----> THROUGH?
+
+            if ( include_through_IN == True ):
+
+                # add THROUGH Entity ID to list.  If no Entity ID, don't add.
+                current_entity = current_relation.relation_through
+                
+                # add to dictionary
+                entity_dict_OUT = self.add_entity_to_dict( current_entity, entity_dict_OUT, store_entity_IN = store_entity_IN )
+                
+            #-- END check to see if we include THROUGH --#
+    
+        #-- END loop over Entities --#
+
+        return entity_dict_OUT
+
+    #-- END function add_entities_to_dict() --#
+
+
+    def add_entity_to_dict( self, entity_IN, dictionary_IN, store_entity_IN = False ):
+
+        """
+            Accepts a dictionary, an Entity instance, and a flag that indicates
+                if Entity model instances should be stored in the
+                dictionary. Retrieves the Entity's ID and if it is not already
+                in the dictionary, adds it, making the Entity ID the key and
+                either None or the Entity instance the value, depending on the
+                value in the store_entity_IN flag.
+
+            Postconditions: Returns the same dictionary passed in, but with
+                the Entity passed in added, and optionally adds the associated
+                Entity instance, if store_entity_IN == True.
+
+            Parameters:
+            - self - self instance variable.
+            - entity_IN - django Entity instance to be added to dictionary
+                passed in.
+            - dictionary_IN - dictionary we want to add entity to.  Returned
+                with entity added.
+            - store_entity_IN - boolean, defaults to False - if False, doesn't
+                load Entity model instances into dictionary while building the
+                dictionary.  If True, loads Entity model instances and stores
+                them in the dictionary as the value associated with each
+                Entity's ID.
+
+            Returns:
+            - Dictionary - dictionary updated to include the Entity passed in,
+                either mapped to None or to Entity model instances,
+                depending on the store_entity_IN flag value.
+        """
+
+        # return reference
+        entity_dict_OUT = {}
+
+        # declare variables
+        me = "add_entity_to_dict"
+        current_relation = None
+        current_entity = None
+        current_entity_id = None
+        current_value = None
+
+        # set the output dictionary
+        if ( dictionary_IN ):
+
+            # yes, store in output parameter
+            entity_dict_OUT = dictionary_IN
+
+        #-- END check to see if dictionary passed in --#
+
+        current_entity = entity_IN
+
+        # see if there is an entity
+        if ( current_entity is not None ):
+
+            # are we also loading the Entity?
+            current_entity_id = current_entity.id
+
+            if ( store_entity_IN == True ):
+
+                # yes, use Entity model as value.
+                current_value = current_entity
+
+            else:
+
+                # no, use None as value.
+                current_value = None
+
+            #-- END conditional to check if we are storing actual model instances --#
+
+            # store the Entity in the output dict.
+            entity_dict_OUT[ current_entity_id ] = current_value
+
+        #-- END check to see if there is an entity --#
+
+        return entity_dict_OUT
+
+    #-- END function add_entity_to_dict() --#
 
 
     def build_filter_spec_aggregate_q( self, filter_spec_IN ):
@@ -1552,16 +1907,302 @@ class NetworkDataRequest( ContextBase ):
     #-- END method build_filter_spec_relation_type_slug_q() --#
 
 
-    def do_output_entity_traits_or_ids( self ):
+    def create_entity_ids_and_traits_header_list( self ):
+        
+        # return reference
+        list_OUT = False
+        
+        # declare variables
+        me = "create_entity_ids_and_traits_header_list"
+        entity_ids_list = None
+        entity_id_dict = None
+        entity_traits_list = None
+        entity_trait_dict = None
+        header_label = None
+        
+        # init
+        list_OUT = []
+        
+        # check to see if already rendered
+        list_OUT = self.get_entity_ids_and_traits_header_list()
+        if ( list_OUT is None ):
+        
+            # retrieve lists
+            entity_ids_list = self.get_output_entity_identifiers_list()
+            entity_traits_list = self.get_output_entity_traits_list()
+            
+            # got ids list?
+            if ( entity_ids_list is not None ):
+            
+                # yes - loop, create header label for each, append to list.
+                for entity_id_dict in entity_ids_list:
+                
+                    # get header label for id filter
+                    header_label = self.create_entity_id_header_label( entity_id_dict )
+                    
+                    # add to list?
+                    if ( ( header_label is not None ) and ( header_label != "" ) ):
+                    
+                        # add to list.
+                        list_OUT.append( header_label )
+                        
+                    #-- END check to make sure the label contained something --#
+                    
+                #-- END loop over entity ID details dicts --#
+                    
+            #-- END check to see if list present. --#
+            
+            # got traits list?
+            if ( entity_traits_list is not None ):
+            
+                # yes - loop, create header label for each, append to list.
+                for entity_trait_dict in entity_traits_list:
+                
+                    # get header label for id filter
+                    header_label = self.create_entity_trait_header_label( entity_trait_dict )
+                    
+                    # add to list?
+                    if ( ( header_label is not None ) and ( header_label != "" ) ):
+                    
+                        # add to list.
+                        list_OUT.append( header_label )
+                        
+                    #-- END check to make sure the label contained something --#
+                    
+                #-- END loop over entity ID details dicts --#
+                                
+            #-- END check to see if list present. --#
+            
+            # store the list, for future reference.
+            self.set_entity_ids_and_traits_header_list( list_OUT )
+            
+        else:
+        
+            # there is a list.  Just return it.
+            pass
+            
+        #-- END check to see if already have a list.  --#
+        
+        return list_OUT
+    
+    #-- END method create_entity_ids_and_traits_header_list() --#
+
+
+    def create_entity_ids_and_traits_value_dict( self ):
+
+        """
+            Method: create_entity_ids_and_traits_value_dict()
+
+            Purpose: retrieves list of ids and traits headers, loops and builds
+                list of values for each for all entities, then adds them to
+                dictionary that maps label to list.
+
+            Returns:
+            - dictionary mapping ids and traits labels to value lists for each.
+        """
+
+        # return reference
+        ids_and_traits_values_dict_OUT = None
+
+        # declare variables
+        me = "create_entity_ids_and_traits_value_dict"
+        status_message = None
+        debug_flag = None
+        ids_and_traits_header_labels_list = None
+        header_label = None
+        value_list = None
+        
+        # initialize
+        debug_flag = self.DEBUG_FLAG
+        
+        # get list of headers
+        ids_and_traits_header_labels_list = self.get_entity_ids_and_traits_header_list()
+
+        # initialize
+        ids_and_traits_values_dict_OUT = {}
+    
+        # loop over role list.
+        for header_label in ids_and_traits_header_labels_list:
+        
+            # get values
+            value_list = self.create_entity_ids_and_traits_value_list( header_label )
+            
+            # add to output dictionary
+            ids_and_traits_values_dict_OUT[ header_label ] = value_list
+            
+        #-- END loop over roles --#
+            
+        return relation_type_role_values_dict_OUT
+
+    #-- END method create_entity_ids_and_traits_value_dict() --#
+
+
+    def create_entity_ids_and_traits_value_list( self, header_label_IN ):
+
+        """
+            Method: create_entity_ids_and_traits_value_list()
+
+            Purpose: accepts an ids and traits header label, creates list of
+                values for all entities in master entity list for that
+                header label.  If not present for a given entity, sets to None.
+
+            Returns:
+            - List of values for id or trait of header_label passed in.
+        """
+
+        # return reference
+        value_list_OUT = None
+
+        # declare variables
+        me = "create_entity_ids_and_traits_value_list"
+        debug_flag = None
+        status_message = None
+        entity_list = None
+        entity_to_ids_and_traits_map = None
+        entity_id = None
+        entity_ids_and_traits = None
+        relation_type_roles = None
+        current_value = None
+        
+        # initialization
+        debug_flag = self.DEBUG_FLAG
+        
+        # make sure we have a header label
+        if ( ( header_label_IN is not None ) and ( header_label_IN != "" ) ):
+        
+            # initialize output list
+            value_list_OUT = []
+    
+            # get entity list
+            entity_list = self.get_master_entity_list()
+            if ( ( entity_list is not None ) and ( len( entity_list ) > 0 ) ):
+            
+                # retrieve map of entities to their relation types and roles.
+                entity_to_ids_and_types_map = self.get_entity_id_to_traits_map()
+            
+                # we have a list.  Loop.
+                for entity_id in entity_list:
+                
+                    # retrieve the ids and traits for this entity.
+                    entity_ids_and_traits = entity_to_ids_and_types_map.get( entity_id, None )
+                    
+                    # got anything at all?
+                    if ( entity_ids_and_traits is not None ):
+                    
+                        # yes.  any value for requested header label?
+                        current_value = entity_ids_and_traits.get( header_label_IN, None )
+                    
+                    else:
+                    
+                        # no ids or traits, either no ties, just here for comparison.
+                        current_value = None
+                        
+                    #-- END check to see if any relation type roles at all --#
+                    
+                    # add value to list.
+                    value_list_OUT.append( current_value )
+                    
+                #-- END loop over entity IDs. --#
+                
+            else:
+            
+                # no entities, output a warning.
+                status_message = "In {}(): WARNING - No entities to process.  Returning empty list.  relation_type_slug_IN: {}; relation_role_IN: {}".format( me, relation_type_slug_IN, relation_role_IN )
+                self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                    
+            #-- END check to see if entity list. --#
+        
+        else:
+        
+            # no slug passed in, can't do anything.
+            status_message = "In {}(): ERROR - No relation type slug passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if relation type slug passed in --#
+
+        return value_list_OUT
+
+    #-- END method create_relation_type_role_value_list --#
+
+
+    def create_ids_and_traits_values_for_entity( self, entity_id_IN ):
+
+        """
+            Method: create_ids_and_traits_values_for_entity()
+
+            Purpose: retrieves ids and traits header label list. For each label,
+                retrieves value for the entity and adds it to the list (with
+                None added if trait or ID is not present). Returns list of
+                values.
+
+            Returns:
+            - List of values for the entity for each label in header label list.
+        """
+
+        # return reference
+        value_list_OUT = None
+
+        # declare variables
+        me = "create_entity_ids_and_traits_for_entity"
+        status_message = None
+        debug_flag = None
+        ids_and_traits_header_labels_list = None
+        entity_to_ids_and_types_map = None
+        entity_ids_and_traits = None
+        header_label = None
+        current_value = None
+        value_list = None
+        
+        # initialize
+        debug_flag = self.DEBUG_FLAG
+        value_list = []
+
+        # make sure we have entity ID
+        if ( entity_id_IN is not None ):
+        
+            # retrieve ids and traits header labels.
+            ids_and_traits_header_labels_list = self.get_entity_ids_and_traits_header_list()        
+
+            # get ids and traits for this entity.
+            entity_ids_and_traits = self.get_ids_and_traits_for_entity( entity_id_IN )
+                        
+            # loop over labels, retrieving value for each and adding it to list.
+            for header_label in ids_and_traits_header_labels_list:
+            
+                # retrieve value from entity_ids_and_traits
+                current_value = entity_ids_and_traits.get( header_label_IN, None )
+                
+                # append to the list.
+                value_list.append( current_value )
+                
+            #-- END loop over header labels --#
+            
+            value_list_OUT = value_list
+
+        else:
+        
+            # no Entity ID passed in.
+            status_message = "In {}(): ERROR - no Entity ID passed in.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+            value_list_OUT = None 
+
+        #-- END check to see if entity ID passed in. --#
+
+        return value_list_OUT
+
+    #-- END method create_ids_and_traits_values_for_entity --#
+
+
+    def do_output_entity_ids_or_traits( self ):
         
         # return reference
         boolean_OUT = False
         
         # declare variables
-        entity_traits_list = None
-        entity_traits_list_count = None
         entity_ids_list = None
         entity_ids_list_count = None
+        entity_traits_list = None
+        entity_traits_list_count = None
         
         # retrieve lists
         entity_ids_list = self.get_output_entity_identifiers_list()
@@ -1597,7 +2238,7 @@ class NetworkDataRequest( ContextBase ):
         
         return boolean_OUT
     
-    #-- END method do_output_entity_traits_or_ids() --#
+    #-- END method do_output_entity_ids_or_traits() --#
 
 
     def filter_relation_query_set( self, qs_IN = None, use_entity_selection_IN = False ):
@@ -2079,6 +2720,45 @@ class NetworkDataRequest( ContextBase ):
     #-- END method filter_relations_by_filter_spec() --#
 
 
+    def get_entity_id_to_instance_map( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_entity_id_to_instance_map
+                
+        return value_OUT
+    
+    #-- END method get_entity_id_to_instance_map() --#
+    
+
+    def get_entity_id_to_traits_map( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_entity_id_to_traits_map
+                
+        return value_OUT
+    
+    #-- END method get_entity_id_to_traits_map() --#
+    
+
+    def get_entity_ids_and_traits_header_list( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_entity_ids_and_traits_header_list
+                
+        return value_OUT
+    
+    #-- END method get_entity_id_to_instance_map() --#
+    
+
     def get_entity_selection( self ):
         
         # return reference
@@ -2131,6 +2811,56 @@ class NetworkDataRequest( ContextBase ):
         return value_OUT
     
     #-- END method get_entity_selection_property() --#
+
+
+    def get_ids_and_traits_for_entity( self, entity_id_IN ):
+
+        """
+            Method: get_ids_and_traits_for_entity()
+
+            Purpose: retrieves nested ids and traits map.  Retrieves ids and
+                traits for the entity whose ID was passed in.
+
+            Returns:
+            - dictionary - dictionary that maps id and trait labels to their
+                values for this entity.
+        """
+
+        # return reference
+        value_OUT = {}
+
+        # declare variables
+        entity_id_to_ids_and_traits_dict = None
+
+        # got an ID?
+        if ( entity_id_IN != '' ):
+
+            # grab map
+            entity_id_to_ids_and_traits_dict = self.get_entity_id_to_traits_map()
+
+            # anything there?
+            if ( ( entity_id_to_ids_and_traits_dict is not None ) and ( len( entity_id_to_ids_and_traits_dict ) > 0 ) ):
+
+                # yes.  Check if ID is a key.
+                if entity_id_IN in entity_id_to_ids_and_traits_dict:
+
+                    # it is.  Return what is there.
+                    value_OUT = entity_id_to_ids_and_traits_dict[ entity_id_IN ]
+
+                else:
+
+                    # no relation roles.  Return empty dictionary.
+                    value_OUT = {}
+
+                #-- END check to see if Entity has any relations.
+
+            #-- END check to make sure dict is populated. --#
+
+        #-- END check to see if ID passed in. --#
+
+        return value_OUT
+
+    #-- END method get_ids_and_traits_for_entity() --#
 
 
     def get_output_entity_identifiers_list( self ):
@@ -2278,6 +3008,19 @@ class NetworkDataRequest( ContextBase ):
     #-- END method get_output_type() --#
 
 
+    def get_relation_query_set( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_relation_query_set
+                
+        return value_OUT
+    
+    #-- END method get_relation_query_set() --#
+    
+
     def get_relation_selection( self ):
         
         # return reference
@@ -2399,6 +3142,499 @@ class NetworkDataRequest( ContextBase ):
         return value_OUT
     
     #-- END method is_request_ok() --#
+
+
+    def load_entities_ids_and_traits( self, relation_qs_IN, dictionary_IN, include_through_IN = False ):
+
+        """
+            Accepts a dictionary, a list of Entity_Relation instances, and flag
+                that indicates if we want THROUGH in addition to FROM and TO.
+                Retrieves entities from the FROM and TO of the relations in the
+                Entity_Relation query set passed in to the dictionary, making
+                the Entity ID the key and then a dictionary of traits and
+                identifiers where name is mapped to either value or UUID.  If
+                include_through_IN == True, also adds Entities stored in
+                relations as THROUGH to the map.  If trait or identifier is not
+                present, stores an entry for it in the traits map with value of
+                None.
+
+            Preconditions: request must have contained at least a valid filter
+                specification, else this will likely be a list of all relations
+                (or we won't even get to calling this method).
+
+            Postconditions: Returns the same dictionary passed in, but with
+                the entities in relation_qs_IN added, where ID is associated
+                with a dictionary of name-value traits and identifiers.
+
+            Parameters:
+            - self - self instance variable.
+            - relation_qs_IN - django query set object that contains the relations we
+                want to add to our dictionary.
+            - dictionary_IN - dictionary we want to add people to.  Returned
+                with people added.
+            - include_through_IN - boolean, defaults to False - If True,
+                includes the entity in relation_through in the dictionary along
+                with the FROM and TO.  If False, ignores THROUGH.
+
+            Returns:
+            - Dictionary - dictionary updated to include all entities from the
+                FROM, TO, and optionally THROUGH references in the
+                Entity_Relation QuerySet passed in, with entity ID mapped to a
+                dictionary of traits and identifiers where name is mapped to
+                either value or UUID.
+        """
+
+        # return reference
+        entity_dict_OUT = {}
+
+        # declare variables
+        me = "load_entities_ids_and_traits"
+        current_relation = None
+        current_entity = None
+        current_entity_id = None
+        current_value = None
+
+        # set the output dictionary
+        if ( dictionary_IN ):
+
+            # yes, store in output parameter
+            entity_dict_OUT = dictionary_IN
+
+        #-- END check to see if dictionary passed in --#
+
+        # loop over the articles
+        for current_relation in relation_qs_IN:
+
+            # ! ----> FROM
+
+            # add FROM Entity ID to list.  If no Entity ID, don't add.
+            current_entity = current_relation.relation_from
+            
+            # add to dictionary
+            entity_dict_OUT = self.load_entity_identifiers( current_entity, entity_dict_OUT )
+            entity_dict_OUT = self.load_entity_traits( current_entity, entity_dict_OUT )
+
+            # ! ----> TO
+
+            # add TO Entity ID to list.  If no Entity ID, don't add.
+            current_entity = current_relation.relation_to
+            
+            # add to dictionary
+            entity_dict_OUT = self.load_entity_identifiers( current_entity, entity_dict_OUT )
+            entity_dict_OUT = self.load_entity_traits( current_entity, entity_dict_OUT )
+
+            # ! ----> THROUGH?
+
+            if ( include_through_IN == True ):
+
+                # add THROUGH Entity ID to list.  If no Entity ID, don't add.
+                current_entity = current_relation.relation_through
+                
+                # add to dictionary
+                entity_dict_OUT = self.load_entity_identifiers( current_entity, entity_dict_OUT )
+                entity_dict_OUT = self.load_entity_traits( current_entity, entity_dict_OUT )
+                
+            #-- END check to see if we include THROUGH --#
+    
+        #-- END loop over Entities --#
+
+        return entity_dict_OUT
+
+    #-- END function load_entities_ids_and_traits() --#
+
+
+    def load_entity_identifiers( self, entity_IN, dictionary_IN, multi_value_separator_IN = "||" ):
+
+        """
+            Accepts a dictionary, an Entity instance.  Retrieves the Entity's ID
+                and if it is not already in the dictionary, adds it, making the
+                Entity ID the key and a map of requested identifier
+                names to their associated UUIDs the associated value.
+
+            Postconditions: Returns the same dictionary passed in, but with
+                the Entity passed in added, associated with a dict of its
+                identifiers.
+
+            Parameters:
+            - self - self instance variable.
+            - entity_IN - django Entity instance to be added to dictionary
+                passed in.
+            - dictionary_IN - dictionary we want to add entity to.  Returned
+                with entity added.
+
+            Returns:
+            - Dictionary - dictionary updated to include the Entity passed in,
+                associated with a dict of its values for requested identifiers.
+        """
+
+        # return reference
+        entity_dict_OUT = {}
+
+        # declare variables
+        me = "load_entity_identifiers"
+        current_relation = None
+        current_entity = None
+        current_entity_id = None
+        entity_ids_list = None
+        entity_ids_list_count = None
+        identifier_dict = None
+        
+        # declare variables - ids
+        id_info_dict = None
+        id_name = None
+        id_id_type = None
+        id_source = None
+        id_identifier_type_id = None
+        id_qs = None
+        id_count = None
+        id_instance = None
+        id_value = None
+        id_value_list = None
+        id_value_list_count = None
+        current_id = None
+        id_dict_key = None
+        
+        # set the output dictionary
+        if ( dictionary_IN ):
+
+            # yes, store in output parameter
+            entity_dict_OUT = dictionary_IN
+
+        #-- END check to see if dictionary passed in --#
+
+        current_entity = entity_IN
+
+        # see if there is an entity
+        if ( current_entity is not None ):
+
+            # get Entity ID
+            current_entity_id = current_entity.id
+            identifier_dict = None
+
+            # Does entity already have a traits/ids dictionary?
+            if ( current_entity_id in entity_dict_OUT ):
+            
+                # retrieve trait/id dict
+                identifier_dict = entity_dict_OUT.get( current_entity_id, None )
+                
+            #-- END retrieve trait/id dict. --#
+            
+            # anything in trait/id dict?
+            if ( identifier_dict is None ):
+            
+                # no trait dict - create and add one.
+                identifier_dict = {}
+                entity_dict_OUT[ current_entity_id ] = identifier_dict
+            
+            #-- END check to see if existing trait/id dictionary --#
+
+            # are there identifiers to collect?
+            entity_ids_list = self.get_output_entity_identifiers_list()
+            if ( entity_ids_list is None ):
+
+                # no list.  Make an empty one, so we can just always loop.
+                entity_ids_list = []
+                
+            #-- END check to see if ids list --#
+            
+            # loop over id filters.
+            for id_info_dict in entity_ids_list:
+            
+                # get values from the dict
+                id_name = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_NAME, None )
+                id_id_type = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE, None )
+                id_source = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_SOURCE, None )
+                id_identifier_type_id = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID, None )
+                id_header = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER, None )
+                
+                # Must have at least a name
+                if ( ( id_name is not None ) and ( id_name != "" ) ):
+                
+                    # filter entity's identifier QuerySet
+                    id_qs = current_entity.entity_identifier_set.all()
+                    
+                    # got a name?
+                    if ( ( id_name is not None ) and ( id_name != "" ) ):
+                    
+                        # yes. Filter.
+                        id_qs = id_qs.filter( name = id_name )
+                        
+                    #-- END check to see if name. --#
+                    
+                    # got a string id type value?
+                    if ( ( id_id_type is not None ) and ( id_id_type != "" ) ):
+                    
+                        # yes. Filter.
+                        id_qs = id_qs.filter( id_type = id_id_type )
+                        
+                    #-- END check to see if id_id_type. --#                    
+                    
+                    # got a id_source?
+                    if ( ( id_source is not None ) and ( id_source != "" ) ):
+                    
+                        # yes. Filter.
+                        id_qs = id_qs.filter( source = id_source )
+                        
+                    #-- END check to see if id_source. --#                    
+                    
+                    # got an identifier type id?
+                    if ( ( id_identifier_type_id is not None ) and ( id_identifier_type_id != "" ) ):
+                    
+                        # yes. Filter.
+                        id_qs = id_qs.filter( entity_identifier_type_id = id_identifier_type_id )
+                        
+                    #-- END check to see if identifier type id. --#
+                    
+                    # got any matches?
+                    id_count = id_qs.count()
+                    if ( id_count > 0 ):
+                    
+                        # yes.  Build value.
+                        id_value_list = []
+                        for id_instance in id_qs:
+                            
+                            # retrieve UUID and add to list.
+                            id_value = id_instance.uuid
+                            id_value_list.append( id_value )
+                        
+                        #-- END loop over id instances. --#
+                        
+                        # how many values?
+                        id_value_list_count = len( id_value_list )
+                        if ( id_value_list_count > 1 ):
+                        
+                            # more than one.  Smoosh them together.
+                            id_value = multi_value_separator_IN.join( id_value_list )
+                            
+                        elif ( id_value_list_count == 1 ):
+                        
+                            # just one.
+                            id_value = id_value_list[ 0 ]
+                            
+                        else:
+                        
+                            # neither one or > 1... 0, so set to None.
+                            id_value = None
+                            
+                        #-- END check to see how many values. --#
+                        
+                    else:
+                    
+                        # no.  Set value to None.
+                        id_value = None
+                        
+                    #-- END chec to see if traits for trait spec --#
+                    
+                    # get id_dict_key
+                    id_dict_key = self.create_entity_id_header_label( id_info_dict )
+                    
+                    # add value to map.
+                    identifier_dict[ id_dict_key ] = id_value
+                    
+                #-- END check to see if enough info to filter. --#
+                
+            #-- END loop over traits we are to collect. --#
+        
+            # store the Entity in the output dict.
+            entity_dict_OUT[ current_entity_id ] = identifier_dict
+
+        #-- END check to see if there is an entity --#
+
+        return entity_dict_OUT
+
+    #-- END function load_entity_identifiers() --#
+
+
+    def load_entity_traits( self, entity_IN, dictionary_IN, multi_value_separator_IN = "||" ):
+
+        """
+            Accepts a dictionary, an Entity instance.  Retrieves the Entity's ID
+                and if it is not already in the dictionary, adds it, making the
+                Entity ID the key and a map of requested trait and identifier
+                names to their associated values/UUIDs the associated value.
+
+            Postconditions: Returns the same dictionary passed in, but with
+                the Entity passed in added, associated with a dict of its traits
+                and identifiers.
+
+            Parameters:
+            - self - self instance variable.
+            - entity_IN - django Entity instance to be added to dictionary
+                passed in.
+            - dictionary_IN - dictionary we want to add entity to.  Returned
+                with entity added.
+
+            Returns:
+            - Dictionary - dictionary updated to include the Entity passed in,
+                associated with a dict of its values for requested traits and
+                identifiers.
+        """
+
+        # return reference
+        entity_dict_OUT = {}
+
+        # declare variables
+        me = "load_entity_traits"
+        current_relation = None
+        current_entity = None
+        current_entity_id = None
+        entity_traits_list = None
+        entity_traits_list_count = None
+        trait_dict = None
+        
+        # declare variables - traits
+        trait_info_dict = None
+        trait_name = None
+        trait_slug = None
+        trait_entity_type_trait_id = None
+        trait_qs = None
+        trait_count = None
+        trait_instance = None
+        trait_value = None
+        trait_value_list = None
+        trait_value_list_count = None
+        current_trait = None
+        trait_dict_key = None
+        
+        # set the output dictionary
+        if ( dictionary_IN ):
+
+            # yes, store in output parameter
+            entity_dict_OUT = dictionary_IN
+
+        #-- END check to see if dictionary passed in --#
+
+        current_entity = entity_IN
+
+        # see if there is an entity
+        if ( current_entity is not None ):
+
+            # get Entity ID
+            current_entity_id = current_entity.id
+            trait_dict = None
+
+            # Does entity already have a traits/ids dictionary?
+            if ( current_entity_id in entity_dict_OUT ):
+            
+                # retrieve trait dict
+                trait_dict = entity_dict_OUT.get( current_entity_id, None )
+                
+            #-- END retrieve trait dict. --#
+            
+            # anything in trait dict?
+            if ( trait_dict is None ):
+            
+                # no trait dict - create and add one.
+                trait_dict = {}
+                entity_dict_OUT[ current_entity_id ] = trait_dict
+            
+            #-- END check to see if existing trait dictionary --#
+
+            # are there traits to collect?
+            entity_traits_list = self.get_output_entity_traits_list()
+            if ( entity_traits_list is None ):
+
+                # no list.  Make an empty one, so we can just always loop.
+                entity_traits_list = []
+                
+            #-- END check to see if traits list --#
+            
+            # loop over trait filters.
+            for trait_info_dict in entity_traits_list:
+            
+                # get values from the dict
+                trait_name = trait_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_NAME, None )
+                trait_slug = trait_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_SLUG, None )
+                trait_entity_type_trait_id = trait_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_ENTITY_TYPE_TRAIT_ID, None )
+                
+                # Must have at least a name
+                if ( ( trait_name is not None ) and ( trait_name != "" ) ):
+                
+                    # filter entity's trait QuerySet
+                    trait_qs = current_entity.entity_trait_set.all()
+                    
+                    # got a name?
+                    if ( ( trait_name is not None ) and ( trait_name != "" ) ):
+                    
+                        # yes. Filter.
+                        trait_qs = trait_qs.filter( name = trait_name )
+                        
+                    #-- END check to see if name. --#
+                    
+                    # got a slug?
+                    if ( ( trait_slug is not None ) and ( trait_slug != "" ) ):
+                    
+                        # yes. Filter.
+                        trait_qs = trait_qs.filter( slug = trait_slug )
+                        
+                    #-- END check to see if slug. --#                    
+                    
+                    # got a trait type id?
+                    if ( ( trait_entity_type_trait_id is not None ) and ( trait_entity_type_trait_id != "" ) ):
+                    
+                        # yes. Filter.
+                        trait_qs = trait_qs.filter( entity_type_trait_id = trait_entity_type_trait_id )
+                        
+                    #-- END check to see if trait_entity_type_trait_id. --#
+                    
+                    # got any matches?
+                    trait_count = trait_qs.count()
+                    if ( trait_count > 0 ):
+                    
+                        # yes.  Build value.
+                        trait_value_list = []
+                        for trait_instance in trait_qs:
+                            
+                            # retrieve value and add to list.
+                            trait_value = trait_instance.value
+                            trait_value_list.append( trait_value )
+                        
+                        #-- END loop over trait instances. --#
+                        
+                        # how many values?
+                        trait_value_list_count = len( trait_value_list )
+                        if ( trait_value_list_count > 1 ):
+                        
+                            # more than one.  Smoosh them together.
+                            trait_value = multi_value_separator_IN.join( trait_value_list )
+                            
+                        elif ( trait_value_list_count == 1 ):
+                        
+                            # just one.
+                            trait_value = trait_value_list[ 0 ]
+                            
+                        else:
+                        
+                            # neither one or > 1... 0, so set to None.
+                            trait_value = None
+                            
+                        #-- END check to see how many values. --#
+                        
+                    else:
+                    
+                        # no.  Set value to None.
+                        trait_value = None
+                        
+                    #-- END chec to see if traits for trait spec --#
+                    
+                    # get trait_dict_key
+                    trait_dict_key = self.create_entity_trait_header_label( trait_info_dict )
+                    
+                    # add value to map.
+                    trait_dict[ trait_dict_key ] = trait_value
+                    
+                #-- END check to see if enough info to filter. --#
+                
+            #-- END loop over traits we are to collect. --#
+        
+            # store the Entity in the output dict.
+            entity_dict_OUT[ current_entity_id ] = trait_dict
+
+        #-- END check to see if there is an entity --#
+
+        return entity_dict_OUT
+
+    #-- END function load_entity_traits() --#
 
 
     def load_network_data_request_json( self, json_IN ):
@@ -2663,6 +3899,145 @@ class NetworkDataRequest( ContextBase ):
     #-- END method load_network_data_request_json_string() --#
     
     
+    def process_entities( self, include_through_IN = False, load_instance_IN = False ):
+
+        """
+            Accepts flag that dictates whether we load the actual Entity
+                record or not.  Uses nested request to retrieve all matching
+                relations, then builds a dictionary of all the IDs of FROM and
+                TO Entities in those relations, mapped either to None or to
+                their Entity instance.
+
+            Preconditions: request must have contained required parameters, and
+                so contained at least a start and end date and a publication.
+                Should we have a flag that says to use the same criteria as the
+                selection criteria?
+
+            Postconditions: uses a lot of memory if you choose a large date
+                range.
+
+            Parameters:
+            - load_instance_IN - boolean, if False, doesn't load Entity model
+                instances while building the dictionary.  If True, loads Entity
+                models and stores them in the dictionary.
+            - include_through_IN - boolean, if False does not include Entities
+                referenced in relation_through, if True does include them.
+
+            Returns:
+            - Dictionary - dictionary that maps entity IDs to Entity model
+                instances for all TO and FROM entities associated with all
+                matching Entity_Relations.
+        """
+
+        # return reference
+        dict_OUT = None
+
+        # declare variables
+        me = "process_entities"
+        my_logger = None
+        relation_query_set = None
+        request_instance = None
+        entity_id_to_instance_map = None
+        do_gather_ids_and_traits = None
+        entity_id_to_traits_map = None
+        
+        # initialize
+        my_logger = self.get_logger()
+        entity_id_to_instance_map = {}
+        entity_id_to_traits_map = {}
+
+        # get query set to loop over Entity_Relations that match the filter
+        #     criteria in the request for selecting included Entities.  This
+        #     might or might not be the same as the QuerySet for included
+        #     Entity_Relations.
+        relation_query_set = self.filter_relation_query_set( use_entity_selection_IN = True )
+        
+        # store the QuerySet
+        self.set_relation_query_set( relation_query_set )
+        
+        my_logger.debug( "In {}(): relation_query_set.count() = {}".format( me, relation_query_set.count() ) )
+
+        # add entities from relation QuerySet to dict.
+        entity_id_to_instance_map = self.add_entities_to_dict( relation_query_set,
+                                                               entity_id_to_instance_map,
+                                                               include_through_IN = include_through_IN,
+                                                               store_entity_IN = load_instance_IN )
+                                              
+        # store dictionary internally
+        self.set_entity_id_to_instance_map( entity_id_to_instance_map )
+        
+        # also return it.
+        dict_OUT = entity_id_to_instance_map
+                                              
+        # do we need to also gather traits and/or identifiers?
+        do_gather_ids_and_traits = self.do_output_entity_ids_or_traits()
+        if ( do_gather_ids_and_traits == True ):
+        
+            # yes.  Call method.
+            entity_id_to_traits_map = self.load_entities_ids_and_traits( relation_query_set, entity_id_to_traits_map )
+            
+            # store dictionary internally
+            self.set_entity_id_to_traits_map( entity_id_to_traits_map )
+            
+        #-- END check to see if we gather traits and IDs. --#
+            
+        #-- END check to make sure we have a request --#
+        
+        my_logger.debug( "In {}(): len( dict_OUT ) = {}".format( me, len( dict_OUT ) ) )
+
+        return dict_OUT
+
+    #-- END function process_entities() --#
+
+
+    def set_entity_id_to_instance_map( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_entity_id_to_instance_map = value_IN
+        
+        # return it
+        value_OUT = self.get_entity_id_to_instance_map()
+        
+        return value_OUT
+    
+    #-- END method set_entity_id_to_instance_map() --#
+
+
+    def set_entity_id_to_traits_map( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_entity_id_to_traits_map = value_IN
+        
+        # return it
+        value_OUT = self.get_entity_id_to_traits_map()
+        
+        return value_OUT
+    
+    #-- END method set_entity_id_to_traits_map() --#
+
+
+    def set_entity_ids_and_traits_header_list( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_entity_ids_and_traits_header_list = value_IN
+        
+        # return it
+        value_OUT = self.get_entity_ids_and_traits_header_list()
+        
+        return value_OUT
+    
+    #-- END method set_entity_ids_and_traits_header_list() --#
+
+
     def set_entity_selection( self, value_IN ):
         
         # return reference
@@ -2858,6 +4233,22 @@ class NetworkDataRequest( ContextBase ):
         return value_OUT
     
     #-- END method set_relation_selection() --#
+
+
+    def set_relation_query_set( self, value_IN ):
+        
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_relation_query_set = value_IN
+        
+        # return it
+        value_OUT = self.get_relation_query_set()
+        
+        return value_OUT
+    
+    #-- END method set_relation_query_set() --#
 
 
 #-- END class NetworkDataRequest --#

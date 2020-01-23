@@ -134,6 +134,11 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         csv_writer = None
         do_output_attrs = False
         relation_type_role_counts_list = None
+        
+        # related attributes - ids and traits
+        request_instance = None
+        do_gather_ids_and_traits = None
+        ids_and_traits_value_list = None
 
         # get entity ID?
         if ( entity_id_IN ):
@@ -199,6 +204,24 @@ class NDO_CSVMatrix( NetworkDataOutput ):
                 # extend the row's column_value_list with these new values.
                 column_value_list.extend( relation_type_role_counts_list )
                             
+                # do we have any additional traits or IDs to add?
+                request_instance = self.get_network_data_request()
+                do_gather_ids_and_traits = self.do_output_entity_ids_or_traits()
+                if ( do_gather_ids_and_traits == True ):
+                
+                    # we do.  Retrieve values.
+                    ids_and_traits_value_list = request_instance.create_ids_and_traits_values_for_entity( entity_id_IN )
+                
+                    # got anything?
+                    if ( ( ids_and_traits_value_list is not None ) and ( len( ids_and_traits_value_list ) > 0 ) ):
+                    
+                        # yes.  Append items to end of list.
+                        column_value_list.extend( ids_and_traits_value_list )
+                        
+                    #-- END check to see if any traits and ids returned --#
+                    
+                #-- END check to see if we have traits or ids --#
+            
             #-- END check to see if we append attributes to the end of rows. --#
             
             # append row to CSV
@@ -249,6 +272,87 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         #-- END check to make sure we have list.
 
     #-- END method append_entity_id_row --#
+
+
+    def append_entity_ids_and_traits_rows( self ):
+
+        '''
+            Method: append_entity_relation_type_rows()
+
+            Purpose: Pull in all relation types, then for each
+                entity-->type-->role, walk all entities and output their value
+                for that relation type in the row.  So, will result in many rows
+                of attribute values.
+
+            Preconditions: Master entity list must be present.  Note: if the
+                network is large, might take a lot of memory...
+
+            Params: none
+            
+            Postconditions: Rows are appended to the end of the nested CSV document, but nothing is returned.
+        '''
+
+        # declare variables
+        me = "append_entity_ids_and_traits_rows"
+        debug_flag = None
+        status_message = None
+        request_instance = None
+        label_to_value_list_map = None
+        sorted_label_list = None
+        current_label = None
+        label_value_list = None
+        row_label = None
+        
+        # initialize
+        debug_flag = self.DEBUG_FLAG
+
+        # first, retrieve the values.
+        request_instance = self.get_network_data_request()
+        label_to_value_list_map = request_instance.create_entity_ids_and_traits_value_dict()
+        
+        # got anything?
+        if ( label_to_value_list_map is not None ):
+        
+            # get list of labels, sorted appropriately
+            sorted_label_list = request_instance.create_entity_ids_and_traits_header_list()
+            
+            # loop over labels
+            for current_label in sorted_label_list:
+            
+                # retrieve value list for this label
+                label_value_list = label_to_value_list_map.get( current_label, None )
+                
+                # got anything?
+                if ( label_value_list is not None ):
+                
+                    # build row label
+                    row_label = current_label
+                    
+                    # prepend row label
+                    label_value_list.insert( 0, row_label )
+
+                    # write the row
+                    self.append_row_to_csv( label_value_list )
+                    
+                else:
+                
+                    # No value list for relation type slug+role
+                    status_message = "In {}(): WARNING - No value list for label: {}.  No row added for this type and role.".format( me, current_label )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                    
+                #-- END check to see if list for label --#
+                
+            #-- END loop over ids and traits labels --#
+            
+        else:
+        
+            # no slug passed in, can't do anything.
+            status_message = "In {}(): ERROR - Call to self.create_all_relation_type_values_lists() returned None.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if create list method returned anything --#
+
+    #-- END method append_entity_ids_and_traits_rows --#
 
 
     def append_entity_relation_type_rows( self ):
@@ -464,6 +568,16 @@ class NDO_CSVMatrix( NetworkDataOutput ):
             # ...and append the "entity_type" attribute string.
             self.append_entity_relation_type_rows()
             
+            # do we have any additional traits or IDs to add?
+            request_instance = self.get_network_data_request()
+            do_gather_ids_and_traits = self.do_output_entity_ids_or_traits()
+            if ( do_gather_ids_and_traits == True ):
+            
+                # we do.  append ids and traits rows.
+                self.append_entity_ids_and_traits_rows()
+                
+            #-- END check to see if we have traits or ids --#
+
         #-- END check to see if include attributes. --#
 
     #-- END method create_csv_document --#

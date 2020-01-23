@@ -514,6 +514,9 @@ class NetworkDataOutput( ContextBase ):
         node_attribute_list = []
         current_attr_name = ""
         relation_type_roles_header_list = None
+        request_instance = None
+        do_gather_ids_and_traits = None
+        ids_and_traits_header_list = None
 
         # get the data output type.
         data_output_structure = self.get_output_structure()
@@ -525,8 +528,8 @@ class NetworkDataOutput( ContextBase ):
             or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
             or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
-            # yes.  Start with list of labels.
-            header_list_OUT = self.create_label_list()
+            # yes.  Start with list of entity labels.
+            header_list_OUT = self.create_entity_label_list()
             
         else:
         
@@ -557,6 +560,24 @@ class NetworkDataOutput( ContextBase ):
                 
             #-- END check to see if any relation type roles headers returned --#
             
+            # do we have any additional traits or IDs to add?
+            request_instance = self.get_network_data_request()
+            do_gather_ids_and_traits = self.do_output_entity_ids_or_traits()
+            if ( do_gather_ids_and_traits == True ):
+            
+                # we do.  Build list of labels.
+                ids_and_traits_header_list = request_instance.create_entity_ids_and_traits_header_list()
+            
+                # got anything?
+                if ( ( ids_and_traits_header_list is not None ) and ( len( ids_and_traits_header_list ) > 0 ) ):
+                
+                    # yes.  Append items to end of list.
+                    header_list_OUT.extend( ids_and_traits_header_list )
+                    
+                #-- END check to see if any traits and ids headers returned --#
+                
+            #-- END check to see if we have traits or ids --#
+            
         #-- END check to see if output attributes as columns --#
 
         return header_list_OUT
@@ -564,10 +585,10 @@ class NetworkDataOutput( ContextBase ):
     #-- END method create_header_list --#
 
 
-    def create_label_list( self, quote_character_IN = '' ):
+    def create_entity_label_list( self, quote_character_IN = '' ):
 
         """
-            Method: create_label_list()
+            Method: create_entity_label_list()
 
             Purpose: retrieves the master Entity list from the instance, uses it
                to output a list of Entity labels.  Each Entity's label consists
@@ -584,6 +605,7 @@ class NetworkDataOutput( ContextBase ):
         list_OUT = []
 
         # declare variables
+        me = "create_entity_label_list"
         master_list = None
         my_label = ''
         current_entity_id = -1
@@ -626,7 +648,7 @@ class NetworkDataOutput( ContextBase ):
 
         return list_OUT
 
-    #-- END method create_label_list --#
+    #-- END method create_entity_label_list --#
 
 
     def create_relation_type_roles_for_entity( self, entity_id_IN ):

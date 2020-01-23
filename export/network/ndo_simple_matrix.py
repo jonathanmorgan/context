@@ -387,6 +387,95 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
     #-- END method create_entity_relation_types_attribute_string --#
 
 
+    def create_entity_ids_and_traits_attribute_string( self ):
+
+        '''
+            Method: create_entity_ids_and_traits_attribute_string()
+
+            Purpose: retrieves Entity ids and traits header list.  For each
+                header value, loops over entities, uses traits stored in request
+                to create a list of values for each.
+
+            Preconditions: Master entity list must be present, and in request,
+                process_entities() must have been called.
+
+            Params: none
+
+            Returns:
+            - string_OUT - lists of roles for each relation type, with a count of number of times each entity was in that role for that relation type, in sorted master entity list order.
+        '''
+
+        # return reference
+        string_OUT = ""
+
+        # declare variables
+        me = "create_entity_ids_and_traits_attribute_string"
+        debug_flag = None
+        status_message = None
+        request_instance = None
+        entity_ids_and_traits_header_list = None
+        ids_and_types_labels_to_values_map = None
+        current_header_label = None
+        value_list = None
+        string_value_list = None
+        attribute_label = None
+        
+        # initialize
+        debug_flag = self.DEBUG_FLAG
+        request_instance = self.get_network_data_request()
+        entity_ids_and_traits_header_list = request_instance.create_entity_ids_and_traits_header_list()
+
+        # first, retrieve the values.
+        ids_and_types_labels_to_values_map = request_instance.create_entity_ids_and_traits_value_dict()
+        
+        # got anything?
+        if ( ids_and_types_labels_to_values_map is not None ):
+        
+            # loop over header_labels
+            for current_header_label in entity_ids_and_traits_header_list:
+            
+                # retrieve value list for this header label
+                value_list = ids_and_types_labels_to_values_map.get( current_header_label, None )
+                
+                # got anything?
+                if ( value_list is not None ):
+                
+                    # build row label
+                    attribute_label = current_header_label
+                    
+                    # output the name of this attribute
+                    string_OUT += "{}\n".format( attribute_label )
+
+                    # join the list into a string, separated by newlines.
+                    string_value_list = [ str( i ) for i in value_list ]
+                    string_OUT += "\n".join( string_value_list )
+    
+                    # add two newlines to the end.
+                    string_OUT += "\n\n"
+
+                else:
+                
+                    # No value list for relation type slug+role
+                    status_message = "In {}(): WARNING - No value list for relation type slug: {}; role: {}.  No attribute added for this type and role.".format( me, current_slug, current_role )
+                    self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.WARNING )
+                    
+                #-- END check to see if list for role --#
+                                    
+            #-- END loop over relation type slugs --#
+            
+        else:
+        
+            # no slug passed in, can't do anything.
+            status_message = "In {}(): ERROR - Call to self.create_all_relation_type_values_lists() returned None.  Doing nothing.".format( me )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
+        
+        #-- END check to see if create list method returned anything --#
+
+        return string_OUT
+
+    #-- END method create_entity_ids_and_traits_attribute_string --#
+
+
     def render_network_data( self ):
 
         """
@@ -408,6 +497,8 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         # declare variables
         data_output_structure = ""
         master_entity_list = None
+        request_instance = None
+        do_gather_ids_and_traits = None
 
         #--------------------------------------------------------------------
         # render network data.
@@ -438,13 +529,23 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
     
         #-- END check to see if include network matrix --#
 
-        # include entity relation type attributes?
+        # include attributes?
         if ( ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_ATTRIBUTES )
             or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_COLS )
             or ( data_output_structure == NetworkDataOutput.NETWORK_DATA_OUTPUT_STRUCTURE_NET_AND_ATTR_ROWS ) ):
 
-            # yes - append the attribute string.
+            # yes - append the Entity_Relation types attribute string.
             network_data_OUT += self.create_entity_relation_types_attribute_string()
+            
+            # Do we have entity-specific IDs or traits?
+            request_instance = self.get_network_data_request()
+            do_gather_ids_and_traits = request_instance.do_output_entity_ids_or_traits()
+            if ( do_gather_ids_and_traits == True ):
+            
+                # we do - build and add the lists of values.
+                network_data_OUT += self.create_entity_ids_and_traits_attribute_string()
+            
+            #-- eND chcek to see if we have ids and traits --#
             
         #-- END check to see if include attributes. --#
 
