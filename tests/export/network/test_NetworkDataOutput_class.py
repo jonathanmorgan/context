@@ -652,7 +652,7 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
         network_output.set_network_data_request( test_request )
         
         # create entity dict
-        entity_dict = network_output.process_entities()
+        entity_dict = test_request.process_entities()
         entity_dict_count = len( entity_dict )
         
         # and create relation QuerySet

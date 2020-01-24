@@ -562,7 +562,7 @@ class NetworkDataOutput( ContextBase ):
             
             # do we have any additional traits or IDs to add?
             request_instance = self.get_network_data_request()
-            do_gather_ids_and_traits = self.do_output_entity_ids_or_traits()
+            do_gather_ids_and_traits = request_instance.do_output_entity_ids_or_traits()
             if ( do_gather_ids_and_traits == True ):
             
                 # we do.  Build list of labels.

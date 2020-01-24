@@ -1920,13 +1920,13 @@ class NetworkDataRequest( ContextBase ):
         entity_trait_dict = None
         header_label = None
         
-        # init
-        list_OUT = []
-        
         # check to see if already rendered
         list_OUT = self.get_entity_ids_and_traits_header_list()
         if ( list_OUT is None ):
         
+            # init
+            list_OUT = []
+            
             # retrieve lists
             entity_ids_list = self.get_output_entity_identifiers_list()
             entity_traits_list = self.get_output_entity_traits_list()
@@ -2170,7 +2170,7 @@ class NetworkDataRequest( ContextBase ):
             for header_label in ids_and_traits_header_labels_list:
             
                 # retrieve value from entity_ids_and_traits
-                current_value = entity_ids_and_traits.get( header_label_IN, None )
+                current_value = entity_ids_and_traits.get( header_label, None )
                 
                 # append to the list.
                 value_list.append( current_value )

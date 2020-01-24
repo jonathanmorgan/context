@@ -25,7 +25,6 @@
             },
             {
                 "name": "person_open_calais_uuid",
-                "source": "Open Calais v.2",
                 "identifier_type_id": 2,
                 "output_header" : "person_open_calais_uuid"
             }
