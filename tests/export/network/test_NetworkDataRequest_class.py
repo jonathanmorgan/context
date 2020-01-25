@@ -60,6 +60,8 @@ class NetworkDataRequestTest( django.test.TestCase ):
     JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ TestHelper.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION ] = "validate_instance_entity_selection"
     
     # test - get()/set()
+    TEST_SET_ENTITY_ID_TO_INSTANCE_MAP = { 1 : None, 2 : None, 3 : None }
+    TEST_SET_ENTITY_ID_TO_TRAITS_MAP = { 1 : {}, 2 : {}, 3 : {} }
     TEST_SET_ENTITY_SELECTION = "test_set_entity_selection"
     TEST_SET_IS_REQUEST_OK = "false"
     TEST_SET_OUTPUT_ENTITY_IDENTIFIERS_LIST = [ { "name" : "identifier_name_1", "source" : "source_1" }, { "name" : "identifier_name_2", "source" : "source_2" } ]
@@ -3426,6 +3428,95 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #-- END test method test_build_filter_spec_relation_type_slug_q() --#
 
 
+    def test_do_output_entity_traits_or_ids( self ):
+
+        # declare variables
+        me = "test_do_output_entity_traits_or_ids"
+        debug_flag = None
+        test_instance = None
+        test_value = None
+        should_be = None
+        error_string = None
+        original_ids_list = None
+        original_traits_list = None
+
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test basic instance.
+        test_instance = TestHelper.load_basic()
+        
+        # store off the original lists.
+        original_ids_list = test_instance.get_output_entity_identifiers_list()
+        original_traits_list = test_instance.get_output_entity_traits_list()
+                
+        # call the method
+        test_value = test_instance.do_output_entity_ids_or_traits()
+        
+        # should be True...
+        should_be = True
+        error_string = "BASIC - output ids and traits?  got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> set both to None.
+        test_instance.set_output_entity_identifiers_list( None )
+        test_instance.set_output_entity_traits_list( None )
+                
+        # call the method
+        test_value = test_instance.do_output_entity_ids_or_traits()
+        
+        # should be False...
+        should_be = False
+        error_string = "BASIC - output ids and traits?  got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> set both to empty lists.
+        test_instance.set_output_entity_identifiers_list( [] )
+        test_instance.set_output_entity_traits_list( [] )
+                
+        # call the method
+        test_value = test_instance.do_output_entity_ids_or_traits()
+        
+        # should be False...
+        should_be = False
+        error_string = "BASIC - output ids and traits?  got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> just identifiers.
+        test_instance.set_output_entity_identifiers_list( original_ids_list )
+        test_instance.set_output_entity_traits_list( [] )
+                
+        # call the method
+        test_value = test_instance.do_output_entity_ids_or_traits()
+        
+        # should be True...
+        should_be = True
+        error_string = "BASIC - output ids and traits?  got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> just traits.
+        test_instance.set_output_entity_identifiers_list( [] )
+        test_instance.set_output_entity_traits_list( original_traits_list )
+                
+        # call the method
+        test_value = test_instance.do_output_entity_ids_or_traits()
+        
+        # should be True...
+        should_be = True
+        error_string = "BASIC - output ids and traits?  got {}, should = {}.".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+    #-- END test method test_do_output_entity_traits_or_ids --#
+
+
     def test_filter_relation_query_set( self ):
 
         # declare variables
@@ -3834,6 +3925,40 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # - assertEquals( get value, new value )
         # - assertNotEqual( get value, original value )
         
+        # ! --------> get/set_entity_id_to_instance_map()
+        test_method = "set_entity_id_to_instance_map"
+        original_value = test_instance.get_entity_id_to_instance_map()
+        new_value = self.TEST_SET_ENTITY_ID_TO_INSTANCE_MAP
+        test_instance.set_entity_id_to_instance_map( new_value )
+        test_value = test_instance.get_entity_id_to_instance_map()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+        # ! --------> get/set_entity_id_to_traits_map()
+        test_method = "set_entity_id_to_traits_map"
+        original_value = test_instance.get_entity_id_to_traits_map()
+        new_value = self.TEST_SET_ENTITY_ID_TO_TRAITS_MAP
+        test_instance.set_entity_id_to_traits_map( new_value )
+        test_value = test_instance.get_entity_id_to_traits_map()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
         # ! --------> set_entity_selection()
         test_method = "set_entity_selection"
         original_value = test_instance.get_entity_selection()

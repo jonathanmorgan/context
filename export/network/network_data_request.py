@@ -104,6 +104,7 @@ class NetworkDataRequest( ContextBase ):
     PROP_NAME_ENTITY_IDENTIFIERS_NAME = "name"
     PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE = "id_type"
     PROP_NAME_ENTITY_IDENTIFIERS_SOURCE = "source"
+    PROP_NAME_ENTITY_IDENTIFIERS_SOURCE_IN_LIST = "source_in_list"
     PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID = "identifier_type_id"
     PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER = "output_header"
     
@@ -2203,6 +2204,7 @@ class NetworkDataRequest( ContextBase ):
         entity_ids_list_count = None
         entity_traits_list = None
         entity_traits_list_count = None
+        is_list = None
         
         # retrieve lists
         entity_ids_list = self.get_output_entity_identifiers_list()
@@ -2211,9 +2213,22 @@ class NetworkDataRequest( ContextBase ):
         # got ids list?
         if ( entity_ids_list is not None ):
         
-            # yes - get count
-            entity_ids_list_count = len( entity_ids_list )
-            boolean_OUT = True
+            # is it a list?
+            is_list = isinstance( entity_ids_list, list )
+            if ( is_list == True ):
+        
+                # yes - get count
+                entity_ids_list_count = len( entity_ids_list )
+                
+                # greater than 0?
+                if ( entity_ids_list_count > 0 ):
+                    
+                    # at least one thing in identifiers list, so True!
+                    boolean_OUT = True
+                    
+                #-- END check to make sure the list has something in it. --#
+                
+            #-- END check to see if it is actually a list. --#
             
         else:
         
@@ -2225,10 +2240,23 @@ class NetworkDataRequest( ContextBase ):
         # got traits list?
         if ( entity_traits_list is not None ):
         
-            # yes - get count
-            entity_traits_list_count = len( entity_traits_list )
-            boolean_OUT = True
-            
+            # is it a list?
+            is_list = isinstance( entity_traits_list, list )
+            if ( is_list == True ):
+        
+                # yes - get count
+                entity_traits_list_count = len( entity_traits_list )
+                
+                # greater than 0?
+                if ( entity_traits_list_count > 0 ):
+                    
+                    # at least one thing in identifiers list, so True!
+                    boolean_OUT = True
+                    
+                #-- END check to make sure the list has something in it. --#
+                
+            #-- END check to see if it is actually a list. --#
+
         else:
         
             # no - count = 0
@@ -3284,6 +3312,7 @@ class NetworkDataRequest( ContextBase ):
         id_name = None
         id_id_type = None
         id_source = None
+        id_source_in_list = None
         id_identifier_type_id = None
         id_qs = None
         id_count = None
@@ -3344,6 +3373,7 @@ class NetworkDataRequest( ContextBase ):
                 id_name = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_NAME, None )
                 id_id_type = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE, None )
                 id_source = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_SOURCE, None )
+                id_source_in_list = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_SOURCE_IN_LIST, None )
                 id_identifier_type_id = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID, None )
                 id_header = id_info_dict.get( NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER, None )
                 
@@ -3374,6 +3404,14 @@ class NetworkDataRequest( ContextBase ):
                     
                         # yes. Filter.
                         id_qs = id_qs.filter( source = id_source )
+                        
+                    #-- END check to see if id_source. --#                    
+                    
+                    # got a id_source IN list?
+                    if ( ( id_source_in_list is not None ) and ( len( id_source_in_list ) > 0 ) ):
+                    
+                        # yes. Filter.
+                        id_qs = id_qs.filter( source__in = id_source_in_list )
                         
                     #-- END check to see if id_source. --#                    
                     
