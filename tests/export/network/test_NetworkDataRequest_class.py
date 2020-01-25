@@ -77,6 +77,22 @@ class NetworkDataRequestTest( django.test.TestCase ):
     TEST_SET_OUTPUT_TYPE = "test_set_output_type"
     TEST_SET_RELATION_QUERY_SET = "test_set_relation_query_set"
     TEST_SET_RELATION_SELECTION = "test_set_relation_selection"
+    
+    # ! ----> test values for identifier labels
+    
+    # identifiers
+    TEST_ID_NAME = "test_id_name"
+    TEST_ID_ID_TYPE = "test_id_type"
+    TEST_ID_SOURCE = "test_source"
+    TEST_ID_IDENTIFIER_TYPE_ID = "test_identifier_type_id"
+    TEST_ID_HEADER = "test_header"
+    
+    # traits
+    TEST_TRAIT_NAME = "test_trait_name"
+    TEST_TRAIT_SLUG = "test_trait_slug"
+    TEST_TRAIT_ENTITY_TYPE_TRAIT_ID = "test_entity_trait_type_id"
+    TEST_TRAIT_HEADER = "test_header"
+
 
     #----------------------------------------------------------------------
     # ! ==> class methods
@@ -3426,6 +3442,279 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.validate_filter_spec( test_instance, test_filter_spec, should_be )
 
     #-- END test method test_build_filter_spec_relation_type_slug_q() --#
+
+
+    def test_create_entity_id_header_label( self ):
+
+        # declare variables
+        me = "test_create_entity_id_header_label"
+        debug_flag = None
+        test_instance = None
+        id_dict = None
+        test_value = None
+        should_be = None
+        error_string = None
+        original_ids_list = None
+
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test basic instance.
+        test_instance = TestHelper.load_basic()
+        
+        # get identifier list
+        original_ids_list = test_instance.get_output_entity_identifiers_list()
+                
+        # ! --------> #1 original_ids_list[ 0 ]
+        id_dict = original_ids_list[ 0 ]
+        
+        # call the method
+        test_value = NetworkDataRequest.create_entity_id_header_label( id_dict )
+        
+        # should be "id_person_sourcenet_id"
+        should_be = "id_person_sourcenet_id"
+        error_string = "BASIC - got {} as label for id 1 ( original_ids_list[ 0 ] ), should = {}.  Dict: {}".format( test_value, should_be, id_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> #2 original_ids_list[ 1 ]
+        id_dict = original_ids_list[ 1 ]
+        
+        # call the method
+        test_value = NetworkDataRequest.create_entity_id_header_label( id_dict )
+        
+        # should be "id_person_open_calais_uuid"
+        should_be = "id_person_open_calais_uuid"
+        error_string = "BASIC - got {} as label for id 2 ( original_ids_list[ 1 ] ), should = {}.  Dict: {}".format( test_value, should_be, id_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> more tests
+
+        # ! --------> no name, no type, no source
+        id_dict = {}
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_NAME ] = None  # self.TEST_ID_NAME
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE ] = None  # self.TEST_ID_ID_TYPE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_SOURCE ] = None  # self.TEST_ID_SOURCE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID ] = self.TEST_ID_IDENTIFIER_TYPE_ID
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER ] = None  # self.TEST_ID_HEADER
+
+        # call the method
+        test_value = NetworkDataRequest.create_entity_id_header_label( id_dict )
+        
+        # should be None - name is required.
+        should_be = None
+        error_string = "BASIC - got {} as label, should = {}.  Dict: {}".format( test_value, should_be, id_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> name, no type, no source
+        id_dict = {}
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_NAME ] = self.TEST_ID_NAME
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE ] = None  # self.TEST_ID_ID_TYPE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_SOURCE ] = None  # self.TEST_ID_SOURCE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID ] = self.TEST_ID_IDENTIFIER_TYPE_ID
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER ] = None  # self.TEST_ID_HEADER
+
+        # call the method
+        test_value = NetworkDataRequest.create_entity_id_header_label( id_dict )
+        
+        # should be "id_person_open_calais_uuid"
+        should_be = "{}{}".format( NetworkDataRequest.OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX, self.TEST_ID_NAME )
+        error_string = "BASIC - got {} as label, should = {}.  Dict: {}".format( test_value, should_be, id_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> name, type, no source
+        id_dict = {}
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_NAME ] = self.TEST_ID_NAME
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE ] = self.TEST_ID_ID_TYPE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_SOURCE ] = None  # self.TEST_ID_SOURCE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID ] = self.TEST_ID_IDENTIFIER_TYPE_ID
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER ] = None  # self.TEST_ID_HEADER
+
+        # call the method
+        test_value = NetworkDataRequest.create_entity_id_header_label( id_dict )
+        
+        # should be "id_person_open_calais_uuid"
+        should_be = "{}{}{}{}".format( NetworkDataRequest.OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX,
+                                       self.TEST_ID_NAME,
+                                       NetworkDataRequest.OUTPUT_ENTITY_LABEL_SEPARATOR,
+                                       self.TEST_ID_ID_TYPE )
+        error_string = "BASIC - got {} as label, should = {}.  Dict: {}".format( test_value, should_be, id_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> name, no type, source
+        id_dict = {}
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_NAME ] = self.TEST_ID_NAME
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE ] = None  # self.TEST_ID_ID_TYPE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_SOURCE ] = self.TEST_ID_SOURCE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID ] = self.TEST_ID_IDENTIFIER_TYPE_ID
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER ] = None  # self.TEST_ID_HEADER
+
+        # call the method
+        test_value = NetworkDataRequest.create_entity_id_header_label( id_dict )
+        
+        # should be "id_person_open_calais_uuid"
+        should_be = "{}{}{}{}".format( NetworkDataRequest.OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX,
+                                       self.TEST_ID_NAME,
+                                       NetworkDataRequest.OUTPUT_ENTITY_LABEL_SEPARATOR,
+                                       self.TEST_ID_SOURCE )
+        error_string = "BASIC - got {} as label, should = {}.  Dict: {}".format( test_value, should_be, id_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> name, type, source
+        id_dict = {}
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_NAME ] = self.TEST_ID_NAME
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_ID_TYPE ] = self.TEST_ID_ID_TYPE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_SOURCE ] = self.TEST_ID_SOURCE
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_IDENTIFIER_TYPE_ID ] = self.TEST_ID_IDENTIFIER_TYPE_ID
+        id_dict[ NetworkDataRequest.PROP_NAME_ENTITY_IDENTIFIERS_OUTPUT_HEADER ] = None  # self.TEST_ID_HEADER
+
+        # call the method
+        test_value = NetworkDataRequest.create_entity_id_header_label( id_dict )
+        
+        # should be "id_person_open_calais_uuid"
+        should_be = "{}{}{}{}{}{}".format( NetworkDataRequest.OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX,
+                                           self.TEST_ID_NAME,
+                                           NetworkDataRequest.OUTPUT_ENTITY_LABEL_SEPARATOR,
+                                           self.TEST_ID_ID_TYPE,
+                                           NetworkDataRequest.OUTPUT_ENTITY_LABEL_SEPARATOR,
+                                           self.TEST_ID_SOURCE )
+        error_string = "BASIC - got {} as label, should = {}.  Dict: {}".format( test_value, should_be, id_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+    #-- END test method test_create_entity_id_header_label --#
+
+
+    def test_create_entity_trait_header_label( self ):
+
+        # declare variables
+        me = "test_create_entity_trait_header_label"
+        debug_flag = None
+        test_instance = None
+        trait_dict = None
+        test_value = None
+        should_be = None
+        error_string = None
+        original_traits_list = None
+
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test basic instance.
+        test_instance = TestHelper.load_basic()
+        
+        # get traits list
+        original_traits_list = test_instance.get_output_entity_traits_list()
+                
+        # ! --------> #1 original_traits_list[ 0 ]
+        trait_dict = original_traits_list[ 0 ]
+        
+        # call the method
+        test_value = NetworkDataRequest.create_entity_trait_header_label( trait_dict )
+        
+        # should be "trait_first_name"
+        should_be = "trait_first_name"
+        error_string = "BASIC - got {} as label for trait 1 ( original_traits_list[ 0 ] ), should = {}.  Dict: {}".format( test_value, should_be, trait_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> #2 original_traits_list[ 1 ]
+        trait_dict = original_traits_list[ 1 ]
+        
+        # call the method
+        test_value = NetworkDataRequest.create_entity_trait_header_label( trait_dict )
+        
+        # should be "trait_middle_name"
+        should_be = "trait_middle_name"
+        error_string = "BASIC - got {} as label for trait 2 ( original_traits_list[ 1 ] ), should = {}.  Dict: {}".format( test_value, should_be, trait_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> #3 original_traits_list[ 2 ]
+        trait_dict = original_traits_list[ 2 ]
+        
+        # call the method
+        test_value = NetworkDataRequest.create_entity_trait_header_label( trait_dict )
+        
+        # should be "trait_last_name"
+        should_be = "trait_last_name"
+        error_string = "BASIC - got {} as label for trait 1 ( original_traits_list[ 0 ] ), should = {}.  Dict: {}".format( test_value, should_be, trait_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        #----------------------------------------------------------------------#
+        # ! ----> more tests
+
+        # ! --------> no name, no slug
+        trait_dict = {}
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_NAME ] = None  # self.TEST_TRAIT_NAME
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_SLUG ] = None  # self.TEST_TRAIT_SLUG
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_ENTITY_TYPE_TRAIT_ID ] = self.TEST_TRAIT_ENTITY_TYPE_TRAIT_ID
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_OUTPUT_HEADER ] = None  # self.TEST_TRAIT_HEADER
+
+        # call the method
+        test_value = NetworkDataRequest.create_entity_trait_header_label( trait_dict )
+        
+        # should be None - name is required.
+        should_be = None
+        error_string = "BASIC - got {} as label, should = {}.  Dict: {}".format( test_value, should_be, trait_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> name, no slug
+        trait_dict = {}
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_NAME ] = self.TEST_TRAIT_NAME
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_SLUG ] = None  # self.TEST_TRAIT_SLUG
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_ENTITY_TYPE_TRAIT_ID ] = self.TEST_TRAIT_ENTITY_TYPE_TRAIT_ID
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_OUTPUT_HEADER ] = None  # self.TEST_TRAIT_HEADER
+
+        # call the method
+        test_value = NetworkDataRequest.create_entity_trait_header_label( trait_dict )
+        
+        # should be "id_person_open_calais_uuid"
+        should_be = "{}{}".format( NetworkDataRequest.OUTPUT_ENTITY_TRAITS_LABEL_PREFIX,
+                                   self.TEST_TRAIT_NAME )
+        error_string = "BASIC - got {} as label, should = {}.  Dict: {}".format( test_value, should_be, trait_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> name, slug
+        trait_dict = {}
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_NAME ] = self.TEST_TRAIT_NAME
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_SLUG ] = self.TEST_TRAIT_SLUG
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_ENTITY_TYPE_TRAIT_ID ] = self.TEST_TRAIT_ENTITY_TYPE_TRAIT_ID
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_OUTPUT_HEADER ] = None  # self.TEST_TRAIT_HEADER
+
+        # call the method
+        test_value = NetworkDataRequest.create_entity_trait_header_label( trait_dict )
+        
+        # should be prefix, then name, then slug
+        should_be = "{}{}{}{}".format( NetworkDataRequest.OUTPUT_ENTITY_TRAITS_LABEL_PREFIX,
+                                       self.TEST_TRAIT_NAME,
+                                       NetworkDataRequest.OUTPUT_ENTITY_LABEL_SEPARATOR,
+                                       self.TEST_TRAIT_SLUG )
+        error_string = "BASIC - got {} as label, should = {}.  Dict: {}".format( test_value, should_be, trait_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # ! --------> name, slug, header
+        trait_dict = {}
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_NAME ] = self.TEST_TRAIT_NAME
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_SLUG ] = self.TEST_TRAIT_SLUG
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_ENTITY_TYPE_TRAIT_ID ] = self.TEST_TRAIT_ENTITY_TYPE_TRAIT_ID
+        trait_dict[ NetworkDataRequest.PROP_NAME_ENTITY_TRAITS_OUTPUT_HEADER ] = self.TEST_TRAIT_HEADER
+
+        # call the method
+        test_value = NetworkDataRequest.create_entity_trait_header_label( trait_dict )
+        
+        # should be just header
+        should_be = "{}{}".format( NetworkDataRequest.OUTPUT_ENTITY_TRAITS_LABEL_PREFIX,
+                                   self.TEST_TRAIT_HEADER )
+        error_string = "BASIC - got {} as label, should = {}.  Dict: {}".format( test_value, should_be, trait_dict )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+    #-- END test method test_create_entity_trait_header_label --#
 
 
     def test_do_output_entity_traits_or_ids( self ):

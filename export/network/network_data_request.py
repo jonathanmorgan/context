@@ -147,8 +147,9 @@ class NetworkDataRequest( ContextBase ):
     OUTPUT_STRUCTURE_VALUES.append( PROP_VALUE_OUTPUT_STRUCTURE_BOTH_TRAIT_ROWS )
     
     # configuration for Trait and Identifier output.
-    OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX = "id_"
-    OUTPUT_ENTITY_TRAITS_LABEL_PREFIX = "trait_"
+    OUTPUT_ENTITY_LABEL_SEPARATOR = "_"
+    OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX = "id{}".format( OUTPUT_ENTITY_LABEL_SEPARATOR )
+    OUTPUT_ENTITY_TRAITS_LABEL_PREFIX = "trait{}".format( OUTPUT_ENTITY_LABEL_SEPARATOR )
     
     #--------------------------------------------------------------------------#
     # ! ----> filter types - name prefixes/types and variable name suffixes.
@@ -271,7 +272,10 @@ class NetworkDataRequest( ContextBase ):
 
         
     @classmethod
-    def create_entity_id_header_label( cls, id_info_dict_IN, prefix_IN = OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX ):
+    def create_entity_id_header_label( cls,
+                                       id_info_dict_IN,
+                                       prefix_IN = OUTPUT_ENTITY_IDENTIFIERS_LABEL_PREFIX,
+                                       separator_IN = OUTPUT_ENTITY_LABEL_SEPARATOR ):
 
         '''
         Assumes there is an output format property specified in the request
@@ -311,24 +315,33 @@ class NetworkDataRequest( ContextBase ):
                 
             else:
             
-                # start with mandatory name.
-                value_OUT = id_name
+                if ( ( id_name is not None ) and ( id_name != "" ) ):
                 
-                # got an id type?
-                if ( ( id_id_type is not None ) and ( id_id_type != "" ) ):
+                    # start with mandatory name.
+                    value_OUT = id_name
                 
-                    # yes.  Append
-                    value_OUT = "{}_{}".format( value_OUT, id_id_type )
+                    # got an id type?
+                    if ( ( id_id_type is not None ) and ( id_id_type != "" ) ):
                     
-                #-- END check to see if id_type --#
+                        # yes.  Append
+                        value_OUT = "{}{}{}".format( value_OUT, separator_IN, id_id_type )
+                        
+                    #-- END check to see if id_type --#
+                        
+                    # got a source?
+                    if ( ( id_source is not None ) and ( id_source != "" ) ):
                     
-                # got a source?
-                if ( ( id_source is not None ) and ( id_source != "" ) ):
+                        # yes.  Append
+                        value_OUT = "{}{}{}".format( value_OUT, separator_IN, id_source )
+                        
+                    #-- END check to see if id_source --#
+                    
+                else:
                 
-                    # yes.  Append
-                    value_OUT = "{}_{}".format( value_OUT, id_source )
+                    # no name.
+                    value_OUT = None
                     
-                #-- END check to see if id_source --#
+                #-- END check to see if name. --#
                 
             #-- END check to see if pre-built header --#
                 
@@ -384,7 +397,7 @@ class NetworkDataRequest( ContextBase ):
 
             # get values from the dict
             trait_name = trait_info_dict.get( cls.PROP_NAME_ENTITY_TRAITS_NAME, None )
-            trait_sluf = trait_info_dict.get( cls.PROP_NAME_ENTITY_TRAITS_SLUG, None )
+            trait_slug = trait_info_dict.get( cls.PROP_NAME_ENTITY_TRAITS_SLUG, None )
             trait_entity_type_trait_id = trait_info_dict.get( cls.PROP_NAME_ENTITY_TRAITS_ENTITY_TYPE_TRAIT_ID, None )
             trait_header = trait_info_dict.get( cls.PROP_NAME_ENTITY_TRAITS_OUTPUT_HEADER, None )
             
@@ -396,17 +409,26 @@ class NetworkDataRequest( ContextBase ):
                 
             else:
             
-                # start with mandatory name.
-                value_OUT = trait_name
+                if ( ( trait_name is not None ) and ( trait_name != "" ) ):
                 
-                # got a slug?
-                if ( ( trait_slug is not None ) and ( trait_slug != "" ) ):
+                    # start with mandatory name.
+                    value_OUT = trait_name
+                    
+                    # got a slug?
+                    if ( ( trait_slug is not None ) and ( trait_slug != "" ) ):
+                    
+                        # yes.  Append
+                        value_OUT = "{}_{}".format( value_OUT, trait_slug )
+                        
+                    #-- END check to see if slug --#
+                    
+                else:
                 
-                    # yes.  Append
-                    value_OUT = "{}_{}".format( value_OUT, trait_slug )
+                    # no name.
+                    value_OUT = None
                     
-                #-- END check to see if slug --#
-                    
+                #-- END check to see if name. --#
+                
             #-- END check to see if pre-built header --#
                 
         else:
