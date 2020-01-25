@@ -62,6 +62,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
     # test - get()/set()
     TEST_SET_ENTITY_ID_TO_INSTANCE_MAP = { 1 : None, 2 : None, 3 : None }
     TEST_SET_ENTITY_ID_TO_TRAITS_MAP = { 1 : {}, 2 : {}, 3 : {} }
+    TEST_SET_ENTITY_IDS_AND_TRAITS_HEADER_LIST = [ "id_1", "id_2", "trait1", "trait_2", "trait_3" ]
     TEST_SET_ENTITY_SELECTION = "test_set_entity_selection"
     TEST_SET_IS_REQUEST_OK = "false"
     TEST_SET_OUTPUT_ENTITY_IDENTIFIERS_LIST = [ { "name" : "identifier_name_1", "source" : "source_1" }, { "name" : "identifier_name_2", "source" : "source_2" } ]
@@ -4213,6 +4214,23 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # - get value.
         # - assertEquals( get value, new value )
         # - assertNotEqual( get value, original value )
+
+        # ! --------> get/set_entity_ids_and_traits_header_list()
+        test_method = "set_entity_ids_and_traits_header_list"
+        original_value = test_instance.get_entity_ids_and_traits_header_list()
+        new_value = self.TEST_SET_ENTITY_IDS_AND_TRAITS_HEADER_LIST
+        test_instance.set_entity_ids_and_traits_header_list( new_value )
+        test_value = test_instance.get_entity_ids_and_traits_header_list()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
         
         # ! --------> get/set_entity_id_to_instance_map()
         test_method = "set_entity_id_to_instance_map"
