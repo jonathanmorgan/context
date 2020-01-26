@@ -2166,7 +2166,7 @@ class NetworkDataRequest( ContextBase ):
         value_list_OUT = None
 
         # declare variables
-        me = "create_entity_ids_and_traits_for_entity"
+        me = "create_ids_and_traits_values_for_entity"
         status_message = None
         debug_flag = None
         ids_and_traits_header_labels_list = None
