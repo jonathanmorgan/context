@@ -62,7 +62,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
     # test - get()/set()
     TEST_SET_ENTITY_ID_TO_INSTANCE_MAP = { 1 : None, 2 : None, 3 : None }
     TEST_SET_ENTITY_ID_TO_TRAITS_MAP = { 1 : {}, 2 : {}, 3 : {} }
-    TEST_SET_ENTITY_IDS_AND_TRAITS_HEADER_LIST = [ "id_1", "id_2", "trait1", "trait_2", "trait_3" ]
+    TEST_SET_ENTITY_IDS_AND_TRAITS_HEADER_LIST = [ "id_1", "id_2", "id_3", "trait1", "trait_2", "trait_3", "trait_4" ]
     TEST_SET_ENTITY_SELECTION = "test_set_entity_selection"
     TEST_SET_IS_REQUEST_OK = "false"
     TEST_SET_OUTPUT_ENTITY_IDENTIFIERS_LIST = [ { "name" : "identifier_name_1", "source" : "source_1" }, { "name" : "identifier_name_2", "source" : "source_2" } ]
@@ -78,6 +78,14 @@ class NetworkDataRequestTest( django.test.TestCase ):
     TEST_SET_OUTPUT_TYPE = "test_set_output_type"
     TEST_SET_RELATION_QUERY_SET = "test_set_relation_query_set"
     TEST_SET_RELATION_SELECTION = "test_set_relation_selection"
+    
+    # ! ----> goal values
+    GOAL_ENTITY_IDS_AND_TRAITS_HEADER_LIST = []
+    GOAL_ENTITY_IDS_AND_TRAITS_HEADER_LIST.append( "id_person_sourcenet_id" )
+    GOAL_ENTITY_IDS_AND_TRAITS_HEADER_LIST.append( "id_person_open_calais_uuid" )
+    GOAL_ENTITY_IDS_AND_TRAITS_HEADER_LIST.append( "trait_first_name" )
+    GOAL_ENTITY_IDS_AND_TRAITS_HEADER_LIST.append( "trait_middle_name" )
+    GOAL_ENTITY_IDS_AND_TRAITS_HEADER_LIST.append( "trait_last_name" )
     
     # ! ----> test values for identifier labels
     
@@ -3587,6 +3595,110 @@ class NetworkDataRequestTest( django.test.TestCase ):
         self.assertEqual( test_value, should_be, msg = error_string )
 
     #-- END test method test_create_entity_id_header_label --#
+
+
+    def test_create_entity_ids_and_traits_header_list( self ):
+        
+        # declare variables
+        me = "test_create_entity_ids_and_traits_header_list"
+        debug_flag = None
+        test_instance = None
+        header_list = None
+        header_list_count = None
+        goal_header_list = None
+        goal_header_list_count = None
+        goal_value = None
+        test_index = None
+        test_value = None
+        should_be = None
+        error_string = None
+        original_header_list = None
+        original_header_list_count = None
+        test_list = None
+        test_list_count = None
+        should_not_be = None
+
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        #----------------------------------------------------------------------#
+        # ! ----> test basic instance.
+        test_instance = TestHelper.load_basic()
+        
+        # call the method
+        header_list = test_instance.create_entity_ids_and_traits_header_list()
+        header_list_count = len( header_list )
+        
+        # initialize verification
+        goal_header_list = self.GOAL_ENTITY_IDS_AND_TRAITS_HEADER_LIST
+        goal_header_list_count = len( goal_header_list )
+        test_index = -1
+        
+        # should be same length
+        test_value = header_list_count
+        should_be = goal_header_list_count
+        error_string = "BASIC - header list count: {} - should be {} ( header_list = {}; goal_header_list: {} )".format( test_value, should_be, header_list, goal_header_list )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # loop - validate same values and position
+        for goal_value in goal_header_list:
+        
+            # increment index
+            test_index += 1
+            
+            # goal value should be in the list
+            test_value = goal_value in header_list
+            should_be = True
+            error_string = "BASIC - header \"{}\" in header_list? {} - should be {} ( header_list = {}; goal_header_list: {} )".format( goal_value, test_value, should_be, header_list, goal_header_list )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # item at index should be goal value
+            test_value = header_list[ test_index ]
+            should_be = goal_value
+            error_string = "BASIC - item at index {} = {}, should be {} ( header_list = {}; goal_header_list: {} )".format( test_index, test_value, should_be, header_list, goal_header_list )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+        #-- END loop over goal list --#
+        
+        # ! ----> save original, swap in a different list, then make sure the new list is returned.
+        original_header_list = test_instance.get_entity_ids_and_traits_header_list()
+        original_header_list_count = len( original_header_list )
+        test_list = self.TEST_SET_ENTITY_IDS_AND_TRAITS_HEADER_LIST
+        test_list_count = len( test_list )
+        test_instance.set_entity_ids_and_traits_header_list( test_list )
+        
+        # call the method
+        header_list = test_instance.create_entity_ids_and_traits_header_list()
+        header_list_count = len( header_list )
+        
+        # count should = test.
+        test_value = header_list_count
+        should_be = test_list_count
+        error_string = "BASIC - header list count: {} - should be {} ( header_list = {}; test_list: {} )".format( test_value, should_be, header_list, test_list )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # count should not = original.
+        test_value = header_list_count
+        should_not_be = original_header_list_count
+        error_string = "BASIC - header list count: {} - should not be {} ( header_list = {}; original_header_list: {} )".format( test_value, should_not_be, header_list, original_header_list )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+        
+        # retrieved list should equal test list.
+        test_value = header_list
+        should_be = test_list
+        error_string = "BASIC - header list: {} - should = {}".format( test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # retrieved list should not equal original list.
+        test_value = header_list
+        should_not_be = original_header_list
+        error_string = "BASIC - header list: {} - should not = {}".format( test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+
+    #-- END test method test_create_entity_ids_and_traits_header_list --#    
 
 
     def test_create_entity_trait_header_label( self ):
