@@ -747,6 +747,214 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #-- END method create_simple_1_level_aggregate() --#
     
 
+    def validate_entity_identifier( self,
+                                    entity_id_IN,
+                                    ids_and_traits_dict_IN,
+                                    test_name_IN,
+                                    id_name_IN ):
+
+        # declare variables
+        me = "validate_entity_identifier"
+        id_qs = None
+        test_qs = None
+        test_qs_count = None
+        entity_instance = None
+        test_name = None
+        goal_value = None
+        id_name = None
+        id_instance = None
+        id_uuid = None
+        
+        # declare variables - assertions
+        test_value = None
+        should_be = None
+        error_string = None
+
+        # got entity ID?
+        if ( ( entity_id_IN is not None ) and ( entity_id_IN > 0 ) ):
+        
+            # got a dictionary?
+            if ( ids_and_traits_dict_IN is not None ):
+        
+                # for each key, look up value for entity, compare to value in
+                #     dictionary.
+                
+                # retrieve entity instance.
+                entity_instance = Entity.objects.get( pk = entity_id_IN )
+                id_qs = entity_instance.entity_identifier_set.all()
+                
+                # set names.
+                test_name = test_name_IN
+                id_name = id_name_IN
+                
+                # retrieve value from database.
+                test_qs = id_qs.filter( name = id_name )
+                test_qs_count = test_qs.count()
+                
+                # got anything?
+                if ( test_qs_count == 1 ):
+                
+                    # single match - get value.
+                    id_instance = test_qs.get()
+                    goal_value = id_instance.uuid
+                    
+                elif ( test_qs_count == 0 ):
+                
+                    # no match.  Value = None
+                    goal_value = None
+                    
+                else:
+                
+                    # error - report using assertion.
+                    test_value = test_qs_count
+                    should_be = 1
+                    error_string = "found {} Entity_Identifier records for name \"{}\", should be {}.".format( test_value, id_name, should_be )
+                    self.assertEqual( test_value, should_be, msg = error_string )
+                    
+                #-- END check to see how many matches for name --#
+                
+                # name should be in the dictionary
+                test_value = test_name in ids_and_traits_dict_IN
+                should_be = True
+                error_string = "did not find ID label \"{}\" in ids and traits dictionary: {}".format( id_name, ids_and_traits_dict_IN )
+                self.assertEqual( test_value, should_be, msg = error_string )
+                
+                # get ID for name in dictionary passed in.
+                test_value = ids_and_traits_dict_IN.get( test_name, None )
+                
+                # goal and test values should be identical.
+                should_be = goal_value
+                error_string = "value for label \"{}\" in ids and traits dictionary = {}, should be {} ( dictionary: {} )".format( id_name, test_value, should_be, ids_and_traits_dict_IN )
+                self.assertEqual( test_value, should_be, msg = error_string )
+            
+            else:
+            
+                # no ids and traits dictionary passed in.  Assert Not None here, so we raise Error.
+                test_value = ids_and_traits_dict_IN
+                error_string = "For entity ID {}, None passed in, should be a dictionary of ID and trait names to values.".format( entity_id_IN )
+                self.assertIsNotNone( test_value, msg = error_string )
+                
+            #-- END check to see if instance passed in. --#
+    
+        else:
+        
+            # no entity ID passed in.  Assert Not None here, so we raise Error.
+            test_value = entity_id_IN
+            error_string = "None passed in, should be an entity ID."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+        #-- END check to see if entity ID passed in. --#
+        
+    #-- END method validate_entity_identifier() --#
+    
+
+    def validate_entity_ids_and_traits( self, entity_id_IN, ids_and_traits_dict_IN ):        
+
+        # declare variables
+        me = "validate_entity_ids_and_traits"
+        id_qs = None
+        trait_qs = None
+        test_qs = None
+        test_qs_count = None
+        ids_and_traits_dict_count = None
+        test_name = None
+        trait_name = None
+        trait_instance = None
+        trait_value = None
+        goal_value = None
+        id_name = None
+        id_instance = None
+        id_uuid = None
+        
+        # declare variables - assertions
+        test_value = None
+        should_be = None
+        error_string = None
+
+        # got entity ID?
+        if ( ( entity_id_IN is not None ) and ( entity_id_IN > 0 ) ):
+        
+            # got a dictionary?
+            if ( ids_and_traits_dict_IN is not None ):
+        
+                # got what we need.  Test.
+                
+                # count should be 5.
+                ids_and_traits_dict_count = len( ids_and_traits_dict_IN )
+                test_value = ids_and_traits_dict_count
+                should_be = 5
+                error_string = "entity ids and traits for entity {} has {} items, should be {} ( dictionary: {} ).".format( entity_id_IN, test_value, should_be, ids_and_traits_dict_IN )
+                self.assertEqual( test_value, should_be, msg = error_string )
+                
+                # for each key, look up value for entity, compare to value in
+                #     dictionary.
+                
+                #--------------------------------------------------------------#
+                # ! ----> ID - id_person_sourcenet_id
+                test_name = "id_person_sourcenet_id"
+                id_name = "person_sourcenet_id"
+                self.validate_entity_identifier( entity_id_IN,
+                                                 ids_and_traits_dict_IN,
+                                                 test_name,
+                                                 id_name )
+                            
+                #--------------------------------------------------------------#
+                # ! ----> ID - id_person_open_calais_uuid
+                test_name = "id_person_open_calais_uuid"
+                id_name = "person_open_calais_uuid"
+                self.validate_entity_identifier( entity_id_IN,
+                                                 ids_and_traits_dict_IN,
+                                                 test_name,
+                                                 id_name )
+
+                #--------------------------------------------------------------#
+                # ! ----> trait - trait_first_name
+                test_name = "trait_first_name"
+                trait_name = "first_name"
+                self.validate_entity_trait( entity_id_IN,
+                                            ids_and_traits_dict_IN,
+                                            test_name,
+                                            trait_name )
+
+                #--------------------------------------------------------------#
+                # ! ----> trait - trait_middle_name
+                test_name = "trait_middle_name"
+                trait_name = "middle_name"
+                self.validate_entity_trait( entity_id_IN,
+                                            ids_and_traits_dict_IN,
+                                            test_name,
+                                            trait_name )
+
+                #--------------------------------------------------------------#
+                # ! ----> trait - trait_last_name
+                test_name = "trait_last_name"
+                trait_name = "last_name"
+                self.validate_entity_trait( entity_id_IN,
+                                            ids_and_traits_dict_IN,
+                                            test_name,
+                                            trait_name )
+                
+            else:
+            
+                # no ids and traits dictionary passed in.  Assert Not None here, so we raise Error.
+                test_value = ids_and_traits_dict_IN
+                error_string = "For entity ID {}, None passed in, should be a dictionary of ID and trait names to values.".format( entity_id_IN )
+                self.assertIsNotNone( test_value, msg = error_string )
+                
+            #-- END check to see if instance passed in. --#
+    
+        else:
+        
+            # no entity ID passed in.  Assert Not None here, so we raise Error.
+            test_value = entity_id_IN
+            error_string = "None passed in, should be an entity ID."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+        #-- END check to see if entity ID passed in. --#
+        
+    #-- END method validate_entity_ids_and_traits() --#
+    
+
     def validate_entity_selection( self, test_instance_IN ):        
 
         # declare variables
@@ -785,6 +993,107 @@ class NetworkDataRequestTest( django.test.TestCase ):
         #-- END check to see if instance passed in. --#
         
     #-- END method validate_entity_selection() --#
+    
+
+    def validate_entity_trait( self,
+                               entity_id_IN,
+                               ids_and_traits_dict_IN,
+                               test_name_IN,
+                               trait_name_IN ):
+
+        # declare variables
+        me = "validate_entity_trait"
+        trait_qs = None
+        test_qs = None
+        test_qs_count = None
+        entity_instance = None
+        test_name = None
+        goal_value = None
+        trait_name = None
+        trait_instance = None
+        trait_value = None
+        
+        # declare variables - assertions
+        test_value = None
+        should_be = None
+        error_string = None
+
+        # got entity ID?
+        if ( ( entity_id_IN is not None ) and ( entity_id_IN > 0 ) ):
+        
+            # got a dictionary?
+            if ( ids_and_traits_dict_IN is not None ):
+        
+                # for each key, look up value for entity, compare to value in
+                #     dictionary.
+                
+                # retrieve entity instance.
+                entity_instance = Entity.objects.get( pk = entity_id_IN )
+                trait_qs = entity_instance.entity_trait_set.all()
+                
+                # set names.
+                test_name = test_name_IN
+                trait_name = trait_name_IN
+                
+                # retrieve value
+                test_qs = trait_qs.filter( name = trait_name )
+                test_qs_count = test_qs.count()
+                
+                # got anything?
+                if ( test_qs_count == 1 ):
+                
+                    # single match - get value.
+                    trait_instance = test_qs.get()
+                    goal_value = trait_instance.value
+                    
+                elif ( test_qs_count == 0 ):
+                
+                    # no match.  Value = None
+                    goal_value = None
+                    
+                else:
+                
+                    # error - report using assertion.
+                    test_value = test_qs_count
+                    should_be = 1
+                    error_string = "found {} Entity_Trait records for name \"{}\", should be {}.".format( test_value, trait_name, should_be )
+                    self.assertEqual( test_value, should_be, msg = error_string )
+                    
+                #-- END check to see how many matches for name --#
+                
+                # name should be in the dictionary
+                test_value = test_name in ids_and_traits_dict_IN
+                should_be = True
+                error_string = "did not find trait label \"{}\" in ids and traits dictionary: {}".format( trait_name, ids_and_traits_dict_IN )
+                self.assertEqual( test_value, should_be, msg = error_string )
+                
+                # get ID for name in dictionary passed in.
+                test_value = ids_and_traits_dict_IN.get( test_name, None )
+                
+                # goal and test values should be identical.
+                should_be = goal_value
+                error_string = "value for trait label \"{}\" in ids and traits dictionary = {}, should be {} ( dictionary: {} )".format( trait_name, test_value, should_be, ids_and_traits_dict_IN )
+                self.assertEqual( test_value, should_be, msg = error_string )
+            
+            else:
+            
+                # no ids and traits dictionary passed in.  Assert Not None here, so we raise Error.
+                test_value = ids_and_traits_dict_IN
+                error_string = "For entity ID {}, None passed in, should be a dictionary of ID and trait names to values.".format( entity_id_IN )
+                self.assertIsNotNone( test_value, msg = error_string )
+                
+            #-- END check to see if instance passed in. --#
+    
+        else:
+        
+            # no entity ID passed in.  Assert Not None here, so we raise Error.
+            test_value = entity_id_IN
+            error_string = "None passed in, should be an entity ID."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+        #-- END check to see if entity ID passed in. --#
+        
+    #-- END method validate_entity_trait() --#
     
 
     def validate_filter_spec( self,
@@ -4886,10 +5195,17 @@ class NetworkDataRequestTest( django.test.TestCase ):
         me = "test_process_entities"
         debug_flag = None
         test_instance = None
+        entity_count = None
         entity_dict = None
         entity_dict_count = None
         entity_id = None
         entity_instance = None
+        entity_ids_and_traits_dict = None
+        entity_ids_and_traits_dict_count = None
+        ids_and_traits_header_list = None
+        ids_and_traits_header_list_count = None
+        ids_and_traits_dict = None
+        ids_and_traits_dict_count = None
         
         # init debug
         debug_flag = self.DEBUG
@@ -4897,8 +5213,9 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # print test header
         TestHelper.print_test_header( self.CLASS_NAME, me )
         
-        # initialize request
+        # ! ----> initialize request - basic
         test_instance = TestHelper.load_basic()
+        entity_count = 72
         
         # remove output type and file path, so no output
         test_instance.set_output_type( None )
@@ -4911,7 +5228,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # should have 72 things in it.
         test_value = entity_dict_count
-        should_be = 72
+        should_be = entity_count
         error_string = "Entity dictionary length = {}, should = {}, for request: {}.".format( test_value, should_be, test_instance )
         self.assertEqual( test_value, should_be, msg = error_string )
 
@@ -4925,13 +5242,106 @@ class NetworkDataRequestTest( django.test.TestCase ):
             
         #-- END loop over entity dictionary --#
         
+        # ! --------> check the traits and ids.
+        
+        # get IDs and traits dictionary.
+        entity_ids_and_traits_dict = test_instance.get_entity_id_to_traits_map()
+        entity_ids_and_traits_dict_count = len( entity_ids_and_traits_dict )
+        
+        # should be same number of keys as in entity dictionary.
+        test_value = entity_ids_and_traits_dict_count
+        should_be = entity_count
+        error_string = "Entity ids and traits dictionary length = {}, should = {}, for request: {}.".format( test_value, should_be, test_instance )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # make sure all have a dictionary with some value for each of the
+        #     header keys.
+        ids_and_traits_header_list = test_instance.create_entity_ids_and_traits_header_list()
+        ids_and_traits_header_list_count = len( ids_and_traits_header_list )
+        for entity_id, ids_and_traits_dict in six.iteritems( entity_ids_and_traits_dict ):
+        
+            # all should not be None.
+            test_value = ids_and_traits_dict
+            error_string = "Entity ids and traits dictionary should not be None."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+            # should be a dictionary.
+            should_be = dict
+            error_string = "nested instance: {} for ID {} is not of class {}.".format( test_value, entity_id, should_be )
+            self.assertIsInstance( test_value, should_be, msg = error_string )
+        
+            # should be same size as header list.
+            ids_and_traits_dict_count = len( ids_and_traits_dict )
+            test_value = ids_and_traits_dict_count
+            should_be = ids_and_traits_header_list_count
+            error_string = "ids and traits dict length = {}, should = {}; entity ID: {}.".format( test_value, should_be, entity_id )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            if ( debug_flag == True ):
+                print( ">>>> Entity ID: {}".format( entity_id ) )
+            #-- END DEBUG --#
+            
+            # each header should be...
+            for current_header in ids_and_traits_header_list:
+            
+                # ...in the dictionary.
+                test_value = current_header in ids_and_traits_dict
+                should_be = True
+                error_string = "header {} in the ids and traits dictionary for entity {}?: {}, should = {}; ids and traits dictionary: {}.".format( current_header, entity_id, test_value, should_be, ids_and_traits_dict )
+                self.assertEqual( test_value, should_be, msg = error_string )
+                
+                if ( debug_flag == True ):
+                    print( "- {}: {}".format( current_header, ids_and_traits_dict.get( current_header, None ) ) )
+                #-- END DEBUG --#
+
+            #-- END check to see if all headers are in the dictionary.
+
+        #-- END loop over entity dictionary --#
+        
+        # ! --------> spot check ids and traits for a few people.
+        
+        # entity ID 8 - 161; None; Nardy; Baeza; Bickel
+        entity_id = 8
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+        
+        # entity ID 27 - 877; http://d.opencalais.com/pershash-1/15e6a7c0-40fa-3235-bbec-f46f2d362782; Kaidon; None; None
+        entity_id = 27
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # entity ID 57 - 933; http://d.opencalais.com/pershash-1/5de8e1c8-9f6b-32de-b77b-29dab0a9c3c2; Douglas; Vander; Hart
+        entity_id = 57
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # entity ID 66 - 274; http://d.opencalais.com/pershash-1/18bc2abb-9540-300a-b6e1-2f75366848bd; Stacie; None; Behler
+        entity_id = 66
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # entity ID 85 - 84; None; John; None; Tunison
+        entity_id = 85
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+        
+        # ! ----> basic - load instances
+        
+        test_instance = TestHelper.load_basic()
+        entity_count = 72
+        
+        # remove output type and file path, so no output
+        test_instance.set_output_type( None )
+        test_instance.set_output_file_path( None )
+        #test_instance.set_output_file_path( TestHelper.TEST_BASIC_TSV_OUTPUT )
+        
         # call method
         entity_dict = test_instance.process_entities( load_instance_IN = True )
         entity_dict_count = len( entity_dict )
         
         # should have 72 things in it.
         test_value = entity_dict_count
-        should_be = 72
+        should_be = entity_count
         error_string = "Entity dictionary length = {}, should = {}, for request: {}.".format( test_value, should_be, test_instance )
         self.assertEqual( test_value, should_be, msg = error_string )        
         
@@ -4957,16 +5367,176 @@ class NetworkDataRequestTest( django.test.TestCase ):
             
         #-- END loop over entity dictionary --#
         
+        # ! --------> check the traits and ids.
+        
+        # get IDs and traits dictionary.
+        entity_ids_and_traits_dict = test_instance.get_entity_id_to_traits_map()
+        entity_ids_and_traits_dict_count = len( entity_ids_and_traits_dict )
+        
+        # should be same number of keys as in entity dictionary.
+        test_value = entity_ids_and_traits_dict_count
+        should_be = entity_count
+        error_string = "Entity ids and traits dictionary length = {}, should = {}, for request: {}.".format( test_value, should_be, test_instance )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # make sure all have a dictionary with some value for each of the
+        #     header keys.
+        ids_and_traits_header_list = test_instance.create_entity_ids_and_traits_header_list()
+        ids_and_traits_header_list_count = len( ids_and_traits_header_list )
+        for entity_id, ids_and_traits_dict in six.iteritems( entity_ids_and_traits_dict ):
+        
+            # all should not be None.
+            test_value = ids_and_traits_dict
+            error_string = "Entity ids and traits dictionary should not be None."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+            # should be a dictionary.
+            should_be = dict
+            error_string = "nested instance: {} for ID {} is not of class {}.".format( test_value, entity_id, should_be )
+            self.assertIsInstance( test_value, should_be, msg = error_string )
+        
+            # should be same size as header list.
+            ids_and_traits_dict_count = len( ids_and_traits_dict )
+            test_value = ids_and_traits_dict_count
+            should_be = ids_and_traits_header_list_count
+            error_string = "ids and traits dict length = {}, should = {}; entity ID: {}.".format( test_value, should_be, entity_id )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # each header should be...
+            for current_header in ids_and_traits_header_list:
+            
+                # ...in the dictionary.
+                test_value = current_header in ids_and_traits_dict
+                should_be = True
+                error_string = "header {} in the ids and traits dictionary for entity {}?: {}, should = {}; ids and traits dictionary: {}.".format( current_header, entity_id, test_value, should_be, ids_and_traits_dict )
+                self.assertEqual( test_value, should_be, msg = error_string )
+                
+            #-- END check to see if all headers are in the dictionary.
+
+        #-- END loop over entity dictionary --#
+        
+        # ! --------> spot check ids and traits for a few people.
+        
+        # entity ID 8 - 161; None; Nardy; Baeza; Bickel
+        entity_id = 8
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+        
+        # entity ID 27 - 877; http://d.opencalais.com/pershash-1/15e6a7c0-40fa-3235-bbec-f46f2d362782; Kaidon; None; None
+        entity_id = 27
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # entity ID 57 - 933; http://d.opencalais.com/pershash-1/5de8e1c8-9f6b-32de-b77b-29dab0a9c3c2; Douglas; Vander; Hart
+        entity_id = 57
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # entity ID 66 - 274; http://d.opencalais.com/pershash-1/18bc2abb-9540-300a-b6e1-2f75366848bd; Stacie; None; Behler
+        entity_id = 66
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # entity ID 85 - 84; None; John; None; Tunison
+        entity_id = 85
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+        
+        # ! ----> include through
+        
+        test_instance = TestHelper.load_basic()
+        entity_count = 84
+        
+        # remove output type and file path, so no output
+        test_instance.set_output_type( None )
+        test_instance.set_output_file_path( None )
+        #test_instance.set_output_file_path( TestHelper.TEST_BASIC_TSV_OUTPUT )
+        
         # call method
         entity_dict = test_instance.process_entities( include_through_IN = True )
         entity_dict_count = len( entity_dict )
         
         # should have 84 things in it.
         test_value = entity_dict_count
-        should_be = 84
+        should_be = entity_count
         error_string = "when including THROUGH, Entity dictionary length = {}, should = {}, for request: {}.".format( test_value, should_be, test_instance )
         self.assertEqual( test_value, should_be, msg = error_string )
 
+        # ! --------> check the traits and ids.
+        
+        # get IDs and traits dictionary.
+        entity_ids_and_traits_dict = test_instance.get_entity_id_to_traits_map()
+        entity_ids_and_traits_dict_count = len( entity_ids_and_traits_dict )
+        
+        # should be same number of keys as in entity dictionary.
+        test_value = entity_ids_and_traits_dict_count
+        should_be = entity_count
+        error_string = "Entity ids and traits dictionary length = {}, should = {}, for request: {}.".format( test_value, should_be, test_instance )
+        self.assertEqual( test_value, should_be, msg = error_string )
+
+        # make sure all have a dictionary with some value for each of the
+        #     header keys.
+        ids_and_traits_header_list = test_instance.create_entity_ids_and_traits_header_list()
+        ids_and_traits_header_list_count = len( ids_and_traits_header_list )
+        for entity_id, ids_and_traits_dict in six.iteritems( entity_ids_and_traits_dict ):
+        
+            # all should not be None.
+            test_value = ids_and_traits_dict
+            error_string = "Entity ids and traits dictionary should not be None."
+            self.assertIsNotNone( test_value, msg = error_string )
+            
+            # should be a dictionary.
+            should_be = dict
+            error_string = "nested instance: {} for ID {} is not of class {}.".format( test_value, entity_id, should_be )
+            self.assertIsInstance( test_value, should_be, msg = error_string )
+        
+            # should be same size as header list.
+            ids_and_traits_dict_count = len( ids_and_traits_dict )
+            test_value = ids_and_traits_dict_count
+            should_be = ids_and_traits_header_list_count
+            error_string = "ids and traits dict length = {}, should = {}; entity ID: {}.".format( test_value, should_be, entity_id )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+            # each header should be...
+            for current_header in ids_and_traits_header_list:
+            
+                # ...in the dictionary.
+                test_value = current_header in ids_and_traits_dict
+                should_be = True
+                error_string = "header {} in the ids and traits dictionary for entity {}?: {}, should = {}; ids and traits dictionary: {}.".format( current_header, entity_id, test_value, should_be, ids_and_traits_dict )
+                self.assertEqual( test_value, should_be, msg = error_string )
+                
+            #-- END check to see if all headers are in the dictionary.
+
+        #-- END loop over entity dictionary --#
+        
+        # ! --------> spot check ids and traits for a few people.
+        
+        # entity ID 8 - 161; None; Nardy; Baeza; Bickel
+        entity_id = 8
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+        
+        # entity ID 27 - 877; http://d.opencalais.com/pershash-1/15e6a7c0-40fa-3235-bbec-f46f2d362782; Kaidon; None; None
+        entity_id = 27
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # entity ID 57 - 933; http://d.opencalais.com/pershash-1/5de8e1c8-9f6b-32de-b77b-29dab0a9c3c2; Douglas; Vander; Hart
+        entity_id = 57
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # entity ID 66 - 274; http://d.opencalais.com/pershash-1/18bc2abb-9540-300a-b6e1-2f75366848bd; Stacie; None; Behler
+        entity_id = 66
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # entity ID 85 - 84; None; John; None; Tunison
+        entity_id = 85
+        ids_and_traits_dict = entity_ids_and_traits_dict.get( entity_id, None )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+        
     #-- END test method test_process_entities() --#
         
         

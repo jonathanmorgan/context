@@ -4034,15 +4034,15 @@ class NetworkDataRequest( ContextBase ):
         if ( do_gather_ids_and_traits == True ):
         
             # yes.  Call method.
-            entity_id_to_traits_map = self.load_entities_ids_and_traits( relation_query_set, entity_id_to_traits_map )
+            entity_id_to_traits_map = self.load_entities_ids_and_traits( relation_query_set,
+                                                                         entity_id_to_traits_map,
+                                                                         include_through_IN = include_through_IN )
             
             # store dictionary internally
             self.set_entity_id_to_traits_map( entity_id_to_traits_map )
             
         #-- END check to see if we gather traits and IDs. --#
             
-        #-- END check to make sure we have a request --#
-        
         my_logger.debug( "In {}(): len( dict_OUT ) = {}".format( me, len( dict_OUT ) ) )
 
         return dict_OUT
