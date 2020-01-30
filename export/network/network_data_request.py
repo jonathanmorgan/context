@@ -1933,7 +1933,7 @@ class NetworkDataRequest( ContextBase ):
     def create_entity_ids_and_traits_header_list( self ):
         
         # return reference
-        list_OUT = False
+        list_OUT = None
         
         # declare variables
         me = "create_entity_ids_and_traits_header_list"
@@ -1943,69 +1943,58 @@ class NetworkDataRequest( ContextBase ):
         entity_trait_dict = None
         header_label = None
         
-        # check to see if already rendered
-        list_OUT = self.get_entity_ids_and_traits_header_list()
-        if ( list_OUT is None ):
+        # init
+        list_OUT = []
         
-            # init
-            list_OUT = []
+        # retrieve lists
+        entity_ids_list = self.get_output_entity_identifiers_list()
+        entity_traits_list = self.get_output_entity_traits_list()
+        
+        # got ids list?
+        if ( entity_ids_list is not None ):
+        
+            # yes - loop, create header label for each, append to list.
+            for entity_id_dict in entity_ids_list:
             
-            # retrieve lists
-            entity_ids_list = self.get_output_entity_identifiers_list()
-            entity_traits_list = self.get_output_entity_traits_list()
-            
-            # got ids list?
-            if ( entity_ids_list is not None ):
-            
-                # yes - loop, create header label for each, append to list.
-                for entity_id_dict in entity_ids_list:
+                # get header label for id filter
+                header_label = self.create_entity_id_header_label( entity_id_dict )
                 
-                    # get header label for id filter
-                    header_label = self.create_entity_id_header_label( entity_id_dict )
-                    
-                    # add to list?
-                    if ( ( header_label is not None ) and ( header_label != "" ) ):
-                    
-                        # add to list.
-                        list_OUT.append( header_label )
-                        
-                    #-- END check to make sure the label contained something --#
-                    
-                #-- END loop over entity ID details dicts --#
-                    
-            #-- END check to see if list present. --#
-            
-            # got traits list?
-            if ( entity_traits_list is not None ):
-            
-                # yes - loop, create header label for each, append to list.
-                for entity_trait_dict in entity_traits_list:
+                # add to list?
+                if ( ( header_label is not None ) and ( header_label != "" ) ):
                 
-                    # get header label for id filter
-                    header_label = self.create_entity_trait_header_label( entity_trait_dict )
+                    # add to list.
+                    list_OUT.append( header_label )
                     
-                    # add to list?
-                    if ( ( header_label is not None ) and ( header_label != "" ) ):
-                    
-                        # add to list.
-                        list_OUT.append( header_label )
-                        
-                    #-- END check to make sure the label contained something --#
-                    
-                #-- END loop over entity ID details dicts --#
-                                
-            #-- END check to see if list present. --#
-            
-            # store the list, for future reference.
-            self.set_entity_ids_and_traits_header_list( list_OUT )
-            
-        else:
+                #-- END check to make sure the label contained something --#
+                
+            #-- END loop over entity ID details dicts --#
+                
+        #-- END check to see if list present. --#
         
-            # there is a list.  Just return it.
-            pass
-            
-        #-- END check to see if already have a list.  --#
+        # got traits list?
+        if ( entity_traits_list is not None ):
         
+            # yes - loop, create header label for each, append to list.
+            for entity_trait_dict in entity_traits_list:
+            
+                # get header label for id filter
+                header_label = self.create_entity_trait_header_label( entity_trait_dict )
+                
+                # add to list?
+                if ( ( header_label is not None ) and ( header_label != "" ) ):
+                
+                    # add to list.
+                    list_OUT.append( header_label )
+                    
+                #-- END check to make sure the label contained something --#
+                
+            #-- END loop over entity ID details dicts --#
+                            
+        #-- END check to see if list present. --#
+        
+        # store the list, for future reference.
+        self.set_entity_ids_and_traits_header_list( list_OUT )
+            
         return list_OUT
     
     #-- END method create_entity_ids_and_traits_header_list() --#
@@ -2801,8 +2790,23 @@ class NetworkDataRequest( ContextBase ):
         # return reference
         value_OUT = None
         
+        # declare variables
+        header_list = None
+        
         # see if already stored.
         value_OUT = self.m_entity_ids_and_traits_header_list
+        if ( value_OUT is None ):
+        
+            # create, store, and return.
+            header_list = self.create_entity_ids_and_traits_header_list()
+            
+            # store it.
+            self.set_entity_ids_and_traits_header_list( header_list )
+            
+            # return it
+            value_OUT = self.get_entity_ids_and_traits_header_list()
+            
+        #-- END check to see if not yet created. --#
                 
         return value_OUT
     

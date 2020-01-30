@@ -423,7 +423,7 @@ class NDO_SimpleMatrix( NetworkDataOutput ):
         # initialize
         debug_flag = self.DEBUG_FLAG
         request_instance = self.get_network_data_request()
-        entity_ids_and_traits_header_list = request_instance.create_entity_ids_and_traits_header_list()
+        entity_ids_and_traits_header_list = request_instance.get_entity_ids_and_traits_header_list()
 
         # first, retrieve the values.
         ids_and_types_labels_to_values_map = request_instance.create_entity_ids_and_traits_value_dict()

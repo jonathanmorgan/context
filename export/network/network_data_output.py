@@ -566,7 +566,7 @@ class NetworkDataOutput( ContextBase ):
             if ( do_gather_ids_and_traits == True ):
             
                 # we do.  Build list of labels.
-                ids_and_traits_header_list = request_instance.create_entity_ids_and_traits_header_list()
+                ids_and_traits_header_list = request_instance.get_entity_ids_and_traits_header_list()
             
                 # got anything?
                 if ( ( ids_and_traits_header_list is not None ) and ( len( ids_and_traits_header_list ) > 0 ) ):

@@ -314,7 +314,7 @@ class NDO_CSVMatrix( NetworkDataOutput ):
         if ( label_to_value_list_map is not None ):
         
             # get list of labels, sorted appropriately
-            sorted_label_list = request_instance.create_entity_ids_and_traits_header_list()
+            sorted_label_list = request_instance.get_entity_ids_and_traits_header_list()
             
             # loop over labels
             for current_label in sorted_label_list:
