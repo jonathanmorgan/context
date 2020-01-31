@@ -40,6 +40,7 @@ from datetime import datetime
 import json
 import logging
 import operator
+import six
 import sys
 
 # django database classes
@@ -494,6 +495,7 @@ class NetworkDataRequest( ContextBase ):
         self.m_entity_id_to_instance_map = {}
         self.m_entity_id_to_traits_map = {}
         self.m_entity_ids_and_traits_header_list = None
+        self.m_entity_id_list = None
         
         # set logger name (for LoggingHelper parent class: (LoggingHelper --> BasicRateLimited --> ContextTextBase --> ArticleCoding).
         self.set_logger_name( self.LOGGER_NAME )
@@ -2000,7 +2002,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method create_entity_ids_and_traits_header_list() --#
 
 
-    def create_entity_ids_and_traits_value_dict( self ):
+    def create_entity_ids_and_traits_value_dict( self, entity_id_list_IN = None ):
 
         """
             Method: create_entity_ids_and_traits_value_dict()
@@ -2037,7 +2039,7 @@ class NetworkDataRequest( ContextBase ):
         for header_label in ids_and_traits_header_labels_list:
         
             # get values
-            value_list = self.create_entity_ids_and_traits_value_list( header_label )
+            value_list = self.create_entity_ids_and_traits_value_list( header_label, entity_id_list_IN = entity_id_list_IN )
             
             # add to output dictionary
             ids_and_traits_values_dict_OUT[ header_label ] = value_list
@@ -2049,7 +2051,7 @@ class NetworkDataRequest( ContextBase ):
     #-- END method create_entity_ids_and_traits_value_dict() --#
 
 
-    def create_entity_ids_and_traits_value_list( self, header_label_IN ):
+    def create_entity_ids_and_traits_value_list( self, header_label_IN, entity_id_list_IN = None ):
 
         """
             Method: create_entity_ids_and_traits_value_list()
@@ -2085,8 +2087,19 @@ class NetworkDataRequest( ContextBase ):
             # initialize output list
             value_list_OUT = []
     
-            # get entity list
-            entity_list = self.get_master_entity_list()
+            # init entity list - list passed in?
+            if ( entity_id_list_IN is not None ):
+            
+                # yes.  Use it.
+                entity_list = entity_id_list_IN
+                
+            else:
+            
+                # no.  Retrieve from this instance.
+                entity_list = self.get_entity_id_list()
+            
+            #-- END check to see if entity list pasesd in. --#
+            
             if ( ( entity_list is not None ) and ( len( entity_list ) > 0 ) ):
             
                 # retrieve map of entities to their relation types and roles.
@@ -2759,27 +2772,178 @@ class NetworkDataRequest( ContextBase ):
     #-- END method filter_relations_by_filter_spec() --#
 
 
-    def get_entity_id_to_instance_map( self ):
+    def generate_entity_id_list( self, is_sorted_IN = True ):
+
+        """
+            Method: generate_entity_id_list()
+
+            Purpose: Uses nested entity_dict and map of Entity IDs to Entity
+               relation details to make a big list of all the Entities we need
+               to include in the network we output.
+
+            Preconditions: self.m_entity_dictionary must be initialized and populated.
+
+            Returns:
+            - List - reference to the generated master Entity list.
+        """
+
+        # return reference
+        list_OUT = []
+
+        # declare variables
+        me = "generate_master_entity_list"
+        debug_flag = None
+        status_message = None
+        my_logger = None
+        debug_string = ""
+        entity_dict = None
+        entity_dict_count = None
+        entity_ids_list = None
+        entity_ids_list_count = None
+
+        # initialize
+        my_logger = self.get_logger()
+        debug_flag = self.DEBUG_FLAG
+
+        # retrieve the Entity dictionary
+        entity_dict = self.get_entity_id_to_instance_map()
+        entity_dict_count = len( entity_dict )
+
+        status_message = "In {}: len( entity_dict ) = {}; entity_dict: {}".format( me, entity_dict_count, entity_dict )
+        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.DEBUG )            
+
+        # grab list of keys from self.m_entity_dictionary.
+        entity_ids_list = list( six.viewkeys( entity_dict ) )
+
+        # do we want it sorted?
+        if ( is_sorted_IN == True ):
+        
+            # we want it sorted.
+            entity_ids_list.sort()
+        
+        #-- END check to see if we want the list sorted. --#
+
+        # output list and length
+        entity_ids_list_count = len( entity_ids_list )
+        status_message = "In {}(): master entity ID list length: {} ( list: {} )".format( me, entity_ids_list_count, entity_ids_list )
+        self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )            
+    
+        # save this as the master entity list.
+        self.set_entity_id_list( entity_ids_list )
+
+        list_OUT = self.get_entity_id_list()
+        
+        my_logger.debug( "In {}: len( self.m_entity_id_list ) = {}".format( me, len( list_OUT ) ) )
+
+        return list_OUT
+
+    #-- END method generate_entity_id_list() --#
+
+
+
+    def get_entity_id_list( self, is_sorted_IN = True ):
+
+        """
+            Method: get_entity_id_list()
+
+            Purpose: Checks if list is set and has something in it.  If yes,
+               returns list nested in instance.  If no, calls the generate
+               method and returns the result.
+
+            Preconditions: self.m_entity_dictionary must be initialized and populated.
+
+            Returns:
+            - List - reference to the generated master Entity list.
+        """
+
+        # return reference
+        list_OUT = []
+
+        # declare variables
+        me = "get_entity_id_list"
+        debug_flag = None
+        status_message = None
+        is_ok = True
+        list_length = None
+
+        # initialize
+        debug_flag = self.DEBUG_FLAG
+
+        # retrieve master Entity list
+        list_OUT = self.m_entity_id_list
+
+        # just check for None - empty list is OK.
+        if ( list_OUT is None ):
+
+            # no list.  not OK.
+            is_ok = False
+
+            # List not OK.
+            status_message = "In {}(): master list is None ( {} )".format( me, list_OUT )
+            self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )            
+
+        #-- END check to see if stored list is OK --#
+
+        # is stored list OK?
+        if ( is_ok == False ):
+
+            # not OK.  Try generating list.
+            list_OUT = self.generate_entity_id_list( is_sorted_IN )
+
+        #-- END check if list is OK. --#
+        
+        return list_OUT
+
+    #-- END method get_entity_id_list() --#
+
+
+    def get_entity_id_to_instance_map( self, init_if_empty_IN = False ):
         
         # return reference
         value_OUT = None
         
+        # declare variables
+        empty_map = None
+        
         # see if already stored.
         value_OUT = self.m_entity_id_to_instance_map
-                
+        
+        # init if None?
+        if ( ( value_OUT is None ) and ( init_if_empty_IN == True ) ):
+        
+            # yes.
+            empty_map = {}
+            self.set_entity_id_to_instance_map( empty_map )
+            value_OUT = self.get_entity_id_to_instance_map()
+            
+        #-- END check to see if init on None --#
+            
         return value_OUT
     
     #-- END method get_entity_id_to_instance_map() --#
     
 
-    def get_entity_id_to_traits_map( self ):
+    def get_entity_id_to_traits_map( self, init_if_empty_IN = False ):
         
         # return reference
         value_OUT = None
         
+        # declare variables
+        empty_map = None
+        
         # see if already stored.
         value_OUT = self.m_entity_id_to_traits_map
                 
+        # init if None?
+        if ( ( value_OUT is None ) and ( init_if_empty_IN == True ) ):
+        
+            # yes.
+            empty_map = {}
+            self.set_entity_id_to_instance_map( empty_map )
+            value_OUT = self.get_entity_id_to_instance_map()
+            
+        #-- END check to see if init on None --#
+            
         return value_OUT
     
     #-- END method get_entity_id_to_traits_map() --#
@@ -3198,7 +3362,10 @@ class NetworkDataRequest( ContextBase ):
     #-- END method is_request_ok() --#
 
 
-    def load_entities_ids_and_traits( self, relation_qs_IN, dictionary_IN, include_through_IN = False ):
+    def load_entities_ids_and_traits( self,
+                                      relation_qs_IN,
+                                      dictionary_IN,
+                                      include_through_IN = False ):
 
         """
             Accepts a dictionary, a list of Entity_Relation instances, and flag
@@ -3247,6 +3414,7 @@ class NetworkDataRequest( ContextBase ):
         current_entity = None
         current_entity_id = None
         current_value = None
+        entity_id = None
 
         # set the output dictionary
         if ( dictionary_IN ):
@@ -3291,7 +3459,7 @@ class NetworkDataRequest( ContextBase ):
             #-- END check to see if we include THROUGH --#
     
         #-- END loop over Entities --#
-
+        
         return entity_dict_OUT
 
     #-- END function load_entities_ids_and_traits() --#
@@ -3701,6 +3869,81 @@ class NetworkDataRequest( ContextBase ):
     #-- END function load_entity_traits() --#
 
 
+    def load_ids_and_traits_for_entities( self, entity_id_list_IN, dictionary_IN ):
+        
+        """
+            Accepts a dictionary, a list of Entity_Relation instances, and flag
+                that indicates if we want THROUGH in addition to FROM and TO.
+                Retrieves entities from the FROM and TO of the relations in the
+                Entity_Relation query set passed in to the dictionary, making
+                the Entity ID the key and then a dictionary of traits and
+                identifiers where name is mapped to either value or UUID.  If
+                include_through_IN == True, also adds Entities stored in
+                relations as THROUGH to the map.  If trait or identifier is not
+                present, stores an entry for it in the traits map with value of
+                None.
+
+            Preconditions: request must have contained at least a valid filter
+                specification, else this will likely be a list of all relations
+                (or we won't even get to calling this method).
+
+            Postconditions: Returns the same dictionary passed in, but with
+                the entities in relation_qs_IN added, where ID is associated
+                with a dictionary of name-value traits and identifiers.
+
+            Parameters:
+            - self - self instance variable.
+            - relation_qs_IN - django query set object that contains the relations we
+                want to add to our dictionary.
+            - dictionary_IN - dictionary we want to add people to.  Returned
+                with people added.
+            - include_through_IN - boolean, defaults to False - If True,
+                includes the entity in relation_through in the dictionary along
+                with the FROM and TO.  If False, ignores THROUGH.
+
+            Returns:
+            - Dictionary - dictionary updated to include all entities from the
+                FROM, TO, and optionally THROUGH references in the
+                Entity_Relation QuerySet passed in, with entity ID mapped to a
+                dictionary of traits and identifiers where name is mapped to
+                either value or UUID.
+        """
+
+        # return reference
+        entity_dict_OUT = {}
+
+        # declare variables
+        me = "load_entities_ids_and_traits"
+        current_entity_id = None
+        current_entity = None
+        current_value = None
+        entity_id = None
+
+        # set the output dictionary
+        if ( dictionary_IN ):
+
+            # yes, store in output parameter
+            entity_dict_OUT = dictionary_IN
+
+        #-- END check to see if dictionary passed in --#
+
+        # loop over the articles
+        for current_entity_id in entity_id_list_IN:
+
+            # add FROM Entity ID to list.  If no Entity ID, don't add.
+            current_entity = Entity.objects.get( pk = current_entity_id )
+
+            # add to dictionary
+            entity_dict_OUT = self.load_entity_identifiers( current_entity, entity_dict_OUT )
+            entity_dict_OUT = self.load_entity_traits( current_entity, entity_dict_OUT )
+
+        #-- END loop over Entities --#
+        
+        return entity_dict_OUT
+
+    #-- END function load_ids_and_traits_for_entities() --#
+
+
     def load_network_data_request_json( self, json_IN ):
         
         '''
@@ -4046,12 +4289,135 @@ class NetworkDataRequest( ContextBase ):
             self.set_entity_id_to_traits_map( entity_id_to_traits_map )
             
         #-- END check to see if we gather traits and IDs. --#
+        
+        # generate entity ID list.
+        self.generate_entity_id_list()
             
         my_logger.debug( "In {}(): len( dict_OUT ) = {}".format( me, len( dict_OUT ) ) )
 
         return dict_OUT
 
     #-- END function process_entities() --#
+
+
+    def process_entities_from_id_list( self, entity_id_list_IN, include_through_IN = False, load_instance_IN = False ):
+
+        """
+            Accepts flag that dictates whether we load the actual Entity
+                record or not.  Uses nested request to retrieve all matching
+                relations, then builds a dictionary of all the IDs of FROM and
+                TO Entities in those relations, mapped either to None or to
+                their Entity instance.
+
+            Preconditions: request must have contained required parameters, and
+                so contained at least a start and end date and a publication.
+                Should we have a flag that says to use the same criteria as the
+                selection criteria?
+
+            Postconditions: uses a lot of memory if you choose a large date
+                range.
+
+            Parameters:
+            - load_instance_IN - boolean, if False, doesn't load Entity model
+                instances while building the dictionary.  If True, loads Entity
+                models and stores them in the dictionary.
+            - include_through_IN - boolean, if False does not include Entities
+                referenced in relation_through, if True does include them.
+
+            Returns:
+            - Dictionary - dictionary that maps entity IDs to Entity model
+                instances for all TO and FROM entities associated with all
+                matching Entity_Relations.
+        """
+
+        # return reference
+        status_OUT = None
+
+        # declare variables
+        me = "process_entities_from_id_list"
+        my_logger = None
+        entity_id_list_count = None
+        entity_id = None
+        request_instance = None
+        entity_id_to_instance_map = None
+        do_gather_ids_and_traits = None
+        entity_id_to_traits_map = None
+        
+        # initialize
+        my_logger = self.get_logger()
+        entity_id_to_instance_map = self.get_entity_id_to_instance_map( init_if_empty_IN = True )
+        entity_id_to_traits_map = self.get_entity_id_to_traits_map( init_if_empty_IN = True )
+        do_gather_ids_and_traits = self.do_output_entity_ids_or_traits()
+        
+        # got an ID list?
+        if ( ( entity_id_list_IN is not None )
+            and ( isinstance( entity_id_list_IN, list ) )
+            and ( len( entity_id_list_IN ) > 0 ) ):
+
+            entity_id_list_count = len( entity_id_list_IN )
+
+            my_logger.debug( "In {}(): entity_id_list_count = {}".format( me, entity_id_list_count ) )
+            my_logger.debug( "In {}(): BEFORE - len( entity_id_to_instance_map ) = {}".format( me, len( entity_id_to_instance_map ) ) )
+                        
+            # loop over entity IDs.
+            for entity_id in entity_id_list_IN:
+            
+                # retrieve instance
+                entity_instance = Entity.objects.get( pk = entity_id )
+            
+                # add to instance map.
+                entity_id_to_instance_map = self.add_entity_to_dict( entity_instance, entity_id_to_instance_map, store_entity_IN = load_instance_IN )
+                                                                                                    
+            #-- END check to see if we gather traits and IDs. --#
+            
+            # do we need to also gather traits and/or identifiers?
+            if ( do_gather_ids_and_traits == True ):
+        
+                # yes.  Call method.
+                self.load_ids_and_traits_for_entities( entity_id_list_IN, entity_id_to_traits_map )
+
+            #-- END check to see if we gather IDs and traits.
+                
+            # generate entity ID list.
+            self.generate_entity_id_list()
+                            
+            my_logger.debug( "In {}(): AFTER - len( entity_id_to_instance_map ) = {}".format( me, len( entity_id_to_instance_map ) ) )
+            
+        else:
+        
+            # do nothing.
+            my_logger.debug( "In {}(): no entity ID list passed in, so doing nothing.".format( me, len( dict_OUT ) ) )
+        
+        #-- END check to make sure there is a list. --#
+        
+        return status_OUT
+        
+    #-- END function process_entities_from_id_list() --#
+
+
+    def set_entity_id_list( self, value_IN ):
+
+        """
+            Method: set_entity_id_list()
+
+            Purpose: accepts a list, stores it in the instance.
+
+            Params:
+            - value_IN - list of IDs of all entities in current network data set.
+        """
+
+        # return value
+        value_OUT = None
+
+        # store value
+        self.m_entity_id_list = value_IN
+        
+        # sanity check - retrieve and return.
+        value_OUT = self.get_entity_id_list()
+        
+        return value_OUT
+
+    #-- END method set_entity_id_list() --#
 
 
     def set_entity_id_to_instance_map( self, value_IN ):
@@ -4313,6 +4679,101 @@ class NetworkDataRequest( ContextBase ):
         return value_OUT
     
     #-- END method set_relation_query_set() --#
+
+
+    def process_entities_from_id_list( self, entity_id_list_IN, include_through_IN = False, load_instance_IN = False ):
+
+        """
+            Accepts flag that dictates whether we load the actual Entity
+                record or not.  Uses nested request to retrieve all matching
+                relations, then builds a dictionary of all the IDs of FROM and
+                TO Entities in those relations, mapped either to None or to
+                their Entity instance.
+
+            Preconditions: request must have contained required parameters, and
+                so contained at least a start and end date and a publication.
+                Should we have a flag that says to use the same criteria as the
+                selection criteria?
+
+            Postconditions: uses a lot of memory if you choose a large date
+                range.
+
+            Parameters:
+            - load_instance_IN - boolean, if False, doesn't load Entity model
+                instances while building the dictionary.  If True, loads Entity
+                models and stores them in the dictionary.
+            - include_through_IN - boolean, if False does not include Entities
+                referenced in relation_through, if True does include them.
+
+            Returns:
+            - Dictionary - dictionary that maps entity IDs to Entity model
+                instances for all TO and FROM entities associated with all
+                matching Entity_Relations.
+        """
+
+        # return reference
+        status_OUT = None
+
+        # declare variables
+        me = "process_entities_from_id_list"
+        my_logger = None
+        entity_id_list_count = None
+        entity_id = None
+        request_instance = None
+        entity_id_to_instance_map = None
+        do_gather_ids_and_traits = None
+        entity_id_to_traits_map = None
+        
+        # initialize
+        my_logger = self.get_logger()
+        entity_id_to_instance_map = self.get_entity_id_to_instance_map( init_if_empty_IN = True )
+        entity_id_to_traits_map = self.get_entity_id_to_traits_map( init_if_empty_IN = True )
+        do_gather_ids_and_traits = self.do_output_entity_ids_or_traits()
+        
+        # got an ID list?
+        if ( ( entity_id_list_IN is not None )
+            and ( isinstance( entity_id_list_IN, list ) )
+            and ( len( entity_id_list_IN ) > 0 ) ):
+
+            entity_id_list_count = len( entity_id_list_IN )
+
+            my_logger.debug( "In {}(): entity_id_list_count = {}".format( me, entity_id_list_count ) )
+            my_logger.debug( "In {}(): BEFORE - len( entity_id_to_instance_map ) = {}".format( me, len( entity_id_to_instance_map ) ) )
+                        
+            # loop over entity IDs.
+            for entity_id in entity_id_list_IN:
+            
+                # retrieve instance
+                entity_instance = Entity.objects.get( pk = entity_id )
+            
+                # add to instance map.
+                entity_id_to_instance_map = self.add_entity_to_dict( entity_instance, entity_id_to_instance_map, store_entity_IN = load_instance_IN )
+                                                                                                    
+            #-- END check to see if we gather traits and IDs. --#
+            
+            # do we need to also gather traits and/or identifiers?
+            if ( do_gather_ids_and_traits == True ):
+        
+                # yes.  Call method.
+                self.load_ids_and_traits_for_entities( entity_id_list_IN, entity_id_to_traits_map )
+
+            #-- END check to see if we gather IDs and traits.
+                
+            # generate entity ID list.
+            self.generate_entity_id_list()
+                            
+            my_logger.debug( "In {}(): AFTER - len( entity_id_to_instance_map ) = {}".format( me, len( entity_id_to_instance_map ) ) )
+            
+        else:
+        
+            # do nothing.
+            my_logger.debug( "In {}(): no entity ID list passed in, so doing nothing.".format( me, len( dict_OUT ) ) )
+        
+        #-- END check to make sure there is a list. --#
+        
+        return status_OUT
+        
+    #-- END function process_entities_from_id_list() --#
 
 
 #-- END class NetworkDataRequest --#

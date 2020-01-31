@@ -60,6 +60,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
     JSON_FILE_TO_VALIDATE_FUNCTION_MAP[ TestHelper.FILE_PATH_NETWORK_DATA_REQUEST_WITH_ENTITY_SELECTION ] = "validate_instance_entity_selection"
     
     # test - get()/set()
+    TEST_SET_ENTITY_ID_LIST = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
     TEST_SET_ENTITY_ID_TO_INSTANCE_MAP = { 1 : None, 2 : None, 3 : None }
     TEST_SET_ENTITY_ID_TO_TRAITS_MAP = { 1 : {}, 2 : {}, 3 : {} }
     TEST_SET_ENTITY_IDS_AND_TRAITS_HEADER_LIST = [ "id_1", "id_2", "id_3", "trait1", "trait_2", "trait_3", "trait_4" ]
@@ -1232,6 +1233,169 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #-- END method validate_filter_spec() --#
 
 
+    def validate_id_or_trait_value_list( self, test_instance_IN, header_label_IN ):
+        
+        '''
+        preconditions: test_instance_IN has had process_entities() called on it.
+        '''
+        
+        # declare variables
+        me = "validate_id_or_trait_value_list"
+        debug_flag = None
+        test_instance = None
+        header_label = None
+        entity_id_list = None
+        ids_and_traits_dict = None
+        goal_trait_value_list = None
+        goal_trait_value_list_count = None
+        test_trait_value_list = None
+        test_trait_value_list_count = None
+        header_label = None
+        trait_value = None
+        value_list_index = None
+        goal_value = None
+        
+        # declare variables - assertions
+        test_value = None
+        should_be = None
+        error_string = None
+        
+        # init
+        debug_flag = self.DEBUG
+        test_instance = test_instance_IN
+        header_label = header_label_IN
+        
+        # get entity ID list.
+        entity_id_list = test_instance.get_
+        
+        # retrieve ids and traits to build goal list.
+        ids_and_traits_dict = test_instance.get_ids_and_traits_for_entity( entity_id )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # init test lists
+        goal_trait_value_list = []
+        test_trait_value_list = None
+
+        # build trait list for this entity manually.
+        for header_label in header_label_list:
+        
+            # retrieve trait value for this label.
+            trait_value = ids_and_traits_dict.get( header_label, None )
+            
+            # append to goal list.
+            goal_trait_value_list.append( trait_value )
+            
+        #-- END creat goal list. --#
+        
+        # get test list.
+        test_trait_value_list = test_instance.create_ids_and_traits_values_for_entity( entity_id )
+        test_trait_value_list_count = len( test_trait_value_list )
+        
+        # counts should be same
+        goal_trait_value_list_count = len( goal_trait_value_list )
+        test_value = test_trait_value_list_count
+        should_be = goal_trait_value_list_count
+        error_string = "entity {}: trait value list is length {} ( {} ), should = {} ( {} ).".format( entity_id, test_value, test_trait_value_list, should_be, goal_trait_value_list )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # loop over goal list
+        value_list_index = -1
+        for goal_value in goal_trait_value_list:
+        
+            # increment index
+            value_list_index += 1
+            
+            # get test value
+            test_value = test_trait_value_list[ value_list_index ]
+            
+            # values should be equal
+            should_be = goal_value
+            error_string = "entity {}: trait at index {} is {}, should = {}.  goal list: {}; test list: {}".format( entity_id, value_list_index, test_value, should_be, goal_trait_value_list, test_trait_value_list )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+        #-- END loop over goal list. --#
+        
+    #-- END method validate_id_or_trait_value_list --#
+    
+        
+    def validate_ids_and_traits_values_for_entity( self, test_instance_IN, entity_id_IN ):
+        
+        # declare variables
+        me = "validate_ids_and_traits_values_for_entity"
+        debug_flag = None
+        test_instance = None
+        header_label_list = None
+        ids_and_traits_dict = None
+        goal_trait_value_list = None
+        goal_trait_value_list_count = None
+        test_trait_value_list = None
+        test_trait_value_list_count = None
+        header_label = None
+        trait_value = None
+        value_list_index = None
+        goal_value = None
+        
+        # declare variables - assertions
+        test_value = None
+        should_be = None
+        error_string = None
+        
+        # init
+        debug_flag = self.DEBUG
+        test_instance = test_instance_IN
+        entity_id = entity_id_IN
+        header_label_list = test_instance.get_entity_ids_and_traits_header_list()
+        
+        # retrieve ids and traits to build goal list.
+        ids_and_traits_dict = test_instance.get_ids_and_traits_for_entity( entity_id )
+        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+
+        # init test lists
+        goal_trait_value_list = []
+        test_trait_value_list = None
+
+        # build trait list for this entity manually.
+        for header_label in header_label_list:
+        
+            # retrieve trait value for this label.
+            trait_value = ids_and_traits_dict.get( header_label, None )
+            
+            # append to goal list.
+            goal_trait_value_list.append( trait_value )
+            
+        #-- END creat goal list. --#
+        
+        # get test list.
+        test_trait_value_list = test_instance.create_ids_and_traits_values_for_entity( entity_id )
+        test_trait_value_list_count = len( test_trait_value_list )
+        
+        # counts should be same
+        goal_trait_value_list_count = len( goal_trait_value_list )
+        test_value = test_trait_value_list_count
+        should_be = goal_trait_value_list_count
+        error_string = "entity {}: trait value list is length {} ( {} ), should = {} ( {} ).".format( entity_id, test_value, test_trait_value_list, should_be, goal_trait_value_list )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # loop over goal list
+        value_list_index = -1
+        for goal_value in goal_trait_value_list:
+        
+            # increment index
+            value_list_index += 1
+            
+            # get test value
+            test_value = test_trait_value_list[ value_list_index ]
+            
+            # values should be equal
+            should_be = goal_value
+            error_string = "entity {}: trait at index {} is {}, should = {}.  goal list: {}; test list: {}".format( entity_id, value_list_index, test_value, should_be, goal_trait_value_list, test_trait_value_list )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+        #-- END loop over goal list. --#
+        
+    #-- END method validate_ids_and_traits_values_for_entity --#
+    
+        
     def validate_instance_basic( self, test_instance_IN ):        
 
         # declare variables
@@ -4221,7 +4385,9 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #-- END test method test_create_entity_trait_header_label --#
 
 
-    def todo_test_create_ids_and_traits_values_for_entity( self ):
+    def test_create_ids_and_traits_values_for_entity( self ):
+        
+        # def create_ids_and_traits_values_for_entity( self, entity_id_IN )
 
         # declare variables
         me = "test_create_ids_and_traits_values_for_entity"
@@ -4234,6 +4400,19 @@ class NetworkDataRequestTest( django.test.TestCase ):
         entity_ids_and_traits_dict = None
         entity_ids_and_traits_dict_count = None
         ids_and_traits_dict = None
+        goal_trait_value_list = None
+        goal_trait_value_list_count = None
+        test_trait_value_list = None
+        test_trait_value_list_count = None
+        header_label = None
+        trait_value = None
+        value_list_index = None
+        goal_value = None
+        
+        # declare variables - assertions
+        test_value = None
+        should_be = None
+        error_string = None
         
         # init debug
         debug_flag = self.DEBUG
@@ -4271,7 +4450,7 @@ class NetworkDataRequestTest( django.test.TestCase ):
         #-- END loop over entity dictionary --#
         
         # get header label list.
-        header_label_list = self.get_entity_ids_and_traits_header_list()
+        header_label_list = test_instance.get_entity_ids_and_traits_header_list()
         
         # ! --------> check the traits and ids.
         
@@ -4291,28 +4470,23 @@ class NetworkDataRequestTest( django.test.TestCase ):
         
         # entity ID 8 - 161; None; Nardy; Baeza; Bickel
         entity_id = 8
-        ids_and_traits_dict = test_instance.get_ids_and_traits_for_entity( entity_id )
-        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+        self.validate_ids_and_traits_values_for_entity( test_instance, entity_id )
         
         # entity ID 27 - 877; http://d.opencalais.com/pershash-1/15e6a7c0-40fa-3235-bbec-f46f2d362782; Kaidon; None; None
         entity_id = 27
-        ids_and_traits_dict = test_instance.get_ids_and_traits_for_entity( entity_id )
-        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
-
+        self.validate_ids_and_traits_values_for_entity( test_instance, entity_id )
+        
         # entity ID 57 - 933; http://d.opencalais.com/pershash-1/5de8e1c8-9f6b-32de-b77b-29dab0a9c3c2; Douglas; Vander; Hart
         entity_id = 57
-        ids_and_traits_dict = test_instance.get_ids_and_traits_for_entity( entity_id )
-        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
-
+        self.validate_ids_and_traits_values_for_entity( test_instance, entity_id )
+        
         # entity ID 66 - 274; http://d.opencalais.com/pershash-1/18bc2abb-9540-300a-b6e1-2f75366848bd; Stacie; None; Behler
         entity_id = 66
-        ids_and_traits_dict = test_instance.get_ids_and_traits_for_entity( entity_id )
-        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
-
+        self.validate_ids_and_traits_values_for_entity( test_instance, entity_id )
+        
         # entity ID 85 - 84; None; John; None; Tunison
         entity_id = 85
-        ids_and_traits_dict = test_instance.get_ids_and_traits_for_entity( entity_id )
-        self.validate_entity_ids_and_traits( entity_id, ids_and_traits_dict )
+        self.validate_ids_and_traits_values_for_entity( test_instance, entity_id )
         
     #-- END test method test_create_ids_and_traits_values_for_entity() --#
         
@@ -4658,6 +4832,79 @@ class NetworkDataRequestTest( django.test.TestCase ):
     #-- END test method test_filter_relations()
 
 
+    def test_generate_entity_id_list( self ):
+
+        # declare variables
+        me = "test_generate_entity_id_list"
+        debug_flag = None
+        test_instance = None
+        entity_count = None
+        entity_dict = None
+        entity_dict_count = None
+        entity_id = None
+        entity_id_list = None
+        entity_id_list_count = None
+        
+        # init debug
+        debug_flag = self.DEBUG
+        
+        # print test header
+        TestHelper.print_test_header( self.CLASS_NAME, me )
+        
+        # ! ----> initialize request - basic
+        test_instance = TestHelper.load_basic()
+        entity_count = 72
+        
+        # remove output type and file path, so no output
+        test_instance.set_output_type( None )
+        test_instance.set_output_file_path( None )
+        #test_instance.set_output_file_path( TestHelper.TEST_BASIC_TSV_OUTPUT )
+        
+        # call method
+        entity_dict = test_instance.process_entities()
+        entity_dict_count = len( entity_dict )
+        
+        # should have 72 things in it.
+        test_value = entity_dict_count
+        should_be = entity_count
+        error_string = "Entity dictionary length = {}, should = {}, for request: {}.".format( test_value, should_be, test_instance )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # generate_entity_id_list
+        entity_id_list = test_instance.generate_entity_id_list()
+        entity_id_list_count = len( entity_id_list )
+
+        # should have 72 things in it.
+        test_value = entity_id_list_count
+        should_be = entity_count
+        error_string = "Entity id list length = {}, should = {}, for request: {}.".format( test_value, should_be, test_instance )
+        self.assertEqual( test_value, should_be, msg = error_string )
+        
+        # make sure IDs from list are in dictionary.
+        for entity_id in entity_id_list:
+        
+            # should be in dictionary
+            test_value = entity_id in entity_dict
+            should_be = True
+            error_string = "Entity id {} not in entity dictionary, should be.  List: {}; dictionary: {}".format( entity_id, entity_id_list, entity_dict )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+        #-- END loop over entity id list --#    
+        
+        # and vice versa
+        for entity_id, entity_instance in six.iteritems( entity_dict ):
+        
+            # should be in list
+            test_value = entity_id in entity_id_list
+            should_be = True
+            error_string = "Entity id {} not in entity id list, should be.  List: {}; dictionary: {}".format( entity_id, entity_id_list, entity_dict )
+            self.assertEqual( test_value, should_be, msg = error_string )
+            
+        #-- END loop over entity dictionary --#
+        
+    #-- END test method test_generate_entity_id_list() --#
+    
+    
     def test_get_ids_and_traits_for_entity( self ):
 
         # declare variables
@@ -4906,6 +5153,23 @@ class NetworkDataRequestTest( django.test.TestCase ):
         # - assertEquals( get value, new value )
         # - assertNotEqual( get value, original value )
 
+        # ! --------> get/set_entity_id_list()
+        test_method = "set_entity_id_list"
+        original_value = test_instance.get_entity_id_list()
+        new_value = self.TEST_SET_ENTITY_ID_LIST
+        test_instance.set_entity_id_list( new_value )
+        test_value = test_instance.get_entity_id_list()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )
+        
         # ! --------> get/set_entity_ids_and_traits_header_list()
         test_method = "set_entity_ids_and_traits_header_list"
         original_value = test_instance.get_entity_ids_and_traits_header_list()
