@@ -56,6 +56,7 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
     TEST_SET_MASTER_ENTITY_LIST = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
     TEST_SET_NETWORK_DATA_REQUEST = "test_set_network_data_request"
     TEST_SET_OUTPUT_FORMAT = "test_set_output_format"
+    TEST_SET_OUTPUT_INFO_EVERY_X_RELATIONS = 1000
     TEST_SET_OUTPUT_STRUCTURE = "test_set_output_structure"
     TEST_SET_OUTPUT_TYPE = "test_set_output_type"
     TEST_SET_QUERY_SET = "test_set_query_set"
@@ -2382,6 +2383,23 @@ class NetworkDataOutputTest( DjangoTestCaseHelper ):
         error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
         self.assertNotEqual( test_value, should_not_be, msg = error_string )
 
+        # ! --------> get/set_output_info_every_x_relations()
+        test_method = "set_output_info_every_x_relations"
+        original_value = test_instance.get_output_info_every_x_relations()
+        new_value = self.TEST_SET_OUTPUT_INFO_EVERY_X_RELATIONS
+        test_instance.set_output_info_every_x_relations( new_value )
+        test_value = test_instance.get_output_info_every_x_relations()
+
+        # new should equal test
+        should_be = new_value
+        error_string = "Testing {}(), new = {}, should = {}.".format( test_method, test_value, should_be )
+        self.assertEqual( test_value, should_be, msg = error_string )
+                
+        # new should not equal original
+        should_not_be = original_value
+        error_string = "Testing {}(), new = {}, should NOT = {}.".format( test_method, test_value, should_not_be )
+        self.assertNotEqual( test_value, should_not_be, msg = error_string )        
+        
         # ! --------> get/set_output_structure()
         test_method = "set_output_structure"
         original_value = test_instance.get_output_structure()

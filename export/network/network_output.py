@@ -52,8 +52,7 @@ if __name__ == "__main__":
 #===============================================================================
 
 # python base imports
-#from datetime import date
-from datetime import datetime
+import datetime
 import logging
 import operator
 
@@ -307,12 +306,24 @@ class NetworkOutput( ContextBase ):
             
             # ! ----> build network data from request.
 
+            # Processing info
+            status_message = "In {}.{}(): Calling NetworkDataRequest.process_entities() @ {}".format( self.ME, me, datetime.datetime.now() )
+            self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
+
             # create the entity_dictionary
             entity_dictionary = network_data_request.process_entities()
+
+            # Processing info
+            status_message = "In {}.{}(): After calling NetworkDataRequest.process_entities(), calling NetworkDataRequest.filter_relation_query_set() @ {}".format( self.ME, me, datetime.datetime.now() )
+            self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
 
             # create and store the tie Entity_Relation QuerySet
             relation_qs = network_data_request.filter_relation_query_set( qs_IN = relation_qs,
                                                                           use_entity_selection_IN = False )
+
+            # Processing info
+            status_message = "In {}.{}(): After calling NetworkDataRequest.filter_relation_query_set(), initializing NetworkDataOutput instance @ {}".format( self.ME, me, datetime.datetime.now() )
+            self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
 
             # create instance of NetworkDataOutput.
             network_data_outputter = self.get_NDO_instance()
@@ -323,6 +334,10 @@ class NetworkOutput( ContextBase ):
 
             # initialize NetworkDataOutput instance from request.
             network_data_outputter.initialize_from_request( network_data_request )
+
+            # Processing info
+            status_message = "In {}.{}(): After initializing NetworkDataOutput instance, calling NetworkDataOutput.render() @ {}".format( self.ME, me, datetime.datetime.now() )
+            self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
 
             # render and return the result.
             network_OUT = network_data_outputter.render()
@@ -335,6 +350,10 @@ class NetworkOutput( ContextBase ):
 
             #-- END check to see if we have debug to output. --#
             
+            # Processing info
+            status_message = "In {}.{}(): After calling NetworkDataOutput.render(), doing output @ {}".format( self.ME, me, datetime.datetime.now() )
+            self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
+
             # ! ----> output
             
             # Are we to output to a file?
@@ -369,6 +388,10 @@ class NetworkOutput( ContextBase ):
             self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
         
         #-- END check to make sure we have a query set. --#
+
+        # Processing info
+        status_message = "In {}.{}(): Finished @ {}".format( self.ME, me, datetime.datetime.now() )
+        self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
 
         return network_OUT
 

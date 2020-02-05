@@ -25,6 +25,7 @@ if __name__ == "__main__":
 
 # python libraries
 from abc import ABCMeta, abstractmethod
+import datetime
 import logging
 
 #import copy
@@ -171,6 +172,9 @@ class NetworkDataOutput( ContextBase ):
 
         # store the current request
         self.m_network_data_request = None
+        
+        # after how many relations should we output an info message?
+        self.m_output_info_every_x_relations = 100
 
         # set logger name (for LoggingHelper parent class: (LoggingHelper --> BasicRateLimited --> ContextBase).
         self.set_logger_name( self.LOGGER_NAME )
@@ -1378,6 +1382,19 @@ class NetworkDataOutput( ContextBase ):
     #-- END method get_output_format() --#
     
 
+    def get_output_info_every_x_relations( self ):
+        
+        # return reference
+        value_OUT = None
+        
+        # see if already stored.
+        value_OUT = self.m_output_info_every_x_relations
+                
+        return value_OUT
+    
+    #-- END method get_output_info_every_x_relations() --#
+    
+
     def get_output_structure( self ):
         
         # return reference
@@ -1751,6 +1768,7 @@ class NetworkDataOutput( ContextBase ):
         debug_string = ""
         entity_relation_query_set = None
         entity_dict = None
+        entity_relation_count = None
         entity_relation_counter = 0
         current_entity_relation = None
         from_entity = None
@@ -1762,10 +1780,12 @@ class NetworkDataOutput( ContextBase ):
         relation_type_slug = None
         relation_role = None
         result_status = None
+        output_info_every_x_relations = None
 
         # initialize
         debug_flag = self.DEBUG_FLAG
         my_logger = self.get_logger()
+        output_info_every_x_relations = self.get_output_info_every_x_relations()
 
         # start by grabbing entity dict, Entiry_Relation QuerySet.
         entity_relation_query_set = self.get_query_set()
@@ -1774,13 +1794,21 @@ class NetworkDataOutput( ContextBase ):
         # make sure each of these has something in it.
         if ( entity_relation_query_set is not None ):
         
+            # init
+            entity_relation_count = entity_relation_query_set.count()
+        
             if ( entity_dict is not None ):
 
                 #--------------------------------------------------------------------
                 # ! ----> create ties
                 #--------------------------------------------------------------------
                 
+                # Processing info
+                status_message = "In {}.{}(): Starting loop over relations to create ties @ {}".format( self.ME, me, datetime.datetime.now() )
+                self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
+
                 # loop over the Entity_Relations.
+                entity_relation_counter = 0
                 for current_entity_relation in entity_relation_query_set:
     
                     entity_relation_counter += 1
@@ -1874,7 +1902,17 @@ class NetworkDataOutput( ContextBase ):
                         status_message = "In {}(): ERROR - no FROM Entity set.  Doing nothing.  Relation: {}".format( me, current_entity_relation )
                         self.output_message( status_message, do_print_IN = debug_flag, log_level_code_IN = logging.ERROR )
             
-                    #-- END check of FROM entity --# 
+                    #-- END check of FROM entity --#
+                    
+                    # output info?
+                    if ( ( output_info_every_x_relations is not None )
+                        and ( ( entity_relation_counter % output_info_every_x_relations ) == 0 ) ):
+                        
+                        # Processing info
+                        status_message = "----> In {}.{}(): Processed {} of {} relations @ {}".format( self.ME, me, entity_relation_counter, entity_relation_count, datetime.datetime.now() )
+                        self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
+                        
+                    #-- END check to see if we are outputting info every X relations --#
                     
                 #-- END loop over Entity_Relation instances to be processed. --#
                     
@@ -1882,6 +1920,10 @@ class NetworkDataOutput( ContextBase ):
                 # ! ----> generate_master_entity_list (list of network matrix rows/columns)
                 #---------------------------------------------------------------------------
                 
+                # Processing info
+                status_message = "In {}.{}(): Ties created, generating master entity list @ {}".format( self.ME, me, datetime.datetime.now() )
+                self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
+
                 # now that all relations are mapped, need to build our master
                 #     Entity list, so we can loop to build out the network.  All
                 #     entities who need to be included should be in the
@@ -1901,6 +1943,10 @@ class NetworkDataOutput( ContextBase ):
                 # ! ----> render network data based on entities and ties.
                 #--------------------------------------------------------------------
                 
+                # Processing info
+                status_message = "In {}.{}(): Master entity list created, rendering network data @ {}".format( self.ME, me, datetime.datetime.now() )
+                self.output_message( status_message, do_print_IN = True, log_level_code_IN = logging.INFO )
+
                 network_data_OUT = self.render_network_data()
             
             else:
@@ -2060,6 +2106,31 @@ class NetworkDataOutput( ContextBase ):
         return value_OUT
     
     #-- END method set_output_format() --#
+
+
+    def set_output_info_every_x_relations( self, value_IN ):
+
+        """
+            Method: set_output_info_every_x_relations()
+
+            Purpose: accepts an output format, stores it in instance.
+
+            Params:
+            - value_IN - String output format value.
+        """
+
+        # return reference
+        value_OUT = None
+        
+        # store it
+        self.m_output_info_every_x_relations = value_IN
+        
+        # return it
+        value_OUT = self.get_output_info_every_x_relations()
+        
+        return value_OUT
+    
+    #-- END method set_output_info_every_x_relations() --#
 
 
     def set_output_structure( self, value_IN ):
