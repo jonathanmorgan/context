@@ -30,7 +30,6 @@ from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 
 # Django query object for OR-ing selection criteria together.
 from django.db.models import Q
@@ -117,7 +116,6 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
 
 
 # Abstract_Context_Parent model
-@python_2_unicode_compatible
 class Abstract_Context_Parent( models.Model ):
 
     #----------------------------------------------------------------------
@@ -186,7 +184,6 @@ class Abstract_Context_Parent( models.Model ):
 
 
 # Abstract_Context_With_JSON model
-@python_2_unicode_compatible
 class Abstract_Context_With_JSON( Abstract_Context_Parent ):
 
     #----------------------------------------------------------------------
@@ -260,7 +257,6 @@ class Abstract_Context_With_JSON( Abstract_Context_Parent ):
 
 
 # Abstract_Identifier_Type model
-@python_2_unicode_compatible
 class Abstract_Identifier_Type( Abstract_Context_Parent ):
 
     #----------------------------------------------------------------------
@@ -406,7 +402,6 @@ class Abstract_Identifier_Type( Abstract_Context_Parent ):
 
 
 # Abstract_Related_Type_Trait model
-@python_2_unicode_compatible
 class Abstract_Related_Type_Trait( Abstract_Context_Parent ):
 
 
@@ -499,7 +494,6 @@ class Abstract_Related_Type_Trait( Abstract_Context_Parent ):
 
 
 # Abstract Trait model
-@python_2_unicode_compatible
 class Abstract_Trait( Abstract_Context_Parent ):
 
     #---------------------------------------------------------------------------
@@ -829,7 +823,6 @@ class Abstract_Trait( Abstract_Context_Parent ):
 
 
 # Abstract Trait model
-@python_2_unicode_compatible
 class Abstract_Trait_Container( Abstract_Context_With_JSON ):
 
     #---------------------------------------------------------------------------
@@ -1259,7 +1252,6 @@ class Abstract_Trait_Container( Abstract_Context_With_JSON ):
 
 
 # Abstract_Relation model
-@python_2_unicode_compatible
 class Abstract_Relation( Abstract_Trait_Container ):
 
     #----------------------------------------------------------------------
@@ -1343,7 +1335,6 @@ class Abstract_Relation( Abstract_Trait_Container ):
 
 
 # Abstract_Type model
-@python_2_unicode_compatible
 class Abstract_Type( Abstract_Context_Parent ):
 
     #----------------------------------------------------------------------
@@ -1511,7 +1502,6 @@ class Abstract_Type( Abstract_Context_Parent ):
 
 
 # Abstract_UUID model
-@python_2_unicode_compatible
 class Abstract_UUID( Abstract_Context_Parent ):
 
     #---------------------------------------------------------------------------
@@ -1605,7 +1595,6 @@ class Abstract_UUID( Abstract_Context_Parent ):
 
 
 # Abstract_Work_Log model
-@python_2_unicode_compatible
 class Abstract_Work_Log( Abstract_Context_Parent ):
 
     #----------------------------------------------------------------------
@@ -1685,7 +1674,6 @@ class Abstract_Work_Log( Abstract_Context_Parent ):
 
 
 # Entity model
-@python_2_unicode_compatible
 class Entity( Abstract_Trait_Container ):
 
     #----------------------------------------------------------------------
@@ -2623,7 +2611,6 @@ class Entity( Abstract_Trait_Container ):
 
 
 # Entity_Identifier_Type model
-@python_2_unicode_compatible
 class Entity_Identifier_Type( Abstract_Identifier_Type ):
 
     #----------------------------------------------------------------------
@@ -2735,7 +2722,6 @@ class Entity_Identifier_Type( Abstract_Identifier_Type ):
 
 
 # Entity_Identifier model
-@python_2_unicode_compatible
 class Entity_Identifier( Abstract_UUID ):
 
     #----------------------------------------------------------------------
@@ -3111,7 +3097,6 @@ class Entity_Identifier( Abstract_UUID ):
 
 
 # Entity_Relation model
-@python_2_unicode_compatible
 class Entity_Relation( Abstract_Relation ):
 
     #----------------------------------------------------------------------
@@ -3769,7 +3754,6 @@ class Entity_Relation( Abstract_Relation ):
 
 
 # Entity_Identifier model
-@python_2_unicode_compatible
 class Entity_Relation_Identifier( Abstract_UUID ):
 
     entity_relation = models.ForeignKey( Entity_Relation, on_delete = models.CASCADE )
@@ -3798,7 +3782,6 @@ class Entity_Relation_Identifier( Abstract_UUID ):
 
 
 # Entity_Relation_Trait model
-@python_2_unicode_compatible
 class Entity_Relation_Trait( Abstract_Trait ):
 
     #----------------------------------------------------------------------
@@ -3954,7 +3937,6 @@ class Entity_Relation_Trait( Abstract_Trait ):
 
 
 # Entity_Relation_Type model
-@python_2_unicode_compatible
 class Entity_Relation_Type( Abstract_Type ):
 
     #----------------------------------------------------------------------
@@ -4056,7 +4038,6 @@ class Entity_Relation_Type( Abstract_Type ):
 
 
 # Entity_Relation_Type_Trait model
-@python_2_unicode_compatible
 class Entity_Relation_Type_Trait( Abstract_Related_Type_Trait ):
 
 
@@ -4131,7 +4112,6 @@ class Entity_Relation_Type_Trait( Abstract_Related_Type_Trait ):
 
 
 # Entity_Types model
-@python_2_unicode_compatible
 class Entity_Relation_Types( Abstract_Context_Parent ):
 
     #----------------------------------------------------------------------
@@ -4160,7 +4140,6 @@ class Entity_Relation_Types( Abstract_Context_Parent ):
 
 
 # Entity_Trait model
-@python_2_unicode_compatible
 class Entity_Trait( Abstract_Trait ):
 
     #----------------------------------------------------------------------
@@ -4320,7 +4299,6 @@ class Entity_Trait( Abstract_Trait ):
 
 
 # Entity_Type model
-@python_2_unicode_compatible
 class Entity_Type( Abstract_Type ):
 
     #----------------------------------------------------------------------
@@ -4409,7 +4387,6 @@ class Entity_Type( Abstract_Type ):
 
 
 # Entity_Type_Trait model
-@python_2_unicode_compatible
 class Entity_Type_Trait( Abstract_Related_Type_Trait ):
 
 
@@ -4488,7 +4465,6 @@ class Entity_Type_Trait( Abstract_Related_Type_Trait ):
 
 
 # Entity_Types model
-@python_2_unicode_compatible
 class Entity_Types( Abstract_Context_Parent ):
 
     #----------------------------------------------------------------------
@@ -4517,7 +4493,6 @@ class Entity_Types( Abstract_Context_Parent ):
 
 
 # Term model
-@python_2_unicode_compatible
 class Term( Abstract_Context_Parent ):
 
     #----------------------------------------------------------------------
@@ -4605,7 +4580,6 @@ class Term( Abstract_Context_Parent ):
 
 
 # Term_Relation model
-@python_2_unicode_compatible
 class Term_Relation( Abstract_Relation ):
 
     #----------------------------------------------------------------------
@@ -4638,7 +4612,6 @@ class Term_Relation( Abstract_Relation ):
 
 
 # Term_Relation_Type model
-@python_2_unicode_compatible
 class Term_Relation_Type( Abstract_Type ):
 
     #----------------------------------------------------------------------
@@ -4668,7 +4641,6 @@ class Term_Relation_Type( Abstract_Type ):
 
 
 # Trait_Type model
-@python_2_unicode_compatible
 class Trait_Type( Abstract_Type ):
 
     #----------------------------------------------------------------------
@@ -4699,7 +4671,6 @@ class Trait_Type( Abstract_Type ):
 
 
 # Vocabulary model
-@python_2_unicode_compatible
 class Vocabulary( Abstract_Context_Parent ):
 
     name = models.CharField( max_length = 255 )
@@ -4757,7 +4728,6 @@ class Vocabulary( Abstract_Context_Parent ):
 
 
 # Abstract_Work_Log model
-@python_2_unicode_compatible
 class Work_Log( Abstract_Work_Log ):
 
     def __init__( self, *args, **kwargs ):

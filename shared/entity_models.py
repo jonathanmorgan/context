@@ -29,7 +29,6 @@ from nameparser import HumanName
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models import Q
-from django.utils.encoding import python_2_unicode_compatible
 
 # taggit tagging APIs
 from taggit.managers import TaggableManager
@@ -121,7 +120,6 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
 
 
 # Abstract_Entity_Container model
-@python_2_unicode_compatible
 class Abstract_Entity_Container( Abstract_Context_With_JSON ):
     
     '''
@@ -504,7 +502,6 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
 
 # Abstract_Related_Content model
-@python_2_unicode_compatible
 class Abstract_Related_Content( models.Model ):
 
     # Content types:
@@ -695,7 +692,6 @@ class Abstract_Related_Content( models.Model ):
 
 
 # Abstract_Related_JSON_Content model
-@python_2_unicode_compatible
 class Abstract_Related_JSON_Content( Abstract_Related_Content ):
 
     #----------------------------------------------------------------------
@@ -796,7 +792,6 @@ class Abstract_Related_JSON_Content( Abstract_Related_Content ):
 
 
 # Locations
-@python_2_unicode_compatible
 class Abstract_Location( models.Model ):
 
     # States to choose from.
@@ -936,7 +931,6 @@ class Abstract_Location( models.Model ):
 
 
 # AbstractOrganization model
-@python_2_unicode_compatible
 class Abstract_Organization( Abstract_Entity_Container ):
 
     name = models.CharField( max_length = 255 )
@@ -988,7 +982,6 @@ class Abstract_Organization( Abstract_Entity_Container ):
 
 
 # Abstract_Person_Parent model
-@python_2_unicode_compatible
 class Abstract_Person_Parent( Abstract_Entity_Container ):
 
     #----------------------------------------------------------------------
@@ -1530,7 +1523,6 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
 
 
 # Abstract_Person model
-@python_2_unicode_compatible
 class Abstract_Person( Abstract_Person_Parent ):
 
     '''
