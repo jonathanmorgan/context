@@ -237,7 +237,7 @@ class Abstract_Context_Parent( models.Model ):
     #-- END method output_log_message() --#
 
 
-    def output_debug( self, message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = DEFAULT_LOGGER_NAME ):
+    def output_debug( self, message_IN, method_IN = "", indent_with_IN = "", do_print_IN = None ):
 
         '''
         Accepts message string.  If debug is on, logs it.  If not,
@@ -245,26 +245,32 @@ class Abstract_Context_Parent( models.Model ):
         '''
 
         # declare variables
+        logger_name = None
         do_print = False
+
+        # init
+        logger_name = self.LOGGING_LOGGER_NAME
+        do_print = do_print_IN
+        if ( do_print is None ):
+
+            # parameter not set, default to instance debug flag.
+            do_print = self.debug_flag
+
+        #-- END check to see if print parameter set --#
 
         # got a message?
         if ( message_IN ):
-
-            # only print if debug is on.
-            do_print = DEBUG
 
             # call LoggingHelper method
             LoggingHelper.output_debug( message_IN,
                                         method_IN = method_IN,
                                         indent_with_IN = indent_with_IN,
-                                        logger_name_IN = logger_name_IN,
+                                        logger_name_IN = logger_name,
                                         do_print_IN = do_print )
 
         #-- END check to see if message. --#
 
     #-- END method output_debug() --#
-
-#-- END abstract model Abstract_Context_Parent --#
 
 
 # Abstract_Context_With_JSON model
