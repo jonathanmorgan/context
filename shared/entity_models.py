@@ -1713,48 +1713,57 @@ class Abstract_Person( Abstract_Person_Parent ):
         query_set_OUT = cls.look_up_person_from_name( name_IN, do_strict_match_IN = do_strict_match_IN, do_partial_match_IN = do_partial_match_IN )
         
         # got anything back?
-        match_count = query_set_OUT.count()
-        if ( match_count == 0 ):
-        
-            # no exact matches.  Is it just one word?
-            name_part_list = name_IN.split()
-            name_part_count = len( name_part_list )
-            if ( name_part_count == 1 ):
-            
-                # just one word.  Try the old way, so we get either first,
-                #    middle or last.
-                query_set_OUT = cls.objects.filter( Q( first_name__icontains = name_IN ) | Q( middle_name__icontains = name_IN ) | Q( last_name__icontains = name_IN ) | Q( full_name_string__icontains = name_IN ) )
-                
-            #-- END check to see if just one word. --#
-            
-            # got anything back?
+        if ( query_set_OUT is not None ):
+
+            # not None, do we have anything in QuerySet?
             match_count = query_set_OUT.count()
             if ( match_count == 0 ):
-
-                # no.  Try not strict.
-                query_set_OUT = cls.look_up_person_from_name( name_IN, do_strict_match_IN = False, do_partial_match_IN = False )
-        
+            
+                # no exact matches.  Is it just one word?
+                name_part_list = name_IN.split()
+                name_part_count = len( name_part_list )
+                if ( name_part_count == 1 ):
+                
+                    # just one word.  Try the old way, so we get either first,
+                    #    middle or last.
+                    query_set_OUT = cls.objects.filter( Q( first_name__icontains = name_IN ) | Q( middle_name__icontains = name_IN ) | Q( last_name__icontains = name_IN ) | Q( full_name_string__icontains = name_IN ) )
+                    
+                #-- END check to see if just one word. --#
+                
                 # got anything back?
                 match_count = query_set_OUT.count()
                 if ( match_count == 0 ):
-                
-                    # no exact matches.  Try not strict, allow partial match.
-                    query_set_OUT = cls.look_up_person_from_name( name_IN, do_strict_match_IN = False, do_partial_match_IN = True )
-                
+
+                    # no.  Try not strict.
+                    query_set_OUT = cls.look_up_person_from_name( name_IN, do_strict_match_IN = False, do_partial_match_IN = False )
+            
                     # got anything back?
                     match_count = query_set_OUT.count()
                     if ( match_count == 0 ):
                     
-                        # no lookup matches.  Try the old way...
-                        query_set_OUT = cls.objects.filter( Q( first_name__icontains = name_IN ) | Q( middle_name__icontains = name_IN ) | Q( last_name__icontains = name_IN ) | Q( full_name_string__icontains = name_IN ) )
+                        # no exact matches.  Try not strict, allow partial match.
+                        query_set_OUT = cls.look_up_person_from_name( name_IN, do_strict_match_IN = False, do_partial_match_IN = True )
                     
-                    #-- END check to see if any non-strict partial matches. --#
-                
-                #-- END check to see if any non-strict matches. --#
+                        # got anything back?
+                        match_count = query_set_OUT.count()
+                        if ( match_count == 0 ):
+                        
+                            # no lookup matches.  Try the old way...
+                            query_set_OUT = cls.objects.filter( Q( first_name__icontains = name_IN ) | Q( middle_name__icontains = name_IN ) | Q( last_name__icontains = name_IN ) | Q( full_name_string__icontains = name_IN ) )
+                        
+                        #-- END check to see if any non-strict partial matches. --#
+                    
+                    #-- END check to see if any non-strict matches. --#
 
-            #-- END check to see if any matches for just one word. --#
+                #-- END check to see if any matches for just one word. --#
 
-        #-- END check to see if strict matches. --#
+            #-- END check to see if strict matches. --#
+        
+        else:
+
+            output_debug( "In " + me + ": None returned for name {}, so returning None.".format( name_IN ) )
+
+        #-- END check to see if None --#
             
         return query_set_OUT
 
@@ -2290,7 +2299,8 @@ class Abstract_Person( Abstract_Person_Parent ):
         else:
         
             # No name, returning None
-            output_debug( "In " + me + ": no name passed in, returning None." )
+            output_debug( "In " + me + ": no name passed in, returning Empty QuerySet." )
+            qs_OUT = cls.objects.none()
         
         #-- END check to see if we have a name. --#
         
