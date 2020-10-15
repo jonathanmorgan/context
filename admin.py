@@ -1,10 +1,6 @@
 from django.contrib import admin
 from django.contrib.postgres import fields
 
-# import code for AJAX select
-#from ajax_select import make_ajax_form
-#from ajax_select.admin import AjaxSelectAdmin
-
 # django_json_widget imports
 from django_json_widget.widgets import JSONEditorWidget
 
@@ -327,13 +323,7 @@ class ER_EntityRelationTraitInline( admin.TabularInline ):
 
 class Entity_RelationAdmin( admin.ModelAdmin ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Entity_Relation, dict( relation_from = 'entity', relation_to = 'entity', relation_through = 'entity' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'relation_from', 'relation_to', 'relation_through' ]
 
     formfield_overrides = {
@@ -381,13 +371,7 @@ admin.site.register( Entity_Relation, Entity_RelationAdmin )
 # trait inline
 class Entity_Relation_TraitAdmin( admin.ModelAdmin ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Entity_Trait, dict( trait_type = 'trait_type', term = 'term' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'trait_type', 'term', 'entity_relation', 'entity_relation_type_trait' ]
 
     formfield_overrides = {
@@ -427,13 +411,7 @@ admin.site.register( Entity_Relation_Trait, Entity_Relation_TraitAdmin )
 # type inline
 class ERT_Entity_Relation_Type_TraitInline( admin.TabularInline ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Entity_Relation_Type_Trait, dict( trait_type = 'trait_type' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'trait_type' ]
 
     model = Entity_Relation_Type_Trait
@@ -461,13 +439,7 @@ class ERT_Entity_Relation_Type_TraitInline( admin.TabularInline ):
 
 class Entity_Relation_TypeAdmin( admin.ModelAdmin ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Entity_Relation_Type, dict( parent_type = 'entity_relation_type', relation_from_entity_type = 'entity_type', relation_to_entity_type = 'entity_type' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'parent_type', 'relation_from_entity_type', 'relation_to_entity_type', 'relation_through_entity_type' ]
 
     fieldsets = [
@@ -509,13 +481,7 @@ admin.site.register( Entity_Relation_Type, Entity_Relation_TypeAdmin )
 
 class Entity_Relation_Type_TraitAdmin( admin.ModelAdmin ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Trait_Type, dict( vocabulary = 'vocabulary' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'trait_type', 'related_type' ]
 
     fieldsets = [
@@ -552,13 +518,7 @@ admin.site.register( Entity_Relation_Type_Trait, Entity_Relation_Type_TraitAdmin
 # trait inline
 class Entity_TraitAdmin( admin.ModelAdmin ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Entity_Trait, dict( trait_type = 'trait_type', term = 'term' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'trait_type', 'term', 'entity', 'entity_type_trait' ]
 
     formfield_overrides = {
@@ -598,13 +558,7 @@ admin.site.register( Entity_Trait, Entity_TraitAdmin )
 # type inline
 class ET_Entity_Type_TraitInline( admin.TabularInline ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Entity_Type_Trait, dict( trait_type = 'trait_type' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'trait_type' ]
 
     model = Entity_Type_Trait
@@ -632,13 +586,7 @@ class ET_Entity_Type_TraitInline( admin.TabularInline ):
 
 class Entity_TypeAdmin( admin.ModelAdmin ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Entity_Type, dict( parent_type = 'entity_type' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'parent_type' ]
 
     fieldsets = [
@@ -680,13 +628,7 @@ admin.site.register( Entity_Type, Entity_TypeAdmin )
 
 class Entity_Type_TraitAdmin( admin.ModelAdmin ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Trait_Type, dict( vocabulary = 'vocabulary' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'trait_type', 'related_type' ]
 
     fieldsets = [
@@ -722,13 +664,7 @@ admin.site.register( Entity_Type_Trait, Entity_Type_TraitAdmin )
 
 class TermAdmin( admin.ModelAdmin ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Term, dict( vocabulary = 'vocabulary' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'vocabulary' ]
 
     fieldsets = [
@@ -765,13 +701,7 @@ admin.site.register( Term, TermAdmin )
 
 class Trait_TypeAdmin( admin.ModelAdmin ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Trait_Type, dict( vocabulary = 'vocabulary' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'vocabulary' ]
 
     fieldsets = [
@@ -809,13 +739,7 @@ admin.site.register( Trait_Type, Trait_TypeAdmin )
 #class TermInline( admin.StackedInline ):
 class TermInline( admin.TabularInline ):
 
-    # set up ajax-selects - for make_ajax_form, 1st argument is the model you
-    #    are looking to make ajax selects form fields for; 2nd argument is a
-    #    dict of pairs of field names in the model in argument 1 (with no quotes
-    #    around them) mapped to lookup channels used to service them (lookup
-    #    channels are defined in settings.py, implenented in a separate module -
-    #    in this case, implemented in context.lookups.py
-    #form = make_ajax_form( Term, dict( parent_term = 'term' ) )
+    # ajax-based autocomplete
     autocomplete_fields = [ 'parent_term' ]
 
     model = Term
