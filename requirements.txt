@@ -1,5 +1,4 @@
 django
-django-ajax-selects
 django-autocomplete-light
 django-basic-config
 django-json-widget
