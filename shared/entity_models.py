@@ -26,7 +26,7 @@ import logging
 from nameparser import HumanName
 
 # Django imports
-from django.contrib.postgres.fields import JSONField
+#from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models import Q
 
@@ -58,21 +58,21 @@ DEBUG = False
 DEFAULT_LOGGER_NAME = "context.shared.models"
 
 def output_log_message( message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = DEFAULT_LOGGER_NAME, log_level_code_IN = logging.DEBUG, do_print_IN = False ):
-    
+
     '''
     Accepts message string.  If debug is on, logs it.  If not,
        does nothing for now.
     '''
-    
+
     # declare variables
     do_print = False
 
     # got a message?
     if ( message_IN ):
-    
+
         # only print if debug is on.
         do_print = DEBUG
-        
+
         # call LoggingHelper method
         LoggingHelper.log_message( message_IN,
                                    method_IN = method_IN,
@@ -80,35 +80,35 @@ def output_log_message( message_IN, method_IN = "", indent_with_IN = "", logger_
                                    logger_name_IN = logger_name_IN,
                                    log_level_code_IN = log_level_code_IN,
                                    do_print_IN = do_print_IN )
-    
+
     #-- END check to see if message. --#
 
 #-- END method output_log_message() --#
 
 
 def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_IN = DEFAULT_LOGGER_NAME ):
-    
+
     '''
     Accepts message string.  If debug is on, logs it.  If not,
        does nothing for now.
     '''
-    
+
     # declare variables
     do_print = False
 
     # got a message?
     if ( message_IN ):
-    
+
         # only print if debug is on.
         do_print = DEBUG
-        
+
         # call LoggingHelper method
         LoggingHelper.output_debug( message_IN,
                                     method_IN = method_IN,
                                     indent_with_IN = indent_with_IN,
                                     logger_name_IN = logger_name_IN,
                                     do_print_IN = do_print )
-    
+
     #-- END check to see if message. --#
 
 #-- END method output_debug() --#
@@ -121,22 +121,22 @@ def output_debug( message_IN, method_IN = "", indent_with_IN = "", logger_name_I
 
 # Abstract_Entity_Container model
 class Abstract_Entity_Container( Abstract_Context_With_JSON ):
-    
+
     '''
     To extend:
     - make child model extend this class: `class Article( Abstract_Entity_Container ):`
     - give child model an __init__() method if one not already present.  Example:
-    
+
         #def __init__( self, *args, **kwargs ):
-        
+
             # call parent __init()__ first.
             super( Article, self ).__init__( *args, **kwargs )
-    
+
             # then, initialize variable.
             self.my_entity_name_prefix = self.ENTITY_NAME_PREFIX
             self.my_entity_type_slug = self.ENTITY_TYPE_SLUG_ARTICLE
             self.my_base_entity_id_type = self.ENTITY_ID_TYPE_ARTICLE_SOURCENET_ID
-            
+
         #-- END method __init__() --#
 
     - make sure that the three "my_*" variables are set appropriately for the
@@ -169,7 +169,7 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
     class Meta:
 
         abstract = True
-        
+
     #-- END class Meta --#
 
 
@@ -197,7 +197,7 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
 
     def __init__( self, *args, **kwargs ):
-        
+
         # call parent __init()__ first.
         super( Abstract_Entity_Container, self ).__init__( *args, **kwargs )
 
@@ -205,7 +205,7 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
         self.my_entity_name_prefix = None
         self.my_entity_type_slug = None
         self.my_base_entity__id_type = None
-        
+
     #-- END method __init__() --#
 
 
@@ -213,9 +213,9 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
         # return reference
         string_OUT = ""
-        
+
         string_OUT = self.to_string()
-        
+
         return string_OUT
 
     #-- END method __str__() --#
@@ -224,18 +224,18 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
     #---------------------------------------------------------------------------
     # ! ----> instance methods
     #---------------------------------------------------------------------------
-    
-    
+
+
     def get_entity( self, *args, **kwargs ):
-        
+
         '''
         Returns entity nested in this instance.
         Preconditions: None
         Postconditions: None
-        
+
         Returns the entity stored in the instance.
         '''
-        
+
         # return reference
         value_OUT = None
 
@@ -244,23 +244,23 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
         # return the content.
         value_OUT = self.entity
-                
+
         return value_OUT
 
     #-- END method get_entity() --#
 
 
     def has_entity( self, *args, **kwargs ):
-        
+
         '''
         Calls load_entity(), with do_create_if_none_IN set to False.  Returns
             True if Entity returned by load_entity(), False if None returned.
         Preconditions: None
         Postconditions: None
-        
+
         Returns True if Entity returned by load_entity(), False if None found.
         '''
-        
+
         # return reference
         value_OUT = None
 
@@ -270,27 +270,27 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
         # call load_entity()
         entity_instance = self.load_entity( do_create_if_none_IN = False )
-        
+
         # got an entity?
         if ( entity_instance is None ):
-        
+
             # no.  Return False.
             value_OUT = False
-            
+
         else:
-        
+
             # no None.  Check type to make sure it is an Entity?
             value_OUT = True
-            
+
         #-- END check to see if instance returned from load_entity() --#
-                
+
         return value_OUT
 
     #-- END method has_entity() --#
 
 
     def load_entity( self, do_create_if_none_IN = True, *args, **kwargs ):
-        
+
         '''
         Tries to find the entity for this class instance in context:
         - If it finds a match, stores it in instance, and returns it.
@@ -301,7 +301,7 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
             - If not creating, then returns None.
 
         Preconditions: This instance must have been saved so it has an id.  The
-            following variables also must be set correctly for the instance in 
+            following variables also must be set correctly for the instance in
             the child class __init__() method:
             - self.my_entity_name_prefix
             - self.my_entity_type_slug
@@ -314,10 +314,10 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
             as part of a call to update_entity() - it calls this method to get
             the entity instance that it updates.
         '''
-        
+
         # return reference
         value_OUT = None
-        
+
         # declare variables
         entity_instance = None
         my_instance_id = None
@@ -328,115 +328,115 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
         entity_name_prefix = None
         entity_type_slug = None
         entity_type = None
-        
+
         # init
         identifier_type_name = self.my_base_entity_id_type
-        
+
         # does instance have an entity?
         entity_instance = self.get_entity()
         if ( entity_instance is None ):
-        
+
             # no nested entity.  check to see if already an entity with this ID.
             my_instance_id = self.id
-            
+
             # filter on identifier with type from self.my_base_entity_id_type
             entity_identifier_type = Entity_Identifier_Type.get_type_for_name( identifier_type_name )
             existing_entity_qs = Entity.objects.filter( entity_identifier__entity_identifier_type = entity_identifier_type )
-    
+
             # ...and the ID of the current instance.
             existing_entity_qs = existing_entity_qs.filter( entity_identifier__uuid = my_instance_id )
-    
+
             # what have we got?
             existing_entity_count = existing_entity_qs.count()
             if existing_entity_count == 1:
-                
+
                 # Found one. Store it and return it.
                 entity_instance = existing_entity_qs.get()
                 self.set_entity( entity_instance )
                 self.save()
                 value_OUT = self.get_entity()
-        
+
             elif existing_entity_count == 0:
-            
+
                 # no match.
                 log_message = "No entities with identifier of type {}, uuid = {}".format( identifier_type_name, my_instance_id )
                 output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = DEBUG )
-                
+
                 # create?
                 if ( do_create_if_none_IN == True ):
-                
+
                     # no match.
                     log_message = "Creating entity with identifier of type {}, uuid = {}".format( identifier_type_name, my_instance_id )
                     output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = DEBUG )
-                    
+
                     # got an instance.  Create entity instance.  Init:
                     entity_name_prefix = self.my_entity_name_prefix
                     entity_type_slug = self.my_entity_type_slug
-                    
+
                     # create instance
                     entity_instance = Entity()
                     entity_instance.name = "{}{}".format( entity_name_prefix, my_instance_id )
                     entity_instance.notes = "{}".format( self )
                     entity_instance.save()
-        
+
                     # set type
                     entity_type = entity_instance.add_entity_type( entity_type_slug )
-                    
+
                     # add identifier for django ID in this system.
                     identifier_type = Entity_Identifier_Type.get_type_for_name( identifier_type_name )
                     identifier_uuid = my_instance_id
                     entity_instance.set_identifier( identifier_uuid,
                                                     name_IN = identifier_type.name,
                                                     entity_identifier_type_IN = identifier_type )
-                    
+
                     # add to article
                     self.set_entity( entity_instance )
                     self.save()
                     value_OUT = self.get_entity()
 
                 else:
-                
+
                     # no match.
                     log_message = "No entities with identifier of type {}, uuid = {}".format( identifier_type_name, my_instance_id )
                     output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = DEBUG )
-                    
+
                     # do not create.
                     value_OUT = None
-                    
+
                 #-- END check to see if we create when none found --#
-            
+
             else:
-                
+
                 # more than one existing match.  Error.
                 log_message = "ERROR - more than one entity ( {} ) with identifier of type {}, uuid = {}".format( existing_entity_count, identifier_type_name, my_instance_id )
                 output_log_message( log_message, log_level_code_IN = logging.INFO, do_print_IN = True )
                 value_OUT = None
-    
+
             #-- END query for existing entity. --#
-            
+
         else:
-        
+
             # something already loaded - return what is nested.
             value_OUT = entity_instance
-        
+
         #-- END check for associated entity --#
-                
+
         return value_OUT
 
     #-- END method load_entity() --#
 
 
     def set_entity( self, value_IN = "", *args, **kwargs ):
-        
+
         '''
         Accepts a reference to an Entity instance.  Stores it in this instance's
             entity variable.
         Preconditions: None
         Postconditions: None
-        
+
         Returns the entity as it is stored in the instance.
         '''
-        
+
         # return reference
         value_OUT = None
 
@@ -445,39 +445,39 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
         # set the value in the instance.
         self.entity = value_IN
-        
+
         # return the entity.
         value_OUT = self.entity
-                
+
         return value_OUT
 
     #-- END method set_entity() --#
-    
+
 
     def to_string( self ):
 
         # return reference
         string_OUT = ""
-        
+
         if ( self.id ):
-            
+
             string_OUT += str( self.id ) + " - "
-            
+
         #-- END check to see if ID --#
-             
+
         if ( self.entity ):
-        
+
             string_OUT += self.entity
-            
+
         #-- END check to see if content_description --#
-        
+
         return string_OUT
 
     #-- END method to_string() --#
 
 
     def update_entity( self, *args, **kwargs ):
-        
+
         '''
         Looks for entity for this instance in context.  If not found, creates a
             a new one and stores it in this instance.  Then, updates the entity
@@ -487,12 +487,12 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
             stores it internally.  Updates the entity in context based on
             current contents of this instance.
         '''
-        
+
         # return reference
         value_OUT = None
-        
+
         print( "ERROR - you need to implement your update_entity() method." )
-                
+
         return value_OUT
 
     #-- END method update_entity() --#
@@ -513,7 +513,7 @@ class Abstract_Related_Content( models.Model ):
     CONTENT_TYPE_OTHER = 'other'
     CONTENT_TYPE_NONE = 'none'
     CONTENT_TYPE_DEFAULT = CONTENT_TYPE_TEXT
-    
+
     CONTENT_TYPE_CHOICES = (
         ( CONTENT_TYPE_CANONICAL, "Canonical" ),
         ( CONTENT_TYPE_TEXT, "Text" ),
@@ -555,7 +555,7 @@ class Abstract_Related_Content( models.Model ):
 
 
     #bs_helper = None
-    
+
 
     #----------------------------------------------------------------------------
     # methods
@@ -563,50 +563,50 @@ class Abstract_Related_Content( models.Model ):
 
 
     def __init__( self, *args, **kwargs ):
-        
+
         # call parent __init()__ first.
         super( Abstract_Related_Content, self ).__init__( *args, **kwargs )
 
         # then, initialize variable.
         self.bs_helper = None
-        
+
     #-- END method __init__() --#
 
 
     def get_bs_helper( self ):
-    
+
         # return reference
         instance_OUT = None
-        
+
         # get instance.
         instance_OUT = self.bs_helper
-                
+
         # got one?
         if ( not( instance_OUT ) ):
-        
+
             # no.  Create and store.
             self.bs_helper = BeautifulSoupHelper()
-            
+
             # try again.  If nothing this time, nothing we can do.  Return it.
             instance_OUT = self.bs_helper
-            
+
         #-- END check to see if regex is stored in instance --#
 
         return instance_OUT
-    
+
     #-- END method get_bs_helper() --#
 
 
     def get_content( self, *args, **kwargs ):
-        
+
         '''
         Returns content nested in this instance.
         Preconditions: None
         Postconditions: None
-        
+
         Returns the content exactly as it is stored in the instance.
         '''
-        
+
         # return reference
         content_OUT = None
 
@@ -615,22 +615,22 @@ class Abstract_Related_Content( models.Model ):
 
         # return the content.
         content_OUT = self.content
-                
+
         return content_OUT
 
     #-- END method get_content() --#
 
 
     def set_content( self, value_IN = "", *args, **kwargs ):
-        
+
         '''
         Accepts a piece of text.  Stores it in this instance's content variable.
         Preconditions: None
         Postconditions: None
-        
+
         Returns the content as it is stored in the instance.
         '''
-        
+
         # return reference
         value_OUT = None
 
@@ -639,38 +639,38 @@ class Abstract_Related_Content( models.Model ):
 
         # set the text in the instance.
         self.content = value_IN
-        
+
         # return the content.
         value_OUT = self.content
-                
+
         return value_OUT
 
     #-- END method set_content() --#
-    
+
 
     def to_string( self ):
 
         # return reference
         string_OUT = ""
-        
+
         if ( self.id ):
-            
+
             string_OUT += str( self.id ) + " - "
-            
+
         #-- END check to see if ID --#
-             
+
         if ( self.content_description ):
-        
+
             string_OUT += self.content_description
-            
+
         #-- END check to see if content_description --#
-        
+
         if ( self.content_type ):
-            
+
             string_OUT += " of type \"" + self.content_type + "\""
-            
+
         #-- END check to see if there is a type --#
-        
+
         return string_OUT
 
     #-- END method __str__() --#
@@ -680,9 +680,9 @@ class Abstract_Related_Content( models.Model ):
 
         # return reference
         string_OUT = ""
-        
+
         string_OUT = self.to_string()
-        
+
         return string_OUT
 
     #-- END method __str__() --#
@@ -699,7 +699,7 @@ class Abstract_Related_JSON_Content( Abstract_Related_Content ):
     #----------------------------------------------------------------------
 
     content = models.TextField( blank = True, null = True )
-    content_json = JSONField( blank = True, null = True )
+    content_json = models.JSONField( blank = True, null = True )
 
     # meta class so we know this is an abstract class.
     class Meta:
@@ -714,7 +714,7 @@ class Abstract_Related_JSON_Content( Abstract_Related_Content ):
 
 
     #bs_helper = None
-    
+
 
     #----------------------------------------------------------------------------
     # methods
@@ -722,26 +722,26 @@ class Abstract_Related_JSON_Content( Abstract_Related_Content ):
 
 
     def __init__( self, *args, **kwargs ):
-        
+
         # call parent __init()__ first.
         super( Abstract_Related_JSON_Content, self ).__init__( *args, **kwargs )
 
         # then, initialize variable.
         self.bs_helper = None
-        
+
     #-- END method __init__() --#
 
 
     def get_content_json( self, *args, **kwargs ):
-        
+
         '''
         Returns content nested in this instance.
         Preconditions: None
         Postconditions: None
-        
+
         Returns the content exactly as it is stored in the instance.
         '''
-        
+
         # return reference
         content_OUT = None
 
@@ -750,22 +750,22 @@ class Abstract_Related_JSON_Content( Abstract_Related_Content ):
 
         # return the content.
         content_OUT = self.content_json
-                
+
         return content_OUT
 
     #-- END method get_content_json() --#
 
 
     def set_content_json( self, value_IN = "", *args, **kwargs ):
-        
+
         '''
         Accepts a piece of text.  Stores it in this instance's content variable.
         Preconditions: None
         Postconditions: None
-        
+
         Returns the content as it is stored in the instance.
         '''
-        
+
         # return reference
         value_OUT = None
 
@@ -774,14 +774,14 @@ class Abstract_Related_JSON_Content( Abstract_Related_Content ):
 
         # set the text in the instance.
         self.content_json = value_IN
-        
+
         # return the content.
         value_OUT = self.get_content_json()
-                
+
         return value_OUT
 
     #-- END method set_content_json() --#
-    
+
 
 #-- END abstract Abstract_Related_JSON_Content model --#
 
@@ -876,13 +876,13 @@ class Abstract_Location( models.Model ):
 
 
     def __init__( self, *args, **kwargs ):
-        
+
         # call parent __init()__ first.
         super( Abstract_Location, self ).__init__( *args, **kwargs )
 
     #-- END method __init__() --#
 
-    
+
     def __str__( self ):
 
         # return reference
@@ -893,14 +893,14 @@ class Abstract_Location( models.Model ):
         if ( self.id is not None ):
 
             string_OUT = "{} - ".format( self.id )
-            
+
         #-- END check to see if ID --#
 
         if ( ( self.name is not None ) and ( self.name != '' ) ):
 
             string_OUT += '"{}"'.format( self.name )
             delimiter = ', '
-            
+
         #-- END check to see if name --#
 
         if ( self.address != '' ):
@@ -924,7 +924,7 @@ class Abstract_Location( models.Model ):
             delimiter = ', '
 
         return string_OUT
-        
+
     #-- END method __str__() --#
 
 #= End Abstract_Location Model ===========================================================
@@ -947,13 +947,13 @@ class Abstract_Organization( Abstract_Entity_Container ):
     #----------------------------------------------------------------------
 
     def __init__( self, *args, **kwargs ):
-        
+
         # call parent __init()__ first.
         super( Abstract_Organization, self ).__init__( *args, **kwargs )
 
     #-- END method __init__() --#
 
-    
+
     def __str__( self ):
 
         # return reference
@@ -964,14 +964,14 @@ class Abstract_Organization( Abstract_Entity_Container ):
         if ( self.id is not None ):
 
             string_OUT = "{} - ".format( self.id )
-            
+
         #-- END check to see if ID --#
 
         if ( ( self.name is not None ) and ( self.name != '' ) ):
 
             string_OUT += "{}".format( self.name )
             delimiter = ', '
-            
+
         #-- END check to see if name --#
 
         return string_OUT
@@ -995,7 +995,7 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
     #organization = models.ForeignKey( Organization, on_delete = models.SET_NULL, blank = True, null = True )
     organization_string = models.CharField( max_length = 255, blank = True, null = True )
     more_organization = models.TextField( blank = True, null = True )
-    
+
     # field to store how person was captured.
     capture_method = models.CharField( max_length = 255, blank = True, null = True )
 
@@ -1014,7 +1014,7 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
     class Meta:
 
         abstract = True
-        
+
     #-- END class Meta --#
 
 
@@ -1024,47 +1024,47 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
 
 
     def __init__( self, *args, **kwargs ):
-        
+
         # call parent __init()__ first.
         super( Abstract_Person_Parent, self ).__init__( *args, **kwargs )
 
     #-- END method __init__() --#
 
-    
+
     def __str__( self ):
- 
+
         # return reference
         string_OUT = ''
-        
+
         # declare variables
         string_list = []
- 
+
         if ( ( self.title ) or ( self.organization_string ) ):
-        
+
             string_OUT += "( "
-        
+
             string_list = []
-        
+
             if ( self.title ):
-            
+
                 # add title to list
                 string_list.append( "title = " + self.title )
-                
+
             #-- END check for title --#
-            
+
             if ( self.organization_string ):
-            
+
                 # add title to list
                 string_list.append( "organization = " + self.organization_string )
-                
+
             #-- END check for title --#
-            
+
             string_OUT += "; ".join( string_list )
 
             string_OUT += " )"
-            
+
         #-- END check to see if we have a title, organization, or capture_method. --#
- 
+
         return string_OUT
 
     #-- END method __str__() --#
@@ -1076,40 +1076,40 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
 
 
     def set_capture_method( self, value_IN = "", overwrite_IN = False ):
-    
+
         '''
         Accepts capture method value.  If there is already a value in the
             capture_method field, does nothing.  If not, stores the value passed
             in inside the capture_method field.
-            
+
         Returns capture_method value.
         '''
-        
+
         # return reference
         value_OUT = ""
-        
+
         # declare variables
         existing_capture_method = ""
-        
+
         # get existing value
         existing_capture_method = self.capture_method
-        
+
         # are we allowed to update (either is empty, or overwrite flag is True).
         if ( ( ( existing_capture_method is None ) or ( existing_capture_method == "" ) )
             or ( overwrite_IN == True ) ):
-            
+
             # OK to update.
             self.capture_method = value_IN
-            
+
         #-- END check to see if we can update capture_method. --#
-        
+
         # retrieve value_OUT from instance variable.
         value_OUT = self.capture_method
-        
+
         return value_OUT
-    
+
     #-- END method set_capture_method() --#
-    
+
 
     def set_organization_string( self, organization_string_IN, do_save_IN = True, do_append_IN = True ):
 
@@ -1118,103 +1118,103 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
            save if we make changes.  If no existing organization string, places
            first 255 characters into organization string.  If there is already a
            value, does nothing.
-           
+
         Returns the organization string.
         '''
-        
+
         # return reference
         value_OUT = ""
-        
+
         # declare variables
         is_updated = False
         value_cleaned = ""
         value_length = -1
         existing_value = ""
         more_value_cleaned = ""
-        
+
         # got a value passed in?
         if ( ( organization_string_IN is not None ) and ( organization_string_IN != "" ) ):
-            
+
             # not updated so far...
             is_updated = False
-    
+
             # got one.  strip off white space.
             value_cleaned = organization_string_IN.strip()
-            
+
             # yes.  First, deal with existing value.
             existing_value = self.organization_string
             if ( ( existing_value is not None ) and ( existing_value != "" ) ):
-                
+
                 # we have an existing value.  Append it?
                 if ( do_append_IN == True ):
-                
+
                     # yes - anything in more_organization already?
                     if ( ( self.more_organization is not None ) and ( self.more_organization != "" ) ):
-                    
+
                         # yes.  Append.
                         self.more_organization += "\n" + existing_value
-                        
+
                     else:
-                    
+
                         # no - just chuck it in there.
                         self.more_organization = existing_value
-                        
+
                     #--END check to see if anything in more_organization --#
-                    
+
                     is_updated = True
-                
+
                 #-- END check to see if we append. --#
-                
+
             #-- END check to see if we have an existing value. --#
 
             # Is new value longer than 255?
             value_length = len( value_cleaned )
             if ( value_length > 255 ):
-                    
+
                 # field is 255 characters - truncate to 255, put that in
                 #    org string, store full value in more_organization.
                 self.organization_string = value_cleaned[ : 255 ]
-                
+
                 # already got more?
                 if ( ( self.more_organization is not None ) and ( self.more_organization != "" ) ):
-                
+
                     # yes.  Append entire value.
                     self.more_organization += "\n" + value_cleaned
-                    
+
                 else:
-                
+
                     # no - just chuck it in there.
                     self.more_organization = value_cleaned
-                    
+
                 #--END check to see if anything in more_organization --#
 
                 is_updated = True
-                
+
             else:
-            
+
                 # value is not long.  Just put it in field.
                 self.organization_string = value_cleaned
                 is_updated = True
-                
+
             #-- END check to see if value is too long. --#
-            
+
             # updated?
             if ( is_updated == True ):
-                
+
                 # yes.  Do we save?
                 if ( do_save_IN == True ):
-                    
+
                     # yes.  Save.
                     self.save()
-                    
+
                 #-- END check to see if we save or not. --#
-                
+
             #-- END check to see if changes made --#
-            
+
         #-- END check to see anything passed in. --#
-        
+
         value_OUT = self.organization_string
-            
+
         return value_OUT
 
     #-- END method set_organization_string() --#
@@ -1228,103 +1228,103 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
            title, places first 255 characters into title and stores the rest in
            more_title.  If there is title, if do_append, will just append the
            string passed in to more_title, preceded by a newline.
-           
+
         Returns the title.
         '''
-        
+
         # return reference
         value_OUT = ""
-        
+
         # declare variables
         is_updated = False
         value_cleaned = ""
         value_length = -1
         existing_value = ""
         more_value_cleaned = ""
-        
+
         # got a title passed in?
         if ( ( title_string_IN is not None ) and ( title_string_IN != "" ) ):
-            
+
             # not updated so far...
             is_updated = False
-    
+
             # got one.  strip off white space.
             value_cleaned = title_string_IN.strip()
-            
+
             # yes.  First, deal with existing value.
             existing_value = self.title
             if ( ( existing_value is not None ) and ( existing_value != "" ) ):
-                
+
                 # we have an existing value.  Append it?
                 if ( do_append_IN == True ):
-                
+
                     # yes - anything in more_title already?
                     if ( ( self.more_title is not None ) and ( self.more_title != "" ) ):
-                    
+
                         # yes.  Append.
                         self.more_title += "\n" + existing_value
-                        
+
                     else:
-                    
+
                         # no - just chuck it in there.
                         self.more_title = existing_value
-                        
+
                     #--END check to see if anything in more_title --#
-                    
+
                     is_updated = True
-                
+
                 #-- END check to see if we append. --#
-                
+
             #-- END check to see if we have an existing value. --#
 
             # Is new value longer than 255?
             value_length = len( value_cleaned )
             if ( value_length > 255 ):
-                    
+
                 # field is 255 characters - truncate to 255, put that in
                 #    title, store full value in more_title.
                 self.title = value_cleaned[ : 255 ]
-                
+
                 # already got more?
                 if ( ( self.more_title is not None ) and ( self.more_title != "" ) ):
-                
+
                     # yes.  Append entire value.
                     self.more_title += "\n" + value_cleaned
-                    
+
                 else:
-                
+
                     # no - just chuck it in there.
                     self.more_title = value_cleaned
-                    
+
                 #--END check to see if anything in more_title --#
 
                 is_updated = True
-                
+
             else:
-            
+
                 # value is not long.  Just put it in field.
                 self.title = value_cleaned
                 is_updated = True
-                
+
             #-- END check to see if value is too long. --#
-            
+
             # updated?
             if ( is_updated == True ):
-                
+
                 # yes.  Do we save?
                 if ( do_save_IN == True ):
-                    
+
                     # yes.  Save.
                     self.save()
-                    
+
                 #-- END check to see if we save or not. --#
-                
+
             #-- END check to see if changes made --#
-            
+
         #-- END check to see anything passed in. --#
-        
+
         value_OUT = self.title
-            
+
         return value_OUT
 
     #-- END method set_title() --#
@@ -1340,18 +1340,18 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
             appropriately.  End result is that this instance is updated, and if
             the do_save_IN flag is set, the updated values are persisted to the
             database, as well.
-            
+
         Preconditions: Must pass a PersonDetails instance, even if it is empty.
-        
+
         Postconditions: Instance is updated, and if do_save_IN is True, any
             changes are saved to the database.
-           
+
         Returns the title.
         '''
-        
+
         # return reference
         status_OUT = None
-        
+
         # declare variables
         me = "update_from_person_details"
         my_person_details = None
@@ -1367,56 +1367,56 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
         capture_method_IN = ""
         is_insert = False
         is_updated = False
-        
+
         # get values of interest from this instance.
         existing_title = self.title
         existing_organization_string = self.organization_string
         existing_organization = self.organization
         existing_notes = self.notes
         existing_capture_method = self.capture_method
-        
+
         # got person_details?
         my_person_details = PersonDetails.get_instance( person_details_IN )
         if ( my_person_details is not None ):
-        
+
             # we have PersonDetails.  Get values of interest.
             title_IN = my_person_details.get( PersonDetails.PROP_NAME_TITLE, None )
             organization_string_IN = my_person_details.get( PersonDetails.PROP_NAME_PERSON_ORGANIZATION, None )
             organization_IN = my_person_details.get( PersonDetails.PROP_NAME_ORGANIZATION_INSTANCE, None )
             notes_IN = my_person_details.get( PersonDetails.PROP_NAME_NOTES, None )
             capture_method_IN = my_person_details.get( PersonDetails.PROP_NAME_CAPTURE_METHOD, None )
-        
+
             # got an ID (check to see if update or insert)?
             my_id = self.id
             if ( ( my_id is not None ) and ( int( my_id ) > 0 ) ):
-            
+
                 # no ID.  Insert.
                 is_insert = True
-                
+
             else:
-            
+
                 # there is an id.  Not an insert.
                 is_insert = False
-                
+
             #-- END check to see if insert or update --#
-            
+
             #------------------------------------------------------#
             # ==> title
 
             # value passed in?
             if ( title_IN is not None ):
-            
+
                 # yes.  has title changed?
                 if ( existing_title != title_IN ):
 
                     # yes.  Update title.
                     self.set_title( title_IN, do_save_IN = do_save_IN, do_append_IN = True )
-    
+
                     # we need to save.
                     is_updated = True
-    
+
                 #-- END check to see if title changed --#
-                
+
             #-- END check to see if title value passed in. --#
 
             #------------------------------------------------------#
@@ -1427,18 +1427,18 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
 
                 # has organization changed?
                 if ( existing_organization_string != organization_string_IN ):
-                
+
                     # yes.  Replace.
                     self.organization_string = ""
                     self.set_organization_string( organization_string_IN, do_save_IN = do_save_IN, do_append_IN = True )
-    
+
                     # we need to save.
                     is_updated = True
-                    
+
                 #-- END check to see if new value. --#
-                
+
             #-- END check to see if organization string value passed in --#
-            
+
             #------------------------------------------------------#
             # ==> organization instance
 
@@ -1450,9 +1450,9 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
 
                 # we need to save.
                 is_updated = True
-                
+
             #-- END check to see if organization instance passed in --#
-                
+
             #------------------------------------------------------#
             # ==> notes
 
@@ -1461,30 +1461,30 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
 
                 # notes already?
                 if ( existing_notes is not None ):
-                
+
                     # other than empty?
                     if ( existing_notes != "" ):
-                    
+
                         # not empty. Add a semi-colon and a space.
                         self.notes += "; "
-                        
+
                     #-- END check to see if empty --#
-                    
+
                     # Append.
                     self.notes += notes_IN
-                
+
                 else:
-                
+
                     # no.  Just store.
                     self.notes = notes_IN
-                
+
                 #-- END check to see if new value. --#
 
                 # we need to save.
                 is_updated = True
-                
+
             #-- END check to see if organization string value passed in --#
-                
+
             #------------------------------------------------------#
             # ==> capture_method
 
@@ -1496,24 +1496,24 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
 
                 # we need to save.
                 is_updated = True
-                
+
             #-- END check to see if capture_method passed in --#
 
             # updated?
             if ( is_updated == True ):
-                
+
                 # yes.  Do we save?
                 if ( do_save_IN == True ):
-                    
+
                     # yes.  Save.
                     self.save()
-                    
+
                 #-- END check to see if we save or not. --#
-                
+
             #-- END check to see if changes made --#
-            
+
         #-- END check to see anything passed in. --#
-        
+
         return status_OUT
 
     #-- END method update_from_person_details() --#
@@ -1527,15 +1527,15 @@ class Abstract_Person( Abstract_Person_Parent ):
 
     '''
     HumanName (from package "nameparser" ) code sample:
-    
+
     from nameparser import HumanName
     >>> test = HumanName( "Jonathan Scott Morgan" )
     >>> test
     <HumanName : [
-            Title: '' 
-            First: 'Jonathan' 
-            Middle: 'Scott' 
-            Last: 'Morgan' 
+            Title: ''
+            First: 'Jonathan'
+            Middle: 'Scott'
+            Last: 'Morgan'
             Suffix: ''
     ]>
     >>> import pickle
@@ -1559,21 +1559,21 @@ class Abstract_Person( Abstract_Person_Parent ):
     ...     print( "True!" )
     ... else:
     ...     print( "False!" )
-    ... 
+    ...
     True!
     '''
 
 
     #----------------------------------------------------------------------
     # constants-ish
-    #----------------------------------------------------------------------    
+    #----------------------------------------------------------------------
 
     GENDER_CHOICES = (
         ( 'na', 'Unknown' ),
         ( 'female', 'Female' ),
         ( 'male', 'Male' )
     )
-    
+
     # lookup status
     LOOKUP_STATUS_FOUND = "found"
     LOOKUP_STATUS_NEW = "new"
@@ -1599,7 +1599,7 @@ class Abstract_Person( Abstract_Person_Parent ):
     #notes = models.TextField( blank = True, null = True )
     #create_date = models.DateTimeField( auto_now_add = True )
     #last_modified = models.DateTimeField( auto_now = True )
-    
+
     # field to store how source was captured - moved up to parent.
     # capture_method = models.CharField( max_length = 255, blank = True, null = True )
 
@@ -1609,21 +1609,21 @@ class Abstract_Person( Abstract_Person_Parent ):
 
         abstract = True
         ordering = [ 'last_name', 'first_name', 'middle_name' ]
-        
+
     #-- END class Meta --#
 
 
     #----------------------------------------------------------------------
     # ! static methods
     #----------------------------------------------------------------------
-    
-    
+
+
     @staticmethod
     def HumanName_to_str( human_name_IN ):
-    
+
         # return reference
         string_OUT = ""
-    
+
         string_OUT += "HumanName: \"" + StringHelper.object_to_unicode_string( human_name_IN ) + "\"\n"
         string_OUT += "- title: " + human_name_IN.title + "\n"
         string_OUT += "- first: " + human_name_IN.first + "\n"
@@ -1631,17 +1631,17 @@ class Abstract_Person( Abstract_Person_Parent ):
         string_OUT += "- last: " + human_name_IN.last + "\n"
         string_OUT += "- suffix: " + human_name_IN.suffix + "\n"
         string_OUT += "- nickname: " + human_name_IN.nickname + "\n"
-        
+
         return string_OUT
-    
+
     #-- END static method HumanName_to_str() --#
 
 
     #----------------------------------------------------------------------
     # ! class methods
     #----------------------------------------------------------------------
-    
-    
+
+
     @classmethod
     def create_person_for_name( cls,
                                 name_IN,
@@ -1649,43 +1649,43 @@ class Abstract_Person( Abstract_Person_Parent ):
                                 remove_periods_IN = False,
                                 *args,
                                 **kwargs ):
-    
+
         '''
         Accepts name string.  Creates instance of cls, stores name in it, then
            returns the instance.  Eventually, might do more fancy or
            sophisticated things, but for now, not so much.
         '''
-        
+
         # return reference
         instance_OUT = None
-        
+
         # got a name?
         if ( ( name_IN is not None ) and ( name_IN != "" ) ):
-        
+
             # create new Person!
             instance_OUT = cls()
-            
+
             # store name
             instance_OUT.set_name( name_IN,
                                    parsed_name_IN = parsed_name_IN,
                                    remove_periods_IN = remove_periods_IN,
                                    *args,
                                    **kwargs )
-            
+
         else:
-        
+
             instance_OUT = None
-            
+
         #-- END check to make sure there is a name. --#
-        
+
         return instance_OUT
-        
+
     #-- END class method create_person_for_name() --#
-        
-        
+
+
     @classmethod
     def find_person_from_name( cls, name_IN, do_strict_match_IN = True, do_partial_match_IN = False ):
-        
+
         '''
         More flexible way of looking for a person than look_up_person_from_name
             (though it uses it quite extensively).  Accepts name string.  Tries
@@ -1695,76 +1695,76 @@ class Abstract_Person( Abstract_Person_Parent ):
                 any name part that contains that one word.
             - if not one word, or no one-word match, tries non-exact lookup.
             - if no match, tries non-exact, partial lookup.
-        
+
         Postconditions: returns QuerySet instance with what this method could
             find.  Might be empty.  If fatal error, returns None.
         '''
-    
+
         # return reference
         query_set_OUT = None
-        
+
         # declare variables
         me = "find_person_from_name"
         match_count = -1
         name_part_list = None
         name_part_count = -1
-    
+
         # first, try a strict lookup.
         query_set_OUT = cls.look_up_person_from_name( name_IN, do_strict_match_IN = do_strict_match_IN, do_partial_match_IN = do_partial_match_IN )
-        
+
         # got anything back?
         if ( query_set_OUT is not None ):
 
             # not None, do we have anything in QuerySet?
             match_count = query_set_OUT.count()
             if ( match_count == 0 ):
-            
+
                 # no exact matches.  Is it just one word?
                 name_part_list = name_IN.split()
                 name_part_count = len( name_part_list )
                 if ( name_part_count == 1 ):
-                
+
                     # just one word.  Try the old way, so we get either first,
                     #    middle or last.
                     query_set_OUT = cls.objects.filter( Q( first_name__icontains = name_IN ) | Q( middle_name__icontains = name_IN ) | Q( last_name__icontains = name_IN ) | Q( full_name_string__icontains = name_IN ) )
-                    
+
                 #-- END check to see if just one word. --#
-                
+
                 # got anything back?
                 match_count = query_set_OUT.count()
                 if ( match_count == 0 ):
 
                     # no.  Try not strict.
                     query_set_OUT = cls.look_up_person_from_name( name_IN, do_strict_match_IN = False, do_partial_match_IN = False )
-            
+
                     # got anything back?
                     match_count = query_set_OUT.count()
                     if ( match_count == 0 ):
-                    
+
                         # no exact matches.  Try not strict, allow partial match.
                         query_set_OUT = cls.look_up_person_from_name( name_IN, do_strict_match_IN = False, do_partial_match_IN = True )
-                    
+
                         # got anything back?
                         match_count = query_set_OUT.count()
                         if ( match_count == 0 ):
-                        
+
                             # no lookup matches.  Try the old way...
                             query_set_OUT = cls.objects.filter( Q( first_name__icontains = name_IN ) | Q( middle_name__icontains = name_IN ) | Q( last_name__icontains = name_IN ) | Q( full_name_string__icontains = name_IN ) )
-                        
+
                         #-- END check to see if any non-strict partial matches. --#
-                    
+
                     #-- END check to see if any non-strict matches. --#
 
                 #-- END check to see if any matches for just one word. --#
 
             #-- END check to see if strict matches. --#
-        
+
         else:
 
             output_debug( "In " + me + ": None returned for name {}, so returning None.".format( name_IN ) )
 
         #-- END check to see if None --#
-            
+
         return query_set_OUT
 
     #-- END class method find_person_from_name() --#
@@ -1776,7 +1776,7 @@ class Abstract_Person( Abstract_Person_Parent ):
                              parsed_name_IN = None,
                              do_strict_match_IN = False,
                              do_partial_match_IN = False ):
-    
+
         '''
         This method accepts the full name of a person.  Uses NameParse object to
            parse name into prefix/title, first name, middle name(s), last name,
@@ -1790,118 +1790,118 @@ class Abstract_Person( Abstract_Person_Parent ):
            If new Person instance returned, it will not have been saved.  If you
            want that person to be in the database, you have to save it yourself.
         '''
-        
+
         # return reference
         instance_OUT = None
-        
+
         # declare variables.
         me = "get_person_for_name"
         person_qs = None
         person_count = -1
         id_list = []
-        
+
         # got a name?
         if ( name_IN ):
-        
+
             # try to retrieve person for name.
             person_qs = cls.look_up_person_from_name( name_IN,
                                                       parsed_name_IN = parsed_name_IN,
                                                       do_strict_match_IN = do_strict_match_IN,
                                                       do_partial_match_IN = do_partial_match_IN )
-            
+
             # got a match?
             person_count = person_qs.count()
             if ( person_count == 1 ):
-            
+
                 # got one match.  Return it.
                 instance_OUT = person_qs.get()
-                
+
                 output_debug( "In " + me + ": found single match for name: " + name_IN )
-                
+
             elif( person_count == 0 ):
-            
+
                 # no matches.  What do we do?
                 if ( create_if_no_match_IN == True ):
-                
+
                     # create new Person!
                     instance_OUT = cls.create_person_for_name( name_IN, parsed_name_IN = parsed_name_IN )
-                    
+
                     output_debug( "In " + me + ": no match for name: \"" + name_IN + "\"; so, creating new Person instance (but not saving yet)!" )
-                    
+
                 else:
-                
+
                     # return None!
                     instance_OUT = None
-                    
+
                     output_debug( "In " + me + ": no match for name: \"" + name_IN + "\"; so, returning None!" )
-                    
+
                 #-- END check to see if we create on no match. --#
-                
+
             else:
-            
+
                 # Multiple matches.  Trouble.
                 id_list = []
                 for person in person_qs:
-                
+
                     id_list.append( person.id )
-                    
+
                 #-- END loop over person matches. --#
-                
+
                 output_debug( "In " + me + ": multiple matches for name \"" + name_IN + "\" ( " + str( id_list ) + " ).  Returning None." )
                 instance_OUT = None
-            
+
             #-- END check count of persons returned. --#
-            
+
         else:
-        
+
             # No name passed in.  Nothing to return.
             output_debug( "In " + me + ": no name passed in, so returning None." )
             instance_OUT = None
-        
+
         #-- END check for name string passed in. --#
 
         return instance_OUT
-    
+
     #-- END method get_person_for_name() --#
 
 
     @classmethod
     def get_person_lookup_status( cls, person_IN ):
-        
+
         # return reference
         status_OUT = ""
-        
+
         # declare variables
-        
+
         if ( person_IN is not None ):
-        
+
             if ( ( person_IN.id ) and ( person_IN.id > 0 ) ):
-            
+
                 # there is an ID, so this is not a new record.
                 status_OUT = cls.LOOKUP_STATUS_FOUND
-                
+
             else:
-            
+
                 # Person returne, but no ID, so this is a new record - not found.
                 status_OUT = cls.LOOKUP_STATUS_NEW
-                
+
             #-- END check to see if ID present in record returned. --#
-                
+
         else:
-        
+
             # None - either multiple matches (eek!) or error.
             status_OUT = cls.LOOKUP_STATUS_NONE
-        
+
         #-- END check to see if None. --#
-    
+
         return status_OUT
-        
+
     #-- END class method get_person_lookup_status() --#
-    
-    
+
+
     @classmethod
     def is_single_name_part( cls, name_string_IN ):
-        
+
         '''
         Accepts a name string.  If name string just has a single word, returns
             True.  If not, returns False.  If error, returns None.  This works
@@ -1910,10 +1910,10 @@ class Abstract_Person( Abstract_Person_Parent ):
             values are empty.  If that is the case, then single name part.  If
             more than one name field is populated, then not single name part.
         '''
-        
+
         # return reference
         is_just_first_name_OUT = False
-        
+
         # declare variables
         human_name = None
         first_name = ""
@@ -1921,13 +1921,13 @@ class Abstract_Person( Abstract_Person_Parent ):
         name_part = ""
         cleaned_name_part = ""
         other_name_part_string = ""
-        
+
         # Make sure we have a string value
         if ( ( name_string_IN is not None ) and ( name_string_IN != "" ) ):
-        
+
             # parse with HumanName
             human_name = HumanName( name_string_IN )
-            
+
             # get first name
             first_name = human_name.first
 
@@ -1937,62 +1937,62 @@ class Abstract_Person( Abstract_Person_Parent ):
             other_name_part_list.append( human_name.last )
             other_name_part_list.append( human_name.suffix )
             other_name_part_list.append( human_name.nickname )
-            
+
             # clump the rest of the name parts together into a string.
             for name_part in other_name_part_list:
-                
+
                 # got anything?
                 if ( ( name_part is not None ) and ( name_part != "" ) ):
-                
+
                     # clean it up - strip white space.
                     cleaned_name_part = name_part.strip()
-                    
+
                     # got anything now?
                     if ( cleaned_name_part != "" ):
-                    
+
                         # yup.  Add to other_name_part_string.
                         other_name_part_string += cleaned_name_part
 
                     #-- END check to see if other name parts. --#
 
                 #-- check to see if empty. --#
-                
+
             #-- loop over other name parts. --#
-            
+
             # anything in other_name_part_string?
             if ( ( other_name_part_string is not None ) and ( other_name_part_string != "" ) ):
-            
+
                 # yes.  Not just first name.
                 is_just_first_name_OUT = False
-                
+
             else:
-            
+
                 # no.  Just first name.
                 is_just_first_name_OUT = True
-            
+
             #-- END check to see if anything other than first name --#
-                
+
         else:
-        
+
             # None - No string passed in, so returning None.
             is_just_first_name_OUT = None
-        
+
         #-- END check to see if None. --#
-    
+
         return is_just_first_name_OUT
-        
+
     #-- END class method is_single_name_part() --#
 
     @classmethod
     def look_up_person_from_name( cls,
                                   name_IN = "",
                                   parsed_name_IN = None,
-                                  do_strict_match_IN = False, 
+                                  do_strict_match_IN = False,
                                   do_partial_match_IN = False,
                                   qs_IN = None,
                                   *args,
                                   **kwargs ):
-    
+
         '''
         This method accepts the full name of a person.  Uses NameParse object to
            parse name into prefix/title, first name, middle name(s), last name,
@@ -2009,10 +2009,10 @@ class Abstract_Person( Abstract_Person_Parent ):
            objects based on name string passed in.  If None found, returns empty
            QuerySet.  If error, returns None.
         '''
-        
+
         # return reference
         qs_OUT = None
-        
+
         # declare variables.
         me = "look_up_person_from_name"
         parsed_name = None
@@ -2023,24 +2023,24 @@ class Abstract_Person( Abstract_Person_Parent ):
         suffix = ""
         nickname = ""
         strict_q = None
-                
+
         # got a name or a pre-parsed name?
         if ( ( ( name_IN is not None ) and ( name_IN != "" ) )
             or ( parsed_name_IN is not None ) ):
-        
+
             # Got a pre-parsed name?
             if ( parsed_name_IN is not None ):
 
                 # yes. Use it.
                 parsed_name = parsed_name_IN
-                
+
             else:
-            
+
                 # no. Parse name_IN using HumanName class from nameparser.
                 parsed_name = HumanName( name_IN )
-                
-            #-- END check to see if pre-parsed name. --#         
-            
+
+            #-- END check to see if pre-parsed name. --#
+
             # Use parsed values to build a search QuerySet.  First, get values.
             prefix = parsed_name.title
             first = parsed_name.first
@@ -2048,305 +2048,305 @@ class Abstract_Person( Abstract_Person_Parent ):
             last = parsed_name.last
             suffix = parsed_name.suffix
             nickname = parsed_name.nickname
-            
+
             # build up queryset.
             if ( qs_IN is not None ):
-            
+
                 # got one passed in, start with it.
                 qs_OUT = qs_IN
-            
+
             else:
-            
+
                 # make a new one
                 qs_OUT = cls.objects.all()
-                
+
             #-- END check to see if QuerySet passed in. --#
-            
+
             # got a prefix?
             if ( prefix ):
-    
+
                 # yes - allow partial match?
                 if ( do_partial_match_IN == True ):
-                
+
                     # yes.
                     qs_OUT = qs_OUT.filter( name_prefix__icontains = prefix )
-                
+
                 else:
-                
+
                     # no.
                     qs_OUT = qs_OUT.filter( name_prefix__iexact = prefix )
-                    
+
                 #-- END check to see if we allow partial match. --#
-                
+
             else:
-            
+
                 # are we being strict?
                 if ( do_strict_match_IN == True ):
-                
+
                     # yes - None or ""?
                     if ( ( prefix is None ) or ( prefix == "" ) ):
-                    
+
                         # for None or "", match to either NULL OR "".
                         strict_q = Q( name_prefix__isnull = True ) | Q( name_prefix__iexact = "" )
                         qs_OUT = qs_OUT.filter( strict_q )
-                        
+
                     else:
-                    
+
                         # for anything else, what?  Stupid Python False values...
                         pass
-                        
+
                     #-- END check to see what exact value of prefix is. --#
-                
+
                 #-- END check to see if strict. --#
-            
+
             #-- END check for prefix --#
-            
+
             # first name
             if ( first ):
-    
+
                 # allow partial match?
                 if ( do_partial_match_IN == True ):
-                
+
                     # yes.
                     qs_OUT = qs_OUT.filter( first_name__icontains = first )
-                
+
                 else:
-                
+
                     # no.
                     qs_OUT = qs_OUT.filter( first_name__iexact = first )
-                    
+
                 #-- END check to see if we allow partial match. --#
-                
+
             else:
-            
+
                 # are we being strict?
                 if ( do_strict_match_IN == True ):
-                
+
                     # yes - None or ""?
                     if ( ( first is None ) or ( first == "" ) ):
-                    
+
                         # for None or "", match to either NULL OR "".
                         strict_q = Q( first_name__isnull = True ) | Q( first_name__iexact = "" )
                         qs_OUT = qs_OUT.filter( strict_q )
-                        
+
                     else:
-                    
+
                         # for anything else, what?  Stupid Python False values...
                         pass
-                        
+
                     #-- END check to see what exact value of first is. --#
-                
+
                 #-- END check to see if strict. --#
-            
+
             #-- END check for first name --#
-            
+
             # middle name
             if ( middle ):
-    
+
                 # allow partial match?
                 if ( do_partial_match_IN == True ):
-                
+
                     # yes.
                     qs_OUT = qs_OUT.filter( middle_name__icontains = middle )
-                
+
                 else:
-                
+
                     # no.
                     qs_OUT = qs_OUT.filter( middle_name__iexact = middle )
-                    
+
                 #-- END check to see if we allow partial match. --#
-                
+
             else:
-            
+
                 # are we being strict?
                 if ( do_strict_match_IN == True ):
-                
+
                     # yes - None or ""?
                     if ( ( middle is None ) or ( middle == "" ) ):
-                    
+
                         # for None or "", match to either NULL OR "".
                         strict_q = Q( middle_name__isnull = True ) | Q( middle_name__iexact = "" )
                         qs_OUT = qs_OUT.filter( strict_q )
 
                     else:
-                    
+
                         # for anything else, what?  Stupid Python False values...
                         pass
-                        
+
                     #-- END check to see what exact value of middle is. --#
-                
+
                 #-- END check to see if strict. --#
-            
+
             #-- END check for middle name --#
 
             # last name
             if ( last ):
-    
+
                 # allow partial match?
                 if ( do_partial_match_IN == True ):
-                
+
                     # yes.
                     qs_OUT = qs_OUT.filter( last_name__icontains = last )
-                
+
                 else:
-                
+
                     # no.
                     qs_OUT = qs_OUT.filter( last_name__iexact = last )
-                    
+
                 #-- END check to see if we allow partial match. --#
-                
+
             else:
-            
+
                 # are we being strict?
                 if ( do_strict_match_IN == True ):
-                
+
                     # yes - None or ""?
                     if ( ( last is None ) or ( last == "" ) ):
-                    
+
                         # for None or "", match to either NULL OR "".
                         strict_q = Q( last_name__isnull = True ) | Q( last_name__iexact = "" )
                         qs_OUT = qs_OUT.filter( strict_q )
 
                     else:
-                    
+
                         # for anything else, what?  Stupid Python False values...
                         pass
-                        
+
                     #-- END check to see what exact value of last is. --#
-                
+
                 #-- END check to see if strict. --#
-            
+
             #-- END check for last name --#
-            
+
             # suffix
             if ( suffix ):
-    
+
                 # allow partial match?
                 if ( do_partial_match_IN == True ):
-                
+
                     # yes.
                     qs_OUT = qs_OUT.filter( name_suffix__icontains = suffix )
-                
+
                 else:
-                
+
                     # no.
                     qs_OUT = qs_OUT.filter( name_suffix__iexact = suffix )
-                    
+
                 #-- END check to see if we allow partial match. --#
-                
+
             else:
-            
+
                 # are we being strict?
                 if ( do_strict_match_IN == True ):
-                
+
                     # yes - None or ""?
                     if ( ( suffix is None ) or ( suffix == "" ) ):
-                    
+
                         # for None or "", match to either NULL OR "".
                         strict_q = Q( name_suffix__isnull = True ) | Q( name_suffix__iexact = "" )
                         qs_OUT = qs_OUT.filter( strict_q )
 
                     else:
-                    
+
                         # for anything else, what?  Stupid Python False values...
                         pass
-                        
+
                     #-- END check to see what exact value of suffix is. --#
-                
+
                 #-- END check to see if strict. --#
-            
+
             #-- END suffix --#
-            
+
             # nickname
             if ( nickname ):
-    
+
                 # allow partial match?
                 if ( do_partial_match_IN == True ):
-                
+
                     # yes.
                     qs_OUT = qs_OUT.filter( nickname__icontains = nickname )
-                
+
                 else:
-                
+
                     # no.
                     qs_OUT = qs_OUT.filter( nickname__iexact = nickname )
-                    
+
                 #-- END check to see if we allow partial match. --#
-                
+
             else:
-            
+
                 # are we being strict?
                 if ( do_strict_match_IN == True ):
-                
+
                     # yes - None or ""?
                     if ( ( nickname is None ) or ( nickname == "" ) ):
-                    
+
                         # for None or "", match to either NULL OR "".
                         strict_q = Q( nickname__isnull = True ) | Q( nickname__iexact = "" )
                         qs_OUT = qs_OUT.filter( strict_q )
 
                     else:
-                    
+
                         # for anything else, what?  Stupid Python False values...
                         pass
-                        
+
                     #-- END check to see what exact value of nickname is. --#
-                
+
                 #-- END check to see if strict. --#
-            
+
             #-- END nickname --#
-            
+
         else:
-        
+
             # No name, returning None
             output_debug( "In " + me + ": no name passed in, returning Empty QuerySet." )
             qs_OUT = cls.objects.none()
-        
+
         #-- END check to see if we have a name. --#
-        
+
         return qs_OUT
-    
+
     #-- END static method look_up_person_from_name() --#
-    
+
 
     @classmethod
     def standardize_name_part( cls, name_part_IN, remove_periods_IN = False ):
-        
+
         '''
         Accepts string name part, does the following to standardize it, in this
         order:
            - removes any commas.
            - strips white space from the beginning and end.
            - More to come?
-           
+
         preconditions: None.
 
         postconditions: None.
         '''
-        
+
         # return reference
         name_part_OUT = ""
-        
+
         # declare variables
         working_string = ""
-        
+
         # start with name part passed in.
         working_string = name_part_IN
-        
+
         # first, check to see if anything passed in.
         if ( ( working_string is not None ) and ( working_string != "" ) ):
-        
+
             # remove commas.
             working_string = working_string.replace( ",", "" )
-            
+
             # remove periods as well?
             if ( remove_periods_IN == True ):
-            
+
                 # yes.
                 working_string = working_string.replace( ".", "" )
-            
+
             #-- END check to see if remove periods --#
-            
+
             # strip white space.
             working_string = working_string.strip()
 
@@ -2356,16 +2356,16 @@ class Abstract_Person( Abstract_Person_Parent ):
         name_part_OUT = working_string
 
         return name_part_OUT
-        
+
     #-- END method standardize_name_part() --#
-        
-        
+
+
     #----------------------------------------------------------------------
     # ! instance methods
     #----------------------------------------------------------------------
 
     def __init__( self, *args, **kwargs ):
-        
+
         # call parent __init()__ first.
         super( Abstract_Person, self ).__init__( *args, **kwargs )
 
@@ -2373,102 +2373,102 @@ class Abstract_Person( Abstract_Person_Parent ):
 
 
     def __str__( self ):
- 
+
         # return reference
         string_OUT = ''
-        
+
         # declare variables
         string_list = []
- 
+
         if ( self.id ):
-        
+
             string_OUT = str( self.id ) + " - "
-            
+
         #-- END check to see if ID --#
-                
+
         string_OUT += self.last_name + ', ' + self.first_name
-        
+
         # middle name?
         if ( self.middle_name ):
-        
+
             string_OUT += " " + self.middle_name
-            
+
         #-- END middle name check --#
 
         if ( ( self.title ) or ( self.organization_string ) or ( self.capture_method ) ):
-        
+
             string_OUT += " ( "
-        
+
             string_list = []
-        
+
             if ( self.title ):
-            
+
                 # add title to list
                 string_list.append( "title = " + self.title )
-                
+
             #-- END check for title --#
-            
+
             if ( self.organization_string ):
-            
+
                 # add title to list
                 string_list.append( "organization = " + self.organization_string )
-                
+
             #-- END check for title --#
-            
+
             if ( self.capture_method ):
-            
+
                 # add capture method to the list.
                 string_list.append( "capture_method = " + self.capture_method )
-                
+
             #-- END check for capture_method --#
-            
+
             string_OUT += "; ".join( string_list )
 
             string_OUT += " )"
-            
+
         #-- END check to see if we have a title, organization, or capture_method. --#
- 
+
         return string_OUT
 
     #-- END method __str__() --#
 
 
     def get_name_string( self ):
-        
+
         '''
         Converts current person's name into a HumanName, then call the str()
            function on that name to convert it to a string.  Returns that
            string.
         '''
-        
+
         # return reference
         value_OUT = ""
-        
+
         # declare variables
         my_HumanName = None
-        
+
         # get human name for this instance.
         my_HumanName = self.to_HumanName()
-        
+
         # if nickname, remove it so it doesn't get output at the end of the
         #    string like a last name.
         if ( my_HumanName.nickname ):
-        
+
             # yes - get rid of it.
             my_HumanName.nickname = ""
-            
+
         #-- END check to see if nickname. --#
-        
+
         # convert that to a string.
         value_OUT = str( my_HumanName )
-        
+
         return value_OUT
-        
+
     #-- END method get_name_string() --#
 
 
     def standardize_name_parts( self, remove_periods_IN = False ):
-        
+
         '''
         This method looks at each part of a name and for each, calls the method
            standardize_name_part() to do the following to standardize it, in this
@@ -2476,86 +2476,86 @@ class Abstract_Person( Abstract_Person_Parent ):
            - removes any commas.
            - strips white space from the beginning and end.
            - More to come?  Best list is in standardize_name_part()
-           
+
         preconditions: None.
 
         postconditions: if needed, name parts in instance are updated to be
            standardized.  Instance is not saved.
         '''
-        
+
         # return reference
         instance_OUT = None
-        
+
         # declare variables
         me = "standardize_name_parts"
-        
+
         # standardize name parts.
         if ( self.name_prefix ):
-    
+
             self.name_prefix = self.standardize_name_part( self.name_prefix, remove_periods_IN = remove_periods_IN )
-            
+
         #-- END check to see if name_prefix.
-        
+
         if ( self.first_name ):
-    
+
             self.first_name = self.standardize_name_part( self.first_name, remove_periods_IN = remove_periods_IN )
-            
+
         #-- END check to see if first_name.
-        
+
         if ( self.middle_name ):
-    
+
             self.middle_name = self.standardize_name_part( self.middle_name, remove_periods_IN = remove_periods_IN )
-            
+
         #-- END check to see if middle_name.
-        
+
         if ( self.last_name ):
-    
+
             self.last_name = self.standardize_name_part( self.last_name, remove_periods_IN = remove_periods_IN )
-            
+
         #-- END check to see if last_name.
-        
+
         if ( self.name_suffix ):
-    
+
             self.name_suffix = self.standardize_name_part( self.name_suffix, remove_periods_IN = remove_periods_IN )
-            
+
         #-- END check to see if name_suffix.
-        
+
         if ( self.nickname ):
-    
+
             self.nickname = self.standardize_name_part( self.nickname, remove_periods_IN = remove_periods_IN )
-            
+
         #-- END check to see if nickname.
-        
+
         return instance_OUT
-        
+
     #-- END method clean_up_name_parts() --#
 
 
     def save( self, *args, **kwargs ):
-        
+
         '''
         Overridden save() method that automatically creates a full name string
            for a person in case one is not specified.
 
         Note: looks like child classes don't have to override save method.
         '''
-        
+
         # declare variables.
         name_HumanName = None
         generated_full_name_string = ""
-        
+
         # standardize name parts
         self.standardize_name_parts()
-        
+
         # Make HumanName() instance from this Person's name parts.
         name_HumanName = self.to_HumanName()
-            
+
         # use it to update the full_name_string.
         self.full_name_string = StringHelper.object_to_unicode_string( name_HumanName )
 
         # call parent save() method.
         super( Abstract_Person, self ).save( *args, **kwargs )
-        
+
     #-- END method save() --#
 
 
@@ -2565,7 +2565,7 @@ class Abstract_Person( Abstract_Person_Parent ):
                   remove_periods_IN = False,
                   *args,
                   **kwargs ):
-    
+
         '''
         This method accepts the full name of a person.  Uses NameParse object to
            parse name into prefix/title, first name, middle name(s), last name,
@@ -2575,7 +2575,7 @@ class Abstract_Person( Abstract_Person_Parent ):
         postconditions: Updates values in this instance with values parsed out of
            name passed in.
         '''
-        
+
         # declare variables.
         me = "set_name"
         parsed_name = None
@@ -2586,16 +2586,16 @@ class Abstract_Person( Abstract_Person_Parent ):
         suffix = ""
         nickname = ""
         standardized_hn = None
-                
+
         # No name, returning None
         output_debug( "In " + me + ": storing name: " + str( name_IN ) )
 
         # got a name?
         if ( ( name_IN is not None ) and ( name_IN != "" ) ):
-        
+
             # yes.  Store original name string
             self.original_name_string = name_IN
-            
+
             # was parsed name passed in?
             if ( parsed_name_IN is not None ):
 
@@ -2609,9 +2609,9 @@ class Abstract_Person( Abstract_Person_Parent ):
 
                 # Parse it using HumanName class from nameparser.
                 parsed_name = HumanName( name_IN )
-                
+
             #-- END check to see if name already parsed. --#
-            
+
             # Use parsed values to build a search QuerySet.  First, get values.
             prefix = parsed_name.title
             first = parsed_name.first
@@ -2619,58 +2619,58 @@ class Abstract_Person( Abstract_Person_Parent ):
             last = parsed_name.last
             suffix = parsed_name.suffix
             nickname = parsed_name.nickname
-            
+
             # got a prefix?
             if ( prefix ):
-    
+
                 # set value
                 self.name_prefix = prefix
-                
+
             #-- END check for prefix --#
-            
+
             # first name
             if ( first ):
-    
+
                 # set value
                 self.first_name = first
-                
+
             #-- END check for first name --#
-            
+
             # middle name
             if ( middle ):
-    
+
                 # set value
                 self.middle_name = middle
-                
+
             #-- END check for middle name --#
 
             # last name
             if ( last ):
-    
+
                 # set value
                 self.last_name = last
-                
+
             #-- END check for last name --#
-            
+
             # suffix
             if ( suffix ):
-    
+
                 # set value
                 self.name_suffix = suffix
-                
+
             #-- END suffix --#
-            
+
             # nickname
             if ( nickname ):
-    
+
                 # set value
                 self.nickname = nickname
-                
+
             #-- END nickname --#
-            
+
             # standardize name parts
             self.standardize_name_parts( remove_periods_IN = remove_periods_IN )
-            
+
             # Finally, store the full name string (and the pickled object?).
             standardized_hn = self.to_HumanName()
 
@@ -2679,76 +2679,76 @@ class Abstract_Person( Abstract_Person_Parent ):
 
             # not pickling at the moment.
             #self.nameparser_pickled = pickle.dumps( standardized_hn )
-            
+
         else:
-        
+
             # No name, returning None
             output_debug( "In " + me + ": no name passed in, returning None." )
-        
+
         #-- END check to see if we have a name. --#
-        
+
     #-- END method set_name() --#
-    
+
 
     def to_HumanName( self ):
-        
+
         '''
         This method creates a nameparser HumanName() object instance, then uses
            the values from this Abstract_Person instance to populate it.  Returns
            the HumanName instance.
-           
+
         preconditions: None.
         postconditions: None.
         '''
-        
+
         # return reference
         instance_OUT = None
-        
+
         # declare variables
         me = "to_HumanName"
-        
+
         # make HumanString instance.
         instance_OUT = HumanName()
 
         # Use nested values to populate HumanName.
         if ( self.name_prefix ):
-    
+
             instance_OUT.title = self.name_prefix
-            
+
         #-- END check to see if name_prefix.
-        
+
         if ( self.first_name ):
-    
+
             instance_OUT.first = self.first_name
-            
+
         #-- END check to see if first_name.
-        
+
         if ( self.middle_name ):
-    
+
             instance_OUT.middle = self.middle_name
-            
+
         #-- END check to see if middle_name.
-        
+
         if ( self.last_name ):
-    
+
             instance_OUT.last = self.last_name
-            
+
         #-- END check to see if last_name.
-        
+
         if ( self.name_suffix ):
-    
+
             instance_OUT.suffix = self.name_suffix
-            
+
         #-- END check to see if name_suffix.
-        
+
         if ( self.nickname ):
-    
+
             instance_OUT.nickname = self.nickname
-            
+
         #-- END check to see if nickname.
-        
+
         return instance_OUT
-        
+
     #-- END method to_HumanName() --#
 
 
