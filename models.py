@@ -298,7 +298,7 @@ class Abstract_Context_With_JSON( Abstract_Context_Parent ):
     #last_modified = models.DateTimeField( auto_now = True )
 
     # JSON field to hold structured related information.
-    details_json = JSONField( blank = True, null = True )
+    details_json = models.JSONField( blank = True, null = True )
 
 
     #----------------------------------------------------------------------
@@ -602,7 +602,7 @@ class Abstract_Trait( Abstract_Context_Parent ):
     name = models.CharField( max_length = 255 )
     slug = models.SlugField( blank = True, null = True )
     value = models.CharField( max_length = 255, blank = True, null = True )
-    value_json = JSONField( blank = True, null = True )
+    value_json = models.JSONField( blank = True, null = True )
     label = models.CharField( max_length = 255, blank = True, null = True )
     description = models.TextField( blank = True )
 
