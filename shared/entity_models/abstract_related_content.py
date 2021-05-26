@@ -66,6 +66,7 @@ class Abstract_Related_Content( models.Model ):
     #----------------------------------------------------------------------
 
     #article = models.ForeignKey( Article, on_delete = models.SET_NULL, unique = True, null = True )
+    related_instance = None
     content_type = models.CharField( max_length = 255, choices = CONTENT_TYPE_CHOICES, blank = True, null = True, default = "none" )
     content = models.TextField()
     content_hash = models.CharField( max_length = 255, blank = True )

@@ -15,6 +15,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 #================================================================================
 
 # python imports
+import datetime
 import logging
 
 # Django imports
@@ -23,6 +24,8 @@ from django.db import models
 
 # python_utilities
 from python_utilities.json.json_helper import JSONHelper
+from python_utilities.logging.logging_helper import LoggingHelper
+from python_utilities.status.status_container import StatusContainer
 
 # context imports
 from context.shared.entity_models import Abstract_Related_Content
@@ -59,6 +62,7 @@ class Abstract_Related_JSON_Content( Abstract_Related_Content ):
 
 
     #bs_helper = None
+    LOGGING_LOGGER_NAME = "context.shared.entity_models.Abstract_Related_JSON_Content"
 
 
     #----------------------------------------------------------------------------
@@ -92,6 +96,183 @@ class Abstract_Related_JSON_Content( Abstract_Related_Content ):
         return value_OUT
 
     #-- END class method make_standard_json_string_hash() --#
+
+
+    @classmethod
+    def update_related_json( cls, related_instance_IN, json_IN, json_source_IN = None ):
+
+        '''
+        Accepts related instance, JSON. Checks if identical record exists
+            in this related class related to instance passed in. If not, adds
+            this one. If yes, updates the description to note that it was
+            encountered an additional time.
+
+        Preconditions: assumes you'll pass something in to every argument. A
+            None in any of them will cause errors.
+
+        Postconditions: Also outputs error log message if there was a problem.
+            Could throw exception on incorrect calls, but for now, we'll just
+            make sure there is a good error message logged.
+
+        Returns: StatusContainer with information on results.
+        '''
+
+        # return reference
+        status_OUT = None
+
+        # declare variables
+        me = "update_related_json"
+        status_message = None
+        my_related_instance = None
+        update_status = None
+        update_success = None
+        my_json = None
+        my_json_hash = None
+        related_qs = None
+        related_count = None
+        related_content = None
+        related_instance = None
+
+        # init
+        status_OUT = StatusContainer()
+        status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+        do_store_related = False
+
+        # do we have a related instance?
+        my_related_instance = related_instance_IN
+        if ( my_related_instance is not None ):
+
+            # do we have JSON?
+            my_json = json_IN
+            if ( my_json is not None ):
+
+                # look for related instance associated with this instance that
+                #     matches this JSON.
+                # if not found, make one and associate it with this instance.
+
+                # create hash from standardized string representation of JSON passed
+                #     in.
+                my_json_hash = cls.make_standard_json_string_hash( my_json )
+
+                # check if any related have same hash.
+                related_qs = cls.objects.filter( related_instance = my_related_instance )
+                related_qs = related_qs.filter( content_json_hash = my_json_hash )
+                related_count = related_qs.count()
+
+                # got any matches? If no, just make new.
+                if ( related_count == 0 ):
+
+                    # no related so far, add one!
+                    related_instance = cls()
+                    related_instance.related_instance = my_related_instance
+                    related_instance.set_content_json( my_json )
+                    related_instance.content_type = cls.CONTENT_TYPE_JSON
+
+                    if ( json_source_IN is not None ):
+                        related_instance.source = json_source_IN
+                        related_instance.content_description = "- Updated from {source}: {timestamp}".format(
+                            source = json_source_IN,
+                            timestamp = datetime.datetime.now()
+                        )
+                    else:
+                        related_instance.source = None
+                        related_instance.content_description = "- Updated: {timestamp}".format( timestamp = datetime.datetime.now() )
+                    #-- END check to see if json_source_IN --#
+
+                    related_instance.save()
+
+                    # status
+                    status_message = "In {method}(): created new related data - {related_instance} ( class: {class_ref} )".format(
+                        method = me,
+                        related_instance = related_instance,
+                        class_ref = cls
+                    )
+                    status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+                    status_OUT.add_message( status_message )
+
+                    # TODO - log message, also.
+
+                elif ( related_count == 1 ):
+
+                    # 1 match - update notes to include mention of today.
+                    related_instance = related_qs.get()
+                    related_instance.content_description += "\n- Loaded from DMS API - {timestamp}".format( timestamp = datetime.datetime.now() )
+                    related_instance.save()
+
+                    # status
+                    status_message = "In {method}(): found matching related data - {related_instance} ( class: {class_ref} )".format(
+                        method = me,
+                        related_instance = related_instance,
+                        class_ref = cls
+                    )
+                    status_OUT.set_status_code( StatusContainer.STATUS_CODE_SUCCESS )
+                    status_OUT.add_message( status_message )
+
+                    # TODO - log message, also.
+
+                else:
+
+                    # multiple matches...? Error.
+                    status_message = "ERROR - In {method}(): either multiple or negative record count ( {related_count} )".format(
+                        method = me,
+                        related_count = related_count
+                    )
+                    status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+                    status_OUT.add_message( status_message )
+
+                    # log message, also.
+                    LoggingHelper.log_message(
+                        status_message,
+                        method_IN = me,
+                        logger_name_IN = self.LOGGING_LOGGER_NAME,
+                        do_print_IN = True,
+                        log_level_code_IN = logging.ERROR
+                    )
+
+                    # raise exception.
+                    raise ETLError( status_message )
+
+                #-- END check to see if related --#
+
+            else:
+
+                # no record passed in - log error, return false.
+                status_message = "ERROR - No json dictionary passed in ( {} ).".format( record_IN )
+                LoggingHelper.log_message(
+                    status_message,
+                    method_IN = me,
+                    logger_name_IN = self.LOGGING_LOGGER_NAME,
+                    do_print_IN = True,
+                    log_level_code_IN = logging.ERROR
+                )
+
+                # status
+                status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+                status_OUT.add_message( status_message )
+
+            #-- END check to see if record is not None --#
+
+        else:
+
+            # no related class - can't do anything, log error, return false.
+            status_message = "ERROR - No related_class, can't update related."
+            LoggingHelper.log_message(
+                status_message,
+                method_IN = me,
+                logger_name_IN = self.LOGGING_LOGGER_NAME,
+                do_print_IN = True,
+                log_level_code_IN = logging.ERROR
+            )
+
+            # status
+            status_OUT.set_status_code( StatusContainer.STATUS_CODE_ERROR )
+            status_OUT.add_message( status_message )
+
+        #-- END check to see if we have a related class --#
+
+        return status_OUT
+
+    #-- END method update_related_json()
 
 
     #----------------------------------------------------------------------------
