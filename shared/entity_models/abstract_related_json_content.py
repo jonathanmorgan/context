@@ -196,7 +196,7 @@ class Abstract_Related_JSON_Content( Abstract_Related_Content ):
 
                     # 1 match - update notes to include mention of today.
                     related_instance = related_qs.get()
-                    related_instance.content_description += "\n- Loaded from DMS API - {timestamp}".format( timestamp = datetime.datetime.now() )
+                    related_instance.content_description += "\n- Loaded: {timestamp}".format( timestamp = datetime.datetime.now() )
                     related_instance.save()
 
                     # status
