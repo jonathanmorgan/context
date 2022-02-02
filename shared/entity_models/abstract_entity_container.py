@@ -27,7 +27,7 @@ from context.models import Entity
 from context.models import Entity_Identifier_Type
 from context.shared.entity_models import output_debug
 from context.shared.entity_models import output_log_message
-
+from context.shared.entity_models import DEBUG
 
 #================================================================================
 # ! ==> Abstract Models
@@ -93,6 +93,7 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
     # ! ----> class variables
     #----------------------------------------------------------------------
 
+    debug_flag = DEBUG
 
     #----------------------------------------------------------------------
     # NOT instance variables
@@ -204,7 +205,11 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
     #-- END method has_entity() --#
 
 
-    def load_entity( self, do_create_if_none_IN = True, *args, **kwargs ):
+    def load_entity( self,
+                     do_create_if_none_IN = True,
+                     debug_flag_IN = None,
+                     *args,
+                     **kwargs ):
 
         '''
         Tries to find the entity for this class instance in context:
@@ -234,6 +239,7 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
         value_OUT = None
 
         # declare variables
+        my_debug_flag = None
         entity_instance = None
         my_instance_id = None
         identifier_type_name = None
@@ -246,6 +252,12 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
         # init
         identifier_type_name = self.my_base_entity_id_type
+        my_debug_flag = self.debug_flag
+        if ( debug_flag_IN is not None ):
+
+            my_debug_flag = debug_flag_IN
+
+        #-- END check if debug flag passed in --#
 
         # does instance have an entity?
         entity_instance = self.get_entity()
@@ -275,14 +287,14 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
                 # no match.
                 log_message = "No entities with identifier of type {}, uuid = {}".format( identifier_type_name, my_instance_id )
-                output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = DEBUG )
+                output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = my_debug_flag )
 
                 # create?
                 if ( do_create_if_none_IN == True ):
 
                     # no match.
                     log_message = "Creating entity with identifier of type {}, uuid = {}".format( identifier_type_name, my_instance_id )
-                    output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = DEBUG )
+                    output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = my_debug_flag )
 
                     # got an instance.  Create entity instance.  Init:
                     entity_name_prefix = self.my_entity_name_prefix
@@ -313,7 +325,7 @@ class Abstract_Entity_Container( Abstract_Context_With_JSON ):
 
                     # no match.
                     log_message = "No entities with identifier of type {}, uuid = {}".format( identifier_type_name, my_instance_id )
-                    output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = DEBUG )
+                    output_log_message( log_message, log_level_code_IN = logging.DEBUG, do_print_IN = my_debug_flag )
 
                     # do not create.
                     value_OUT = None

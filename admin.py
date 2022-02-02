@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.postgres import fields
+from django.db import models
 
 # django_json_widget imports
 from django_json_widget.widgets import JSONEditorWidget
