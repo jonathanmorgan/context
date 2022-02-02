@@ -25,7 +25,7 @@ import six
 
 # Django imports
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
+#from django.contrib.postgres.fields import JSONField
 #from django.core.exceptions import DoesNotExist
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
@@ -1783,7 +1783,7 @@ class Entity( Abstract_Trait_Container ):
     my_entity_types = models.ManyToManyField( 'Entity_Type', through = 'Entity_Types', blank = True )
 
     # JSON field to hold structured related information.
-    #details_json = JSONField( blank = True, null = True )
+    #details_json = models.JSONField( blank = True, null = True )
 
 
     #----------------------------------------------------------------------
@@ -3207,7 +3207,7 @@ class Entity_Relation( Abstract_Relation ):
     relation_type = models.ForeignKey( "Entity_Relation_Type", on_delete = models.SET_NULL, blank = True, null = True )
 
     # JSON field to hold structured related information.
-    #details_json = JSONField( blank = True, null = True )
+    #details_json = models.JSONField( blank = True, null = True )
 
     # add a way to tie this to a containing entity (article in which a reporter
     #     quotes a source, for example).

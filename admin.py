@@ -114,7 +114,7 @@ class Entity_EntityTraitInline( admin.TabularInline ):
     fk_name = 'entity'
     
     #formfield_overrides = {
-    #    fields.JSONField: {'widget': JSONEditorWidget},
+    #    models.JSONField: {'widget': JSONEditorWidget},
     #}
     
     fieldsets = [
@@ -139,7 +139,7 @@ class Entity_EntityTraitInline( admin.TabularInline ):
 class EntityAdmin( admin.ModelAdmin ):
 
     formfield_overrides = {
-        fields.JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {'widget': JSONEditorWidget},
     }
     
     fieldsets = [
@@ -327,7 +327,7 @@ class Entity_RelationAdmin( admin.ModelAdmin ):
     autocomplete_fields = [ 'relation_from', 'relation_to', 'relation_through' ]
 
     formfield_overrides = {
-        fields.JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: {'widget': JSONEditorWidget},
     }
     
     fieldsets = [
@@ -375,7 +375,7 @@ class Entity_Relation_TraitAdmin( admin.ModelAdmin ):
     autocomplete_fields = [ 'trait_type', 'term', 'entity_relation', 'entity_relation_type_trait' ]
 
     formfield_overrides = {
-        fields.JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: { 'widget': JSONEditorWidget },
     }
     
     fieldsets = [
@@ -522,7 +522,7 @@ class Entity_TraitAdmin( admin.ModelAdmin ):
     autocomplete_fields = [ 'trait_type', 'term', 'entity', 'entity_type_trait' ]
 
     formfield_overrides = {
-        fields.JSONField: {'widget': JSONEditorWidget},
+        models.JSONField: { 'widget': JSONEditorWidget },
     }
     
     fieldsets = [
