@@ -4,6 +4,6 @@ django-basic-config
 django-json-widget
 django-taggit
 nameparser
-psycopg2-binary
+psycopg2
 python-utilities-jsm
 regex
