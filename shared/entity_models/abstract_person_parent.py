@@ -17,6 +17,10 @@ You should have received a copy of the GNU Lesser General Public License along w
 # python imports
 import logging
 
+# nameparser import
+# http://pypi.python.org/pypi/nameparser
+from nameparser import HumanName
+
 # Django imports
 #from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -61,6 +65,195 @@ class Abstract_Person_Parent( Abstract_Entity_Container ):
     #notes = models.TextField( blank = True, null = True )
     #create_date = models.DateTimeField( auto_now_add = True )
     #last_modified = models.DateTimeField( auto_now = True )
+
+
+    #----------------------------------------------------------------------
+    # ! class methods
+    #----------------------------------------------------------------------
+
+
+    @classmethod
+    def get_name_part_count_from_name( cls, name_string_IN ):
+
+        '''
+        Accepts a name string.  Returns list of name parts. This works
+            with nameparser.HumanName - it parses the name using HumanName, then
+            retrieves each name part that HumanName knows about and puts those
+            that are not emtpy into a list. Returns the list.
+        '''
+
+        # return reference
+        value_OUT = None
+
+        # declare variables
+        name_part_list = None
+        name_part_count = None
+
+        # Make sure we have a string value
+        if ( ( name_string_IN is not None ) and ( name_string_IN != "" ) ):
+
+            # get name part list
+            name_part_list = cls.get_name_part_list_from_name( name_string_IN )
+
+            # got anything back?
+            if ( name_part_list is not None ):
+
+                # get and return count.
+                name_part_count = len( name_part_list )
+                value_OUT = name_part_count
+
+            else:
+
+                # error. return None
+                value_OUT = None
+
+            #-- END check for returned name part list. --#
+
+        else:
+
+            # None - No string passed in, so returning None.
+            value_OUT = None
+
+        #-- END check to see if None. --#
+
+        return value_OUT
+
+    #-- END class method get_name_part_count_from_name() --#
+
+
+    @classmethod
+    def get_name_part_list_from_name( cls, name_string_IN ):
+
+        '''
+        Accepts a name string.  Returns list of name parts. This works
+            with nameparser.HumanName - it parses the name using HumanName, then
+            retrieves each name part that HumanName knows about and puts those
+            that are not emtpy into a list. Returns the list.
+        '''
+
+        # return reference
+        list_OUT = None
+
+        # declare variables
+        human_name = None
+        name_part_value_list = None
+        name_part_list = None
+        name_part = ""
+        cleaned_name_part = ""
+
+        # init
+        name_part_value_list = list()
+        name_part_list = list()
+
+        # Make sure we have a string value
+        if ( ( name_string_IN is not None ) and ( name_string_IN != "" ) ):
+
+            # parse with HumanName
+            human_name = HumanName( name_string_IN )
+
+            # make list of HumanName's name parts
+            name_part_value_list.append( human_name.first )
+            name_part_value_list.append( human_name.middle )
+            name_part_value_list.append( human_name.last )
+            name_part_value_list.append( human_name.title )  # prefix
+            name_part_value_list.append( human_name.suffix )
+            name_part_value_list.append( human_name.nickname )
+
+            # loop, checking each for being empty - add any that are not empty to return list.
+            for name_part in name_part_value_list:
+
+                # got anything?
+                if ( ( name_part is not None ) and ( name_part != "" ) ):
+
+                    # clean it up - strip white space.
+                    cleaned_name_part = name_part.strip()
+
+                    # got anything now?
+                    if ( cleaned_name_part != "" ):
+
+                        # yup.  Add to return list.
+                        name_part_list.append( cleaned_name_part )
+
+                    #-- END check to see if other name parts. --#
+
+                #-- check to see if empty. --#
+
+            #-- loop over other name parts. --#
+
+            # return list.
+            list_OUT = name_part_list
+
+        else:
+
+            # None - No string passed in, so returning None.
+            list_OUT = None
+
+        #-- END check to see if None. --#
+
+        return list_OUT
+
+    #-- END class method get_name_part_list_from_name() --#
+
+
+    @classmethod
+    def is_single_name_part( cls, name_string_IN ):
+
+        '''
+        Accepts a name string.  If name string just has a single word, returns
+            True.  If not, returns False.  If error, returns None.  This works
+            with nameparser.HumanName - it parses the name using HumanName, then
+            checks to see if there is a value in first_name and the rest of the
+            values are empty.  If that is the case, then single name part.  If
+            more than one name field is populated, then not single name part.
+        '''
+
+        # return reference
+        is_single_name_OUT = False
+
+        # declare variables
+        me = "is_single_name_part"
+        status_message = None
+        name_part_count = None
+
+        # Make sure we have a string value
+        if ( ( name_string_IN is not None ) and ( name_string_IN != "" ) ):
+
+            # get count.
+            name_part_count = cls.get_name_part_count_from_name( name_string_IN )
+
+            # how many?
+            if ( name_part_count == 1 ):
+
+                # single name part.
+                is_single_name_OUT = True
+
+            elif ( name_part_count > 1 ):
+
+                # more than one name part.
+                is_single_name_OUT = False
+
+            else:
+
+                # not 1 or > 1. Error.
+                is_single_name_OUT = None
+                status_message = "In Abstract_Person.{me}(): name_count = {name_count}, not 1 or greater than 1, unexpected at this point.".format(
+                    me = me,
+                    name_count = name_part_count
+                )
+                raise ContextError( "status_message" )
+
+            #-- END how many name parts found? --#
+
+        else:
+
+            # None - No string passed in, so returning None.
+            is_single_name_OUT = None
+
+        #-- END check to see if None. --#
+
+        return is_single_name_OUT
+
+    #-- END class method is_single_name_part() --#
 
 
     #----------------------------------------------------------------------
