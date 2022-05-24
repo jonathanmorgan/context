@@ -27,6 +27,7 @@ from taggit.managers import TaggableManager
 
 # python_utilities
 from python_utilities.beautiful_soup.beautiful_soup_helper import BeautifulSoupHelper
+from python_utilities.strings.string_helper import StringHelper
 
 # context imports
 from context.shared.entity_models import output_debug
@@ -109,26 +110,9 @@ class Abstract_Related_Content( models.Model ):
 
         # declare variables
         me = "make_string_hash"
-        my_value_bytes = None
-        my_value_hash = None
-        my_value_hash_hexdigest = None
 
-        # Is value not None and not empty?
-        if ( ( value_IN is not None ) and ( value_IN != "" ) ):
-
-            # encode string (convert to bytes)
-            my_value_bytes = value_IN.encode()
-
-            # create hash
-            my_value_hash = hash_function_IN( my_value_bytes )
-
-            # get hex digest of hash
-            my_value_hash_hexdigest = my_value_hash.hexdigest()
-
-            # return it.
-            value_OUT = my_value_hash_hexdigest
-
-        #-- END check to see if value is not None. --#
+        # call StringHelper method.
+        value_OUT = StringHelper.make_string_hash( value_IN, hash_function_IN = hash_function_IN )
 
         return value_OUT
 
@@ -251,7 +235,7 @@ class Abstract_Related_Content( models.Model ):
             # get hex digest of hash
             my_value_hash_hexdigest = self.make_string_hash( value_IN )
 
-            # return it.
+            # store it.
             self.set_content_hash( my_value_hash_hexdigest )
 
         #-- END check to see if value is not None. --#
