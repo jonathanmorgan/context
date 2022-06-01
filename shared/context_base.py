@@ -25,8 +25,12 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 
 # python_utilities
+from python_utilities.booleans.boolean_helper import BooleanHelper
 from python_utilities.parameters.param_container import ParamContainer
 from python_utilities.rate_limited.basic_rate_limited import BasicRateLimited
+
+# context classes
+from context.shared.context_error import ContextError
 
 #===============================================================================
 # classes (in alphabetical order by name)
@@ -474,6 +478,23 @@ class ContextBase( BasicRateLimited ):
     #-- END method get_param() --#
 
 
+    def get_param_as_boolean( self, param_name_IN, default_IN = None ):
+
+        # return reference
+        list_OUT = []
+
+        # declare variables
+        my_params = None
+
+        # call get_param_as_list()
+        my_params = self.get_param_container()
+        list_OUT = my_params.get_param_as_boolean( param_name_IN, default_IN = default_IN )
+
+        return list_OUT
+
+    #-- END method get_param_as_list() --#
+
+
     def get_param_as_list( self, param_name_IN, default_IN = [], delimiter_IN = ',' ):
 
         # return reference
@@ -531,6 +552,59 @@ class ContextBase( BasicRateLimited ):
         return value_OUT
 
     #-- END method get_param_container() --#
+
+
+    def get_param_yes_no_as_boolean( self, param_name_IN, default_IN = None ):
+
+        # return reference
+        value_OUT = ""
+
+        # declare variables
+        me = "get_param_yes_no_as_boolean"
+        my_params = None
+        param_value = None
+
+        # call get_param_as_str()
+        my_params = self.get_param_container()
+        param_value = my_params.get_param_as_str( param_name_IN, default_IN = None )
+
+        # param set?
+        if (
+            ( param_value is not None )
+            and ( param_value != "" )
+            and ( param_value in self.CHOICE_YES_OR_NO_VALUE_LIST )
+        ):
+
+            #raise ContextTextError( "Found database_output param: {}".format( database_output_IN ) )
+            # got a valid value. Yes or no?
+            if ( param_value == self.CHOICE_NO ):
+
+                # no - set to True.
+                value_OUT = False
+
+            elif ( param_value == self.CHOICE_YES ):
+
+                # no - set to True.
+                value_OUT = True
+
+            #-- END check to see if we log output based on data spec --#
+
+        else:
+
+            #status_message = "ERROR in {me}(): Value passed in is not Yes or No ( {my_value} ).".format(
+            #    me = me,
+            #    my_value = param_value
+            #)
+            #raise ContextError( status_message )
+
+            # param not set, use default.
+            value_OUT = default_IN
+
+        #-- END check if database_output param set --#
+
+        return value_OUT
+
+    #-- END method get_param_yes_no_as_boolean() --#
 
 
     def get_request( self ):
